@@ -59,7 +59,7 @@ begin
         state <= EMPTY;
     end
     // now cover EMPTY cases
-    else if (state == EMPTY)
+    else if (next_state == EMPTY)
     begin
         res_word.op <= control_word.op;
         res_word.funct3 <= control_word.funct3;
@@ -76,7 +76,7 @@ begin
         state <= next_state;
     end
     // LOAD cases
-    else if (state == LOAD)
+    else if (next_state == LOAD)
     begin
         res_word.src1_data <= src1;
         res_word.src1_valid <= ~rob_v1;
@@ -87,7 +87,7 @@ begin
         state <= next_state;
     end
     // PEEK cases
-    else if (state == PEEK)
+    else if (next_state == PEEK)
     begin
     if (cdb.tag == res_word.src1_tag & ~res_word.src1_valid)
     begin

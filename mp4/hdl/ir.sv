@@ -32,6 +32,11 @@ assign control_word.src2_rob_id = 3'b000;
 assign control_word.funct3 = funct3;
 assign control_word.funct7 = funct7[30];
 assign control_word.rd = rd;
+
+always_comb
+begin : immediate_load
+    if ()
+end
 assign control_word.i_imm = i_imm;
 assign control_word.s_imm = s_imm;
 assign control_word.b_imm = b_imm;

@@ -145,8 +145,8 @@ BASH_ENV=/usr/share/lmod/lmod/init/bash
 0
 9
 1666561711 /home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/hvl/top.sv
-1666583877 /home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/hvl/testbench.sv
-1666584993 /home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/hdl/reservation_station.sv
+1666588556 /home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/hvl/testbench.sv
+1666588438 /home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/hdl/reservation_station.sv
 1666572694 /home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/hdl/reservation_station_itf.sv
 1666557625 /home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/pkg/rv32i_types.sv
 1666584868 /home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/pkg/tomasula_types.sv
@@ -158,5 +158,5 @@ BASH_ENV=/usr/share/lmod/lmod/init/bash
 1618975343 /software/Synopsys-2021_x86_64/vcs/R-2020.12-SP1-1/linux64/lib/liberrorinf.so
 1618975120 /software/Synopsys-2021_x86_64/vcs/R-2020.12-SP1-1/linux64/lib/libsnpsmalloc.so
 1618975339 /software/Synopsys-2021_x86_64/vcs/R-2020.12-SP1-1/linux64/lib/libvfs.so
-1666585475 simv.daidir
+1666588563 simv.daidir
 -1 partitionlib

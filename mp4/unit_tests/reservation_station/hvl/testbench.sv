@@ -19,7 +19,7 @@ reservation_station res (
     .res_empty (itf.res_empty)
 );
 
-default clocking tb_clk @(negedge itf.clk); endclocking
+default clocking tb_clk @(posedge itf.clk); endclocking
 
 initial begin
     $fsdbDumpfile("dump.fsdb");
@@ -65,6 +65,9 @@ endtask
 task load_res();
     itf.load_word <= 1'b1;
     @(tb_clk);
+endtask
+
+task unload_res();
     itf.load_word <= 1'b0;
     @(tb_clk);
 endtask
@@ -102,12 +105,19 @@ initial begin
     @(tb_clk);
 
     load_res();
+    unload_res();
 
     repeat (10) @(tb_clk);
     set_cdb (3'b001, 32'h0002);
     repeat (2) @(tb_clk);
     set_alu(1'b1);
-    @(tb_clk);
+    repeat (2) @(tb_clk);
+    // set_alu(1'b0);
+    set_src_data(7, 9);
+    set_robs (1'b0, 3'b010, 1'b0, 3'b101);
+    load_res();
+    set_robs (1'b0, 3'b000, 1'b0, 3'b000);
+    unload_res();
 
 
 

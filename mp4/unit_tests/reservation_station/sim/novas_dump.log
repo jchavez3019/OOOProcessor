@@ -225,7 +225,7 @@ QT_IM_MODULE=ibus
 XMODIFIERS=@im=ibus
 _ModuleTable_Sz_=3
 LM_LICENSE_FILE=27005@synopsys.webstore.illinois.edu
-SNPS_VCS_TMPDIR=/tmp/vcs_20221024042431_4155466
+SNPS_VCS_TMPDIR=/tmp/vcs_20221024051559_3399
 DBUS_STARTER_BUS_TYPE=session
 XDG_CURRENT_DESKTOP=GNOME
 SELINUX_USE_CURRENT_RANGE=
@@ -233,7 +233,7 @@ OPENRAM_HOME=/compiler
 GNOME_TERMINAL_SERVICE=:1.75
 MAKELEVEL=1
 VERDI_HOME=/software/Synopsys-2021_x86_64/verdi/R-2020.12-SP1-1
-TURBO_LOG_DIR=/tmp/vcs_20221024042431_4155466
+TURBO_LOG_DIR=/tmp/vcs_20221024051559_3399
 SHLVL=5
 VCS_COM=/software/Synopsys-2021_x86_64/vcs/R-2020.12-SP1-1/linux64/bin/vcs1
 PYTHONPATH=:/class/ece411/software/python2.7/site-packages:/class/ece411/software/python2.7/site-packages
@@ -306,8 +306,8 @@ argv[0]=simv
 argv[1]=+lint=all,noSVA-UA,noNS,noSVA-AECASR
 argv[2]=+v2k
 279 profile - 100
-          CPU/Mem usage: 0.040 sys,  0.330 user,  308.28M mem
-280 Elapsed time:    0:00:01    Sun Oct 23 23:24:35 2022
+          CPU/Mem usage: 0.040 sys,  0.290 user,  308.29M mem
+280 Elapsed time:    0:00:01    Mon Oct 24 00:16:03 2022
 281 pliAppInit
 282 [SC]Init: MemoryConsumed=0.00MB ElapsedTime=0hour 0min. 0sec.
 283 FSDB_GATE is set.
@@ -338,7 +338,7 @@ argv[2]=+v2k
 308 *Verdi* : Enable +all dumping.
 309 *Verdi* : End of traversing.
 310 pliAppHDL_DumpVarComplete traverse var: profile - 
-          CPU/Mem usage: 0.050 sys,  0.330 user,  408.00M mem
+          CPU/Mem usage: 0.050 sys,  0.300 user,  408.00M mem
                    incr: 0.000 sys,  0.000 user,  7.25M mem
                    accu: 0.000 sys,  0.000 user,  7.25M mem
               accu incr: 0.000 sys,  0.000 user,  7.25M mem
@@ -347,9 +347,9 @@ argv[2]=+v2k
                  incr: 74 var,  74 idcode,  52 callback
                  accu: 74 var,  74 idcode,  52 callback
             accu incr: 74 var,  74 idcode,  52 callback
-311 Elapsed time:    0:00:01    Sun Oct 23 23:24:35 2022
+311 Elapsed time:    0:00:01    Mon Oct 24 00:16:03 2022
 312 pliAppHDL_DumpVarComplete: profile - 
-          CPU/Mem usage: 0.050 sys,  0.330 user,  409.05M mem
+          CPU/Mem usage: 0.050 sys,  0.300 user,  409.06M mem
                    incr: 0.000 sys,  0.000 user,  1.05M mem
                    accu: 0.000 sys,  0.000 user,  8.30M mem
               accu incr: 0.000 sys,  0.000 user,  1.05M mem
@@ -358,24 +358,24 @@ argv[2]=+v2k
                  incr: 0 var,  0 idcode,  0 callback
                  accu: 74 var,  74 idcode,  52 callback
             accu incr: 0 var,  0 idcode,  0 callback
-313 Elapsed time:    0:00:01    Sun Oct 23 23:24:35 2022
-314 End of simulation at 125500
-315 Memory usage: 409.051 M
-316 Elapsed time:    0:00:01    Sun Oct 23 23:24:35 2022
+313 Elapsed time:    0:00:01    Mon Oct 24 00:16:03 2022
+314 End of simulation at 128500
+315 Memory usage: 409.055 M
+316 Elapsed time:    0:00:01    Mon Oct 24 00:16:03 2022
 317 Begin FSDB profile info:
-318 FSDB Writer : bc1(306) bcn(307) mtf/stf(0/0)
-FSDB Writer elapsed time : flush(0.008046) io wait(0.000000) theadpool wait(0.000000)
+318 FSDB Writer : bc1(327) bcn(360) mtf/stf(0/0)
+FSDB Writer elapsed time : flush(0.007389) io wait(0.000000) theadpool wait(0.000000)
 FSDB Writer cpu time : MT Compression : 0
 319 End FSDB profile info
-320 FSDB closed. Name: dump.fsdb Size: 11109
+320 FSDB closed. Name: dump.fsdb Size: 11226
 321 Parallel profile     - ProducerThread:1 ConsumerThread:1 Buffer:64MB
-322                      - BlockUsed:1 Acquire:722 BufferUsed:10903
+322                      - BlockUsed:1 Acquire:778 BufferUsed:11776
 323                      - Flush:3 Expand:0 ProducerWait:0 ConsumerWait:0
-324                      - MainProducerTime:0.398954815 TotalConsumerTime:0.000000000
-325                      - ElapsedTime:0.146416000
-326 Producer   0 profile - BlockUsed:1 Acquire:722 BufferUsed:10903
+324                      - MainProducerTime:0.363826089 TotalConsumerTime:0.000000000
+325                      - ElapsedTime:0.137969000
+326 Producer   0 profile - BlockUsed:1 Acquire:778 BufferUsed:11776
 327 Consumer   0 profile - Affinity:-1 CPUTime:0.000000000 LifeTime:0.000000000 (-nan%)
-328                      - BlockUsed:1 Acquire:722 BufferUsed:10903
+328                      - BlockUsed:1 Acquire:778 BufferUsed:11776
 329 SimExit
-330 Elapsed time:    0:00:01    Sun Oct 23 23:24:35 2022
+330 Elapsed time:    0:00:01    Mon Oct 24 00:16:03 2022
 331 Sim process exit
