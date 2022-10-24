@@ -6,6 +6,8 @@ typedef enum bit[2:0] {
     AUIPC = 3'b010, 
     JAL = 3'b011, 
     JALR = 3'b100
+    LOAD = 3'b101,
+    STORE = 3'b110 
 } op_t;
 
 /* remember to take out rob id's later since they are unnecessary */
