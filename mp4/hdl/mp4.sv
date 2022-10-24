@@ -30,6 +30,31 @@ import rv32i_types::*;
     output rv32i_word pmem_address,
     output [63:0] pmem_wdata
 	*/
+
+    ir IR (
+        *, 
+        .load(),
+        .in(instr_mem_rdata),
+        .control_word()
+    );
+
+    reservation_station res(
+        *,
+        .load_word(),
+        .control_word(),
+        .src1(),
+        .src2(),
+        .cdb(),
+        .rob_tag1(),
+        .rob_tag2(),
+        .rob_v1(),
+        .rob_v2(),
+        .alu_free(),
+        .alu_data(),
+        .start_exe(),
+        .res_empty()
+    );
+
 );
 
 endmodule : mp4

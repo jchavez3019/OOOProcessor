@@ -7,6 +7,7 @@ import marmux::*;
 import cmpmux::*;
 import alumux::*;
 import regfilemux::*;
+import tomasula_types::*;
 
 typedef logic [31:0] rv32i_word;
 typedef logic [4:0] rv32i_reg;
@@ -69,6 +70,15 @@ typedef enum bit [2:0] {
     alu_or  = 3'b110,
     alu_and = 3'b111
 } alu_ops;
+
+typedef enum {
+    READ_ERROR
+} error_e;
+
+typedef struct {
+    time timestamp;
+    error_e err;
+} error_t;
 
 
 endpackage : rv32i_types
