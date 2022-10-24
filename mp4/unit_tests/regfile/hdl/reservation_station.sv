@@ -68,9 +68,7 @@ begin
         res_word.src1_data <= 32'h0000;
         res_word.src1_valid <= 1'b0;
         res_word.src2_tag <= control_word.src2_reg;
-        /* src2_data will come in from a mux, one input from iq, one from regfile */
         res_word.src2_data <= 32'h0000;
-        /* src2_valid will be an OR between iq and regfile */
         res_word.src2_valid <= 1'b0;
         res_word.rd_tag <= control_word.rd;
         res_word.imm <= control_word.imm;

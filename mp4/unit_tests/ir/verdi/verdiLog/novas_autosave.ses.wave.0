@@ -1,0 +1,63 @@
+Magic 271485
+Revision Verdi_R-2020.12-SP1-1
+
+; Window Layout <x> <y> <width> <height> <signalwidth> <valuewidth>
+viewPort 0 25 1920 438 175 65
+
+; File list:
+; openDirFile [-d delimiter] [-s time_offset] [-rf auto_bus_rule_file] path_name file_name
+openDirFile -d / "" "/home/jorgejc2/Documents/ece411/mp1/cam/sim/dump.fsdb"
+
+; file time scale:
+; fileTimeScale ### s|ms|us|ns|ps
+
+; signal spacing:
+signalSpacing 5
+
+; windowTimeUnit is used for zoom, cursor & marker
+; waveform viewport range
+zoom 38613.920386 53713.420386
+cursor 0.000000
+marker 0.000000
+
+; user define markers
+; userMarker time_pos marker_name color linestyle
+; visible top row signal index
+top 0
+; marker line index
+markerPos 9
+
+; event list
+; addEvent event_name event_expression
+; curEvent event_name
+
+
+
+COMPLEX_EVENT_BEGIN
+
+
+COMPLEX_EVENT_END
+
+
+
+; toolbar current search type
+; curSTATUS search_type
+curSTATUS ByChange
+
+
+addGroup "G1"
+activeDirFile "" "/home/jorgejc2/Documents/ece411/mp1/cam/sim/dump.fsdb"
+addSignal -h 15 /top/tb/itf/reset_n
+addSignal -h 15 -holdScope rw_n
+addSignal -h 15 -holdScope valid_i
+addSignal -h 15 -holdScope key[15:0]
+addSignal -h 15 -holdScope val_i[15:0]
+addSignal -h 15 -holdScope val_o[15:0]
+addSignal -h 15 -holdScope valid_o
+addSignal -h 15 /top/tb/read_val[15:0]
+addSignal -h 15 /top/tb/itf/clk
+addGroup "G2"
+
+; getSignalForm Scope Hierarchy Status
+; active file of getSignalForm
+

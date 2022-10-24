@@ -1,0 +1,7 @@
+/home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/hdl/reservation_station.sv
+/home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/hdl/reservation_station_itf.sv
+/home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/hvl/testbench.sv
+/home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/hvl/top.sv
+/home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/pkg/rv32i_mux_types.sv
+/home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/pkg/rv32i_types.sv
+/home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/pkg/tomasula_types.sv
