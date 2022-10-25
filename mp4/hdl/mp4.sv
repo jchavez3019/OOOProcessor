@@ -31,6 +31,9 @@ import rv32i_types::*;
     output [63:0] pmem_wdata
 	*/
 
+);
+
+
     ir IR (
         *, 
         .load(),
@@ -55,6 +58,8 @@ import rv32i_types::*;
         .res_empty()
     );
 
-);
+always_comb begin :
+
+end
 
 endmodule : mp4
