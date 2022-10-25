@@ -1,0 +1,68 @@
+{
+    "std": [
+        "std",
+        "reYIK",
+        "module",
+        1
+    ],
+    "pcmux": [
+        "pcmux",
+        "hCqGL",
+        "module",
+        2
+    ],
+    "marmux": [
+        "marmux",
+        "y5RQC",
+        "module",
+        3
+    ],
+    "cmpmux": [
+        "cmpmux",
+        "bqfyk",
+        "module",
+        4
+    ],
+    "alumux": [
+        "alumux",
+        "HIkBf",
+        "module",
+        5
+    ],
+    "regfilemux": [
+        "regfilemux",
+        "hteAu",
+        "module",
+        6
+    ],
+    "tomasula_types": [
+        "tomasula_types",
+        "NLHKy",
+        "module",
+        7
+    ],
+    "rv32i_types": [
+        "rv32i_types",
+        "ZDAey",
+        "module",
+        8
+    ],
+    "reservation_station_itf": [
+        "reservation_station_itf",
+        "at3Fu",
+        "module",
+        9
+    ],
+    "top": [
+        "top",
+        "Emx8S",
+        "module",
+        10
+    ],
+    "...MASTER...": [
+        "SIM",
+        "amcQw",
+        "module",
+        11
+    ]
+}
