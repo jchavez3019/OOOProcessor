@@ -13,42 +13,37 @@ import rv32i_types::*;
    output cdb_data::request req
 );
 
-logic op_t op_buf,
-logic alu_word::src1_data src1_data_buf;
-logic alu_word::src2_data src2_data_buf;
-logic alu_word::imm imm_buf;
-logic alu_word::funct3 funct3_buf;
-logic alu_word::funct7 funct7_buf;
-logic alu_word::pc pc_buf;
-// logic alu_word::load load_buf;
-logic alu_word::tag tag_buf;
 
 always_comb begin : MUXES
+    a = src1_data_buf;
+    b = src2_data_buf;  
     unique case (op)
         op_t::BRANCH :  begin 
-            a = pc_buf;
-            b = imm_buf;
             aluop = rv32i_types::alu_add;
         end
         op_t::ARITH :   begin
-            
-            a = src1_data_buf;
-            b = src2_data_buf;
-
+            if (funct3 == rv32i_types::sr) begin 
+                if (funct7 != 1'b1)
+                    aluop = rv32i_types::alu_srl;
+                else
+                    aluop = rv32i_types::alu_sra;
+            end
+            else if (funct3 == rv32i_types::add) begin
+                if (funct7 != 1'b1)
+                    aluop = rv32i_types::alu_add;
+                else
+                    aluop = rv32i_types::alu_sub;
+            end
+            else
+                aluop = funct3;
         end
         op_t::AUIPC :   begin 
-            a = pc_buf;
-            b = imm_buf;
             aluop = rv32i_types::alu_add;
         end
         op_t::JAL :     begin 
-            a = pc_buf;
-            b = imm_buf;
             aluop = rv32i_types::alu_add;
         end
         op_t::JALR :    begin
-            a = src1_data_buf;
-            b = imm_buf;
             aluop = rv32i_types::alu_add;
         end
         // etc.
@@ -56,16 +51,17 @@ always_comb begin : MUXES
     endcase
 end
 
-always_comb begin : ASSIGNMENTS
-    if(load) begin
-        op_buf          = op;
-        src1_data_buf   = src1_data; 
-        src2_data_buf   = src2_data;
-        funct3_buf      = funct3;
-        funct7_buf      = funct7;      
-        tag_buf         = tag;           
-    end 
-end
+// always_comb begin : ASSIGNMENTS
+//     if(load) begin
+//         op_buf          = op;
+//         src1_data_buf   = src1_data; 
+//         src2_data_buf   = src2_data;
+//         funct3_buf      = funct3;
+//         funct7_buf      = funct7;      
+//         tag_buf         = tag;           
+//     end 
+//     tag_out = tag
+// end
 
 always_comb
 begin
@@ -79,6 +75,10 @@ begin
         alu_or:   data = a | b;
         alu_and:  data = a & b;
     endcase
+    req = load;
+    tag_out = tag;
+
+
 end
 
 endmodule : alu
