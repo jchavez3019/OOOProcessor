@@ -1,7 +1,7 @@
 module top;
 import rv32i_types::*;
 
-reservation_station_itf itf();
+instruction_queue_itf itf();
 
 testbench tb(.*);
 

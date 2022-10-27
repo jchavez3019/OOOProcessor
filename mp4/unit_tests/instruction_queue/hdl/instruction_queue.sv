@@ -27,6 +27,7 @@ import rv32i_types::*;
 );
 
 logic [3:0] res_snoop;
+logic control_o_valid, dequeue;
 tomasula_types::ctl_word control_o_buf;
 assign res_snoop = {res4_empty, res3_empty, res2_empty, res1_empty};
 
@@ -55,7 +56,7 @@ always_comb begin
     // if the fifo is holding a valid entry
     if (control_o_valid) begin 
         // for load store instructions
-        if (control_o_buf.op == STORE || control_o_buf.op == LOAD) begin
+        if (control_o_buf.op == tomasula_types::STORE || control_o_buf.op == tomasula_types::LOAD) begin
             resldst_load = (resldst_empty && !rob_full && !ldst_q_full)? 1'b1 : 1'b0;
             dequeue = (resldst_empty && !rob_full && !ldst_q_full)? 1'b1 : 1'b0;
             control_o = control_o_buf;

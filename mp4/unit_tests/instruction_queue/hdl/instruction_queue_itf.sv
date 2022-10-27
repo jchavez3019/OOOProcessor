@@ -3,7 +3,8 @@
 
 interface instruction_queue_itf;
 import rv32i_types::*;
-bit clk, reset_n, res1_valid, res2_valid, res3_valid, res4_valid, resldst_valid, rob_full, ldst_q_full, rob_load, res1_load, res2_load, res3_load, res4_load, resldst_load;
+bit clk, reset_n, res1_empty, res2_empty, res3_empty, res4_empty, resldst_empty, rob_full, ldst_q_full, rob_load, res1_load, res2_load, res3_load, res4_load, resldst_load, issue_q_full_n, ack_o;
+bit [2:0] regfile_tag1, regfile_tag2;
 tomasula_types::ctl_word control_i, control_o;
 
 time timestamp;

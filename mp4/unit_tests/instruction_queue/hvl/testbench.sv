@@ -5,13 +5,16 @@ instruction_queue iq (
     .clk (itf.clk),
     .rst (~itf.reset_n),
     .control_i (itf.control_i),
-    .res1_valid(itf.res1_valid),
-    .res2_valid(itf.res2_valid),
-    .res3_valid(itf.res3_valid),
-    .res4_valid(itf.res4_valid),
-    .resldst_valid(itf.resldst_valid),
+    .res1_empty(itf.res1_empty),
+    .res2_empty(itf.res2_empty),
+    .res3_empty(itf.res3_empty),
+    .res4_empty(itf.res4_empty),
+    .resldst_empty(itf.resldst_empty),
     .rob_full(itf.rob_full),
     .ldst_q_full(itf.ldst_q_full),
+    .enqueue(itf.enqueue),
+    .regfile_tag1(itf.regfile_tag1),
+    .regfile_tag2(itf.regfile_tag2),
     .rob_load(itf.rob_load),
     .res1_load(itf.res1_load),
     .res2_load(itf.res2_load),
@@ -19,6 +22,8 @@ instruction_queue iq (
     .res4_load(itf.res4_load),
     .resldst_load(itf.resldst_load),
     .control_o(itf.control_o),
+    .issue_q_full_n(itf.issue_q_full_n),
+    .ack_o(itf.ack_o)
 );
 
 default clocking tb_clk @(negedge itf.clk); endclocking
@@ -38,15 +43,15 @@ endtask
 task set_init();
     itf.reset_n <= 1'b0;
     /* set up control word for res station */
-    itf.control_word.op <= tomasula_types::ARITH;
-    itf.control_word.src1_reg <= 8'h1;
-    itf.control_word.src1_valid <= 1'b0;
-    itf.control_word.src2_reg <= 8'h2;
-    itf.control_word.src2_valid <= 1'b0;
-    itf.control_word.funct3 <= 3'b000;
-    itf.control_word.funct7 <= 1'b0;
-    itf.control_word.rd <= 8'h3;
-    itf.control_word.imm <= 32'h0000;
+    itf.control_i.op <= tomasula_types::ARITH;
+    itf.control_i.src1_reg <= 8'h1;
+    itf.control_i.src1_valid <= 1'b0;
+    itf.control_i.src2_reg <= 8'h2;
+    itf.control_i.src2_valid <= 1'b0;
+    itf.control_i.funct3 <= 3'b000;
+    itf.control_i.funct7 <= 1'b0;
+    itf.control_i.rd <= 8'h3;
+    itf.control_i.imm <= 32'h0000;
 
     /* set up cdb */
     itf.cdb.tag = 3'b000;
