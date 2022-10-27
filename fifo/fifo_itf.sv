@@ -3,7 +3,7 @@
 
 interface fifo_itf;
 import fifo_types::*;
-bit clk, reset_n, valid_i, valid_o, yumi, rdy;
+bit clk, reset_n, valid_i, valid_o, yumi, rdy, ack_o;
 word_t data_i, data_o;
 time timestamp;
 

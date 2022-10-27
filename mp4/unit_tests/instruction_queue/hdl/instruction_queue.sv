@@ -3,14 +3,15 @@ import rv32i_types::*;
 (
     input logic clk,
     input logic rst,
-    input ctl_word control_i,
-    input logic res1_busy,
-    input logic res2_busy,
-    input logic res3_busy,
-    input logic res4_busy,
-    input logic resldst_busy,
+    input tomasula_types::ctl_word control_i,
+    input logic res1_empty,
+    input logic res2_empty,
+    input logic res3_empty,
+    input logic res4_empty,
+    input logic resldst_empty,
     input logic rob_full,
     input logic ldst_q_full,
+    input logic enqueue,
 
     output logic [2:0] regfile_tag1, 
     output logic [2:0] regfile_tag2,
@@ -20,12 +21,14 @@ import rv32i_types::*;
     output logic res3_load,
     output logic res4_load,
     output logic resldst_load,
-    output alu_res_word iq_o
+    output tomasula_types::ctl_word control_o,
+    output logic issue_q_full_n,
+    output logic ack_o
 );
 
 logic [3:0] res_snoop;
-logic ctl_word control_o;
-assign res_snoop = {res4_busy, res3_busy, res2_busy, res1_busy};
+tomasula_types::ctl_word control_o_buf;
+assign res_snoop = {res4_empty, res3_empty, res2_empty, res1_empty};
 
     
 fifo instruction_queue 
@@ -35,8 +38,9 @@ fifo instruction_queue
     .data_i(control_i),
     .valid_i(enqueue),
     .ready_o(issue_q_full_n),
+    .ack_o(ack_o),
     .valid_o(control_o_valid),
-    .data_o(control_o),
+    .data_o(control_o_buf),
     .yumi_i(dequeue)
 );
 
@@ -46,55 +50,42 @@ always_comb begin
     res2_load = 1'b0;
     res3_load = 1'b0;
     res4_load = 1'b0;
-    enqueue = 1'b0;
     dequeue = 1'b0;
 
-    // if the issue queue isn't full, add the instruction
-    enqueue = issue_q_full_n ? 1'b1: 1'b0;
     // if the fifo is holding a valid entry
     if (control_o_valid) begin 
         // for load store instructions
-        if (control_o.op == STORE || control_o.op == LOAD) begin
-            resldst_load = (!resldst_busy && !rob_full && !ldst_q_full)? 1'b1 : 1'b0;
-            dequeue = (!resldst_busy && !rob_full && !ldst_q_full)? 1'b1 : 1'b0;
+        if (control_o_buf.op == STORE || control_o_buf.op == LOAD) begin
+            resldst_load = (resldst_empty && !rob_full && !ldst_q_full)? 1'b1 : 1'b0;
+            dequeue = (resldst_empty && !rob_full && !ldst_q_full)? 1'b1 : 1'b0;
+            control_o = control_o_buf;
             //TODO: set up reservation word for ldst instructions
         end
         else begin
             if (!rob_full) begin
-                if (!(&res_snoop)) begin
+                if (res_snoop) begin
                     // dequeue the instruction
                     dequeue = 1'b1;
-                    // assemble the reservation word
-                    iq_o.op = control_o.op; 
-                    iq_o.funct3 = control_o.funct3;
-                    // set by register file
-                    iq_o.src1_tag = 3'b000;
-                    iq_o.src1_data = 32'h00;
-                    iq_o.src1_valid = 1'b0;
-                    // set by register file
-                    iq_o.src2_tag = 3'b000;
-
-                    // if not, will be populated by register file
-                    iq_o.src2_data = control_o.imm;
-                    iq_o.src2_valid = 1'b0;
-                    iq_o.rd = control_o.rd;
-                
+               
                     // send read signals to the regfile
-                    regfile_tag1 = iq_o.src1_reg;
-                    regfile_tag2 = iq_o.src2_reg;
+                    regfile_tag1 = control_o_buf.src1_reg;
+                    regfile_tag2 = control_o_buf.src2_reg;
+
+                    // assign the output to the output of the queue
+                    control_o = control_o_buf;
 
                     // find out which reservation station to route to
                     priority case(res_snoop)
-                        4'bxxx0: begin
+                        4'bxxx1: begin
                             res1_load = 1'b1;
                         end
-                        4'bxx0x: begin
+                        4'bxx1x: begin
                             res2_load = 1'b1;
                         end
-                        4'bx0xx: begin
+                        4'bx1xx: begin
                             res3_load = 1'b1;
                         end
-                        4'b0xxx: begin
+                        4'b1xxx: begin
                             res4_load = 1'b1;
                         end
                     endcase
@@ -104,7 +95,7 @@ always_comb begin
         end
 
         // rob logic is the same as dequeue, reuse here instead of rechecking
-        rob_load = dequeue? 1'b1 : 1'b0;
+        rob_load = dequeue;
     end
 end
 
