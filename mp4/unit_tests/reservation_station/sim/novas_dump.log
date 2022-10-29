@@ -156,13 +156,13 @@ LS_COLORS=rs=0:di=38;5;33:ln=38;5;51:mh=00:pi=40;38;5;11:so=38;5;13:do=38;5;5:bd
 LD_LIBRARY_PATH=/software/Synopsys-2021_x86_64/vcs/R-2020.12-SP1-1/linux64/lib:/software/Synopsys-2021_x86_64/syn/R-2020.09-SP4/linux64/tcl/lib:/class/ece411/software/lib64:/class/ece411/software/riscv-tools/lib:/class/ece411/software/lib64:/class/ece411/software/riscv-tools/lib
 __LMOD_REF_COUNT_PATH=/software/Synopsys-2021_x86_64/wv/R-2020.12-SP1/bin:1;/software/Synopsys-2021_x86_64/vui/R-2020.09-SP4/bin:1;/software/Synopsys-2021_x86_64/vtran/R-2020.09-SP4/bin:1;/software/Synopsys-2021_x86_64/vgen/R-2020.09-SP4/bin:1;/software/Synopsys-2021_x86_64/verdi/R-2020.12-SP1-1/bin:1;/software/Synopsys-2021_x86_64/vc_static/R-2020.12-SP1-1/bin:1;/software/Synopsys-2021_x86_64/vcs-mx/O-2018.09-SP2-3/bin:1;/software/Synopsys-2021_x86_64/vcs/R-2020.12-SP1-1/bin:1;/software/Synopsys-2021_x86_64/vc_ml_platform/2019.06/mlplatform/bin:1;/software/Synopsys-2021_x86_64/vcap/R-2020.09-SP4/bin:1;/software/Synopsys-2021_x86_64/ufe_optional_spyglass-vcs/R-2020.12-SP1-1/SPYGLASS_HOME/bin:1;/software/Synopsys-2021_x86_64/txs/R-2020.09-SP4/bin:1;/software/Synopsys-2021_x86_64/taurus_tsuprem4/R_2020.09/bin:1;/software/Synopsys-2021_x86_64/taurus_medici/	R_2020.09/bin:1;/software/Synopsys-2021_x86_64/syn/R-2020.09-SP4/bin:1;/software/Synopsys-2021_x86_64/starrc/R-2020.09-SP5/bin:1;/software/Synopsys-2021_x86_64/spyglass/R-2020.12-SP1-1/SPYGLASS_HOME/bin:1;/software/Synopsys-2021_x86_64/spx/R-2020.09-SP2/bin:1;/software/Synopsys-2021_x86_64/siliconsmart/R-2020.12-SP1/bin:1;/software/Synopsys-2021_x86_64/sentaurus/R_2020.09-SP1/bin:1;/software/Synopsys-2021_x86_64/raphael/R_2020.09a/bin:1;/software/Synopsys-2021_x86_64/prime/R-2020.09-SP5/bin:1;/software/Synopsys-2021_x86_64/pcm_studio/R-2021.03/bin:1;/software/Synopsys-2021_x86_64/nt/R-2020.09-SP5/bin:1;/software/Synopsys-2021_x86_64/mw/R-2020.09-SP4/bin/linux64:1;/software/Synopsys-2021_x86_64/mlwizard/R-2021.03-SP1/bin:1;/software/Synopsys-2021_x86_64/lc/R-2020.09-SP5/bin:1;/software/Synopsys-2021_x86_64/laker/L-2020.06-3/bin:1;/software/Synopsys-2021_x86_64/idq/R-2020.09-SP4/linux64/iddq/bin:1;/software/Synopsys-2021_x86_64/identify/R-2021.03/bin:1;/software/Synopsys-2021_x86_64/icv_workbench/R-2020.09-SP2/bin:1;/software/Synopsys-2021_x86_64/icvalidator/R-2020.09-SP3-3/bin:1;/software/Synopsys-2021_x86_64/icc2/R-2020.09-SP5/bin:1;/software/Synopsys-2021_x86_64/icc/R-2020.09-SP4/bin:1;/software/Synopsys-2021_x86_64/hspice/R-2020.12-SP1/hspice/bin:1;/software/Synopsys-2021_x86_64/hsim/R-2020.12-SP1/hsimplus/bin:1;/software/Synopsys-2021_x86_64/fpga/R-2021.03/bin:1;/software/Synopsys-2021_x86_64/fm/R-2020.09-SP5/bin:1;/software/Synopsys-2021_x86_64/finesim/R-2020.12-SP1-1/bin:1;/software/Synopsys-2021_x86_64/esp/R-2020.09-SP2/bin:1;/software/Synopsys-2021_x86_64/dftview/R-2020.09-SP4/bin:1;/software/Synopsys-2021_x86_64/customcompiler/R-2020.12-SP1/bin:1;/software/Synopsys-2021_x86_64/coretools/R-2020.12-SP3/bin:1;/usr/local/bin:1;/usr/bin:1;/usr/local/sbin:1;/usr/sbin:1;/class/ece411/software/riscv-tools/bin:1;/class/ece411/software/bin:1;/usr/lib/fastx/3/apps:1
 LMODARCH=x86_64
-_ModuleTable002_=bW9kdWxlZmlsZXMiLCAiL3Vzci9zaGFyZS9Nb2R1bGVzL21vZHVsZWZpbGVzIiwgIi91c3Ivc2hhcmUvbW9kdWxlZmlsZXMvTGludXgiLCAiL3Vzci9zaGFyZS9tb2R1bGVmaWxlcy9Db3JlIiwgIi91c3Ivc2hhcmUvbG1vZC9sbW9kL21vZHVsZWZpbGVzL0NvcmUiLCAiL2V0Yy9tb2R1bGVmaWxlcy9lbnYiCiwgIi9ldGMvbW9kdWxlZmlsZXMvY2xhc3MiLCAiL2V0Yy9tb2R1bGVmaWxlcy9ld3Nfc29mdHdhcmUiLAp9LApzeXN0ZW1CYXNlTVBBVEggPSAiL3Vzci9zaGFyZS9tb2R1bGVmaWxlczovdXNyL3NoYXJlL01vZHVsZXMvbW9kdWxlZmlsZXM6L3Vzci9zaGFyZS9tb2R1bGVmaWxlcy9MaW51eDovdXNyL3NoYXJlL21vZHVsZWZpbGVzL0NvcmU6L3Vzci9zaGFyZS9sbW9k
+_ModuleTable002_=bW9kdWxlZmlsZXMiLCAiL3Vzci9zaGFyZS9Nb2R1bGVzL21vZHVsZWZpbGVzIgosICIvdXNyL3NoYXJlL21vZHVsZWZpbGVzL0xpbnV4IiwgIi91c3Ivc2hhcmUvbW9kdWxlZmlsZXMvQ29yZSIKLCAiL3Vzci9zaGFyZS9sbW9kL2xtb2QvbW9kdWxlZmlsZXMvQ29yZSIsICIvZXRjL21vZHVsZWZpbGVzL2VudiIKLCAiL2V0Yy9tb2R1bGVmaWxlcy9jbGFzcyIsICIvZXRjL21vZHVsZWZpbGVzL2V3c19zb2Z0d2FyZSIsCn0sCnN5c3RlbUJhc2VNUEFUSCA9ICIvdXNyL3NoYXJlL21vZHVsZWZpbGVzOi91c3Ivc2hhcmUvTW9kdWxlcy9tb2R1bGVmaWxlczovdXNyL3NoYXJlL21vZHVsZWZpbGVzL0xpbnV4Oi91c3Ivc2hhcmUvbW9kdWxlZmlsZXMvQ29yZTovdXNyL3NoYXJlL2xt
 __LMOD_STACK_LM_LICENSE_FILE=MjcwMDVAc3lub3BzeXMud2Vic3RvcmUuaWxsaW5vaXMuZWR1
 XDG_MENU_PREFIX=gnome-
 __LMOD_STACK_acroread_path=L3Vzci9iaW4vYWNyb3JlYWQ=
 LANG=en_US.UTF-8
-DISPLAY=fastx3-17.ews.illinois.edu:103
-HOSTNAME=fastx3-17.ews.illinois.edu
+DISPLAY=fastx3-28.ews.illinois.edu:105
+HOSTNAME=fastx3-28.ews.illinois.edu
 SCRNAME=vcs
 __LMOD_STACK_SYNOPSYS_LC_ROOT=L3NvZnR3YXJlL1N5bm9wc3lzLTIwMjFfeDg2XzY0L2xjL1ItMjAyMC4wOS1TUDU=
 OLDPWD=/home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/sim/simv.daidir/debug_dump/fsearch
@@ -173,16 +173,16 @@ __LMOD_STACK_VCS_HOME=L3NvZnR3YXJlL1N5bm9wc3lzLTIwMjFfeDg2XzY0L3Zjcy9SLTIwMjAuMT
 COLORTERM=truecolor
 LAMMPS_POTENTIALS=/usr/share/lammps/potentials
 OPENRAM=/class/ece411/openram
-MAKE_TERMOUT=/dev/pts/1
+MAKE_TERMOUT=/dev/pts/4
 OVA_UUM=0
 __LMOD_REF_COUNT_LD_LIBRARY_PATH=/software/Synopsys-2021_x86_64/syn/R-2020.09-SP4/linux64/tcl/lib:1;/class/ece411/software/lib64:1;/class/ece411/software/riscv-tools/lib:1
-SSH_AUTH_SOCK=/tmp/FastX-47893ecf6ba94f8309b1681d6d737916/agent.3813432
+SSH_AUTH_SOCK=/tmp/FastX-6e227eb877f5733c4edc36e03d2b0092/agent.472401
 MFLAGS=
 VCS_MODE_FLAG=64
 apath=/usr/bin/acroread
 ECE411_SOFTWARE=/class/ece411/software
 which_declare=declare -f
-XDG_SESSION_ID=296
+XDG_SESSION_ID=337
 USER=jorgejc2
 VCS_MX_HOME_INTERNAL=1
 FREEPDK45=/class/ece411/freepdk-45nm
@@ -190,13 +190,13 @@ SYNOPSYS_LC_ROOT=/software/Synopsys-2021_x86_64/lc/R-2020.09-SP5
 SNPS_VERDI_INTERNAL_LP_XML_NEW_FLOW=1
 SELINUX_ROLE_REQUESTED=
 __LMOD_REF_COUNT_MODULEPATH=/usr/share/modulefiles:1;/usr/share/Modules/modulefiles:1;/usr/share/modulefiles/Linux:1;/usr/share/modulefiles/Core:1;/usr/share/lmod/lmod/modulefiles/Core:1;/etc/modulefiles/env:1;/etc/modulefiles/class:1;/etc/modulefiles/ews_software:1
-GNOME_TERMINAL_SCREEN=/org/gnome/Terminal/screen/80498bed_c109_4baa_b3fb_9f2651c2132b
+GNOME_TERMINAL_SCREEN=/org/gnome/Terminal/screen/befd4419_367d_4174_a865_bf04a428d0fb
 PWD=/home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/sim
 VMR_MODE_FLAG=64
 SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass
 HOME=/home/jorgejc2
 SOFTPATH=/software
-SSH_CLIENT=10.250.1.159 58922 22
+SSH_CLIENT=10.193.6.227 51404 22
 MSI2LMP_LIBRARY=/usr/share/lammps/frc_files
 LMOD_VERSION=8.7.7
 OPENRAM_TECH=/class/ece411/openram/technology
@@ -206,15 +206,15 @@ VCS_ARG_ADDED_FOR_TMP=1
 BASH_ENV=/usr/share/lmod/lmod/init/bash
 XDG_DATA_DIRS=/home/jorgejc2/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share
 STD_CELL_LIB=/class/ece411/freepdk-45nm/stdcells.db
-FASTX_SESSION_DIR=/home/jorgejc2/.fastx_server/fastx3-17.ews.illinois.edu/sessions/FX3-47893ecf6ba94f8309b1681d6d737916
-FASTX_SESSION_ID=47893ecf6ba94f8309b1681d6d737916
+FASTX_SESSION_DIR=/home/jorgejc2/.fastx_server/fastx3-28.ews.illinois.edu/sessions/FX3-6e227eb877f5733c4edc36e03d2b0092
+FASTX_SESSION_ID=6e227eb877f5733c4edc36e03d2b0092
 LMOD_SHELL_PRGM=bash
-DBUS_STARTER_ADDRESS=unix:abstract=/tmp/dbus-2hHiiMWGqL,guid=8fb0fd71a7bc44b8821e33ec6355aafe
+DBUS_STARTER_ADDRESS=unix:abstract=/tmp/dbus-zQgDSIu6wE,guid=e59555105965fa81ccc5722f6359a278
 DISTARCH=Linux-x86_64
 LMOD_sys=Linux
 _ModuleTable001_=X01vZHVsZVRhYmxlXyA9IHsKTVR2ZXJzaW9uID0gMywKY19yZWJ1aWxkVGltZSA9IGZhbHNlLApjX3Nob3J0VGltZSA9IGZhbHNlLApkZXB0aFQgPSB7fSwKZmFtaWx5ID0ge30sCm1UID0gewpbIlN5bm9wc3lzX3g4Ni02NCJdID0gewpmbiA9ICIvZXRjL21vZHVsZWZpbGVzL2V3c19zb2Z0d2FyZS9TeW5vcHN5c194ODYtNjQvMjAyMS5sdWEiLApmdWxsTmFtZSA9ICJTeW5vcHN5c194ODYtNjQvMjAyMSIsCmxvYWRPcmRlciA9IDEsCnByb3BUID0ge30sCnN0YWNrRGVwdGggPSAwLApzdGF0dXMgPSAiYWN0aXZlIiwKdXNlck5hbWUgPSAiU3lub3BzeXNfeDg2LTY0LzIwMjEiLAp3ViA9ICJeMDAwMDIwMjEuKnpmaW5hbCIsCn0sCn0sCm1wYXRoQSA9IHsKIi91c3Ivc2hhcmUv
 LOADEDMODULES=Synopsys_x86-64/2021
-_ModuleTable003_=L2xtb2QvbW9kdWxlZmlsZXMvQ29yZTovZXRjL21vZHVsZWZpbGVzL2VudjovZXRjL21vZHVsZWZpbGVzL2NsYXNzOi9ldGMvbW9kdWxlZmlsZXMvZXdzX3NvZnR3YXJlIiwKfQo=
+_ModuleTable003_=b2QvbG1vZC9tb2R1bGVmaWxlcy9Db3JlOi9ldGMvbW9kdWxlZmlsZXMvZW52Oi9ldGMvbW9kdWxlZmlsZXMvY2xhc3M6L2V0Yy9tb2R1bGVmaWxlcy9ld3Nfc29mdHdhcmUiLAp9Cg==
 LMOD_ROOT=/usr/share/lmod
 LMOD_arch=x86_64
 SHELL=/bin/bash
@@ -225,19 +225,19 @@ QT_IM_MODULE=ibus
 XMODIFIERS=@im=ibus
 _ModuleTable_Sz_=3
 LM_LICENSE_FILE=27005@synopsys.webstore.illinois.edu
-SNPS_VCS_TMPDIR=/tmp/vcs_20221024051559_3399
+SNPS_VCS_TMPDIR=/tmp/vcs_20221026211231_477814
 DBUS_STARTER_BUS_TYPE=session
 XDG_CURRENT_DESKTOP=GNOME
 SELINUX_USE_CURRENT_RANGE=
 OPENRAM_HOME=/compiler
-GNOME_TERMINAL_SERVICE=:1.75
+GNOME_TERMINAL_SERVICE=:1.74
 MAKELEVEL=1
 VERDI_HOME=/software/Synopsys-2021_x86_64/verdi/R-2020.12-SP1-1
-TURBO_LOG_DIR=/tmp/vcs_20221024051559_3399
+TURBO_LOG_DIR=/tmp/vcs_20221026211231_477814
 SHLVL=5
 VCS_COM=/software/Synopsys-2021_x86_64/vcs/R-2020.12-SP1-1/linux64/bin/vcs1
 PYTHONPATH=:/class/ece411/software/python2.7/site-packages:/class/ece411/software/python2.7/site-packages
-MAKE_TERMERR=/dev/pts/1
+MAKE_TERMERR=/dev/pts/4
 VCS_ARCH=linux64
 MANPATH=/usr/share/lmod/lmod/share/man:
 VCS_DEPTH=0
@@ -245,9 +245,9 @@ __LMOD_STACK_VERDI_HOME=L3NvZnR3YXJlL1N5bm9wc3lzLTIwMjFfeDg2XzY0L3ZlcmRpL1ItMjAy
 MODULEPATH=/usr/share/modulefiles:/usr/share/Modules/modulefiles:/usr/share/modulefiles/Linux:/usr/share/modulefiles/Core:/usr/share/lmod/lmod/modulefiles/Core:/etc/modulefiles/env:/etc/modulefiles/class:/etc/modulefiles/ews_software
 GNOME_DESKTOP_SESSION_ID=this-is-deprecated
 LOGNAME=jorgejc2
-DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-2hHiiMWGqL,guid=8fb0fd71a7bc44b8821e33ec6355aafe
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-zQgDSIu6wE,guid=e59555105965fa81ccc5722f6359a278
 XDG_RUNTIME_DIR=/run/user/1069092
-XAUTHORITY=/home/jorgejc2/.fastx_server/fastx3-17.ews.illinois.edu/sessions/FX3-47893ecf6ba94f8309b1681d6d737916/authority
+XAUTHORITY=/home/jorgejc2/.fastx_server/fastx3-28.ews.illinois.edu/sessions/FX3-6e227eb877f5733c4edc36e03d2b0092/authority
 MODULEPATH_ROOT=/usr/share/modulefiles
 PATH=.:/software/Synopsys-2021_x86_64/wv/R-2020.12-SP1/bin:/software/Synopsys-2021_x86_64/vui/R-2020.09-SP4/bin:/software/Synopsys-2021_x86_64/vtran/R-2020.09-SP4/bin:/software/Synopsys-2021_x86_64/vgen/R-2020.09-SP4/bin:/software/Synopsys-2021_x86_64/verdi/R-2020.12-SP1-1/bin:/software/Synopsys-2021_x86_64/vc_static/R-2020.12-SP1-1/bin:/software/Synopsys-2021_x86_64/vcs-mx/O-2018.09-SP2-3/bin:/software/Synopsys-2021_x86_64/vcs/R-2020.12-SP1-1/bin:/software/Synopsys-2021_x86_64/vc_ml_platform/2019.06/mlplatform/bin:/software/Synopsys-2021_x86_64/vcap/R-2020.09-SP4/bin:/software/Synopsys-2021_x86_64/ufe_optional_spyglass-vcs/R-2020.12-SP1-1/SPYGLASS_HOME/bin:/software/Synopsys-2021_x86_64/txs/R-2020.09-SP4/bin:/software/Synopsys-2021_x86_64/taurus_tsuprem4/R_2020.09/bin:/software/Synopsys-2021_x86_64/taurus_medici/	R_2020.09/bin:/software/Synopsys-2021_x86_64/syn/R-2020.09-SP4/bin:/software/Synopsys-2021_x86_64/starrc/R-2020.09-SP5/bin:/software/Synopsys-2021_x86_64/spyglass/R-2020.12-SP1-1/SPYGLASS_HOME/bin:/software/Synopsys-2021_x86_64/spx/R-2020.09-SP2/bin:/software/Synopsys-2021_x86_64/siliconsmart/R-2020.12-SP1/bin:/software/Synopsys-2021_x86_64/sentaurus/R_2020.09-SP1/bin:/software/Synopsys-2021_x86_64/raphael/R_2020.09a/bin:/software/Synopsys-2021_x86_64/prime/R-2020.09-SP5/bin:/software/Synopsys-2021_x86_64/pcm_studio/R-2021.03/bin:/software/Synopsys-2021_x86_64/nt/R-2020.09-SP5/bin:/software/Synopsys-2021_x86_64/mw/R-2020.09-SP4/bin/linux64:/software/Synopsys-2021_x86_64/mlwizard/R-2021.03-SP1/bin:/software/Synopsys-2021_x86_64/lc/R-2020.09-SP5/bin:/software/Synopsys-2021_x86_64/laker/L-2020.06-3/bin:/software/Synopsys-2021_x86_64/idq/R-2020.09-SP4/linux64/iddq/bin:/software/Synopsys-2021_x86_64/identify/R-2021.03/bin:/software/Synopsys-2021_x86_64/icv_workbench/R-2020.09-SP2/bin:/software/Synopsys-2021_x86_64/icvalidator/R-2020.09-SP3-3/bin:/software/Synopsys-2021_x86_64/icc2/R-2020.09-SP5/bin:/software/Synopsys-2021_x86_64/icc/R-2020.09-SP4/bin:/software/Synopsys-2021_x86_64/hspice/R-2020.12-SP1/hspice/bin:/software/Synopsys-2021_x86_64/hsim/R-2020.12-SP1/hsimplus/bin:/software/Synopsys-2021_x86_64/fpga/R-2021.03/bin:/software/Synopsys-2021_x86_64/fm/R-2020.09-SP5/bin:/software/Synopsys-2021_x86_64/finesim/R-2020.12-SP1-1/bin:/software/Synopsys-2021_x86_64/esp/R-2020.09-SP2/bin:/software/Synopsys-2021_x86_64/dftview/R-2020.09-SP4/bin:/software/Synopsys-2021_x86_64/customcompiler/R-2020.12-SP1/bin:/software/Synopsys-2021_x86_64/coretools/R-2020.12-SP3/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/class/ece411/software/riscv-tools/bin:/class/ece411/software/bin:/usr/lib/fastx/3/apps:/class/ece411/software/riscv-tools/bin:/class/ece411/software/bin
 VCS_HOME=/software/Synopsys-2021_x86_64/vcs/R-2020.12-SP1-1
@@ -258,7 +258,7 @@ LMOD_SETTARG_FULL_SUPPORT=no
 sysc_uni_pwd=/home/jorgejc2/Documents/mp4/mp4/unit_tests/reservation_station/sim
 MAKEFLAGS=
 LMOD_PKG=/usr/share/lmod/lmod
-SESSION_MANAGER=local/unix:@/tmp/.ICE-unix/3813496,unix/unix:/tmp/.ICE-unix/3813496
+SESSION_MANAGER=local/unix:@/tmp/.ICE-unix/472499,unix/unix:/tmp/.ICE-unix/472499
 acroread_path=/usr/bin/acroread
 LMOD_CMD=/usr/share/lmod/lmod/libexec/lmod
 FX_CONFIG_DIR=/etc/fastx
@@ -300,14 +300,14 @@ VCS_PATHMAP_PRELOAD_DONE=1
 VCS_EXEC_DONE=1
 DVE=/software/Synopsys-2021_x86_64/vcs/R-2020.12-SP1-1/gui/dve
 SPECMAN_OUTPUT_TO_TTY=1
-FLEXLM_BORROWFILE=/home/jorgejc2/.fastx3-17.ews.illinois.edu-borrow.txt
+FLEXLM_BORROWFILE=/home/jorgejc2/.fastx3-28.ews.illinois.edu-borrow.txt
 Runtime command line arguments:
 argv[0]=simv
 argv[1]=+lint=all,noSVA-UA,noNS,noSVA-AECASR
 argv[2]=+v2k
 279 profile - 100
-          CPU/Mem usage: 0.040 sys,  0.290 user,  308.29M mem
-280 Elapsed time:    0:00:01    Mon Oct 24 00:16:03 2022
+          CPU/Mem usage: 0.140 sys,  0.310 user,  308.28M mem
+280 Elapsed time:    0:00:01    Wed Oct 26 16:12:37 2022
 281 pliAppInit
 282 [SC]Init: MemoryConsumed=0.00MB ElapsedTime=0hour 0min. 0sec.
 283 FSDB_GATE is set.
@@ -338,7 +338,7 @@ argv[2]=+v2k
 308 *Verdi* : Enable +all dumping.
 309 *Verdi* : End of traversing.
 310 pliAppHDL_DumpVarComplete traverse var: profile - 
-          CPU/Mem usage: 0.050 sys,  0.300 user,  408.00M mem
+          CPU/Mem usage: 0.160 sys,  0.320 user,  408.00M mem
                    incr: 0.000 sys,  0.000 user,  7.25M mem
                    accu: 0.000 sys,  0.000 user,  7.25M mem
               accu incr: 0.000 sys,  0.000 user,  7.25M mem
@@ -347,9 +347,9 @@ argv[2]=+v2k
                  incr: 74 var,  74 idcode,  52 callback
                  accu: 74 var,  74 idcode,  52 callback
             accu incr: 74 var,  74 idcode,  52 callback
-311 Elapsed time:    0:00:01    Mon Oct 24 00:16:03 2022
+311 Elapsed time:    0:00:01    Wed Oct 26 16:12:37 2022
 312 pliAppHDL_DumpVarComplete: profile - 
-          CPU/Mem usage: 0.050 sys,  0.300 user,  409.06M mem
+          CPU/Mem usage: 0.160 sys,  0.320 user,  409.06M mem
                    incr: 0.000 sys,  0.000 user,  1.05M mem
                    accu: 0.000 sys,  0.000 user,  8.30M mem
               accu incr: 0.000 sys,  0.000 user,  1.05M mem
@@ -358,24 +358,24 @@ argv[2]=+v2k
                  incr: 0 var,  0 idcode,  0 callback
                  accu: 74 var,  74 idcode,  52 callback
             accu incr: 0 var,  0 idcode,  0 callback
-313 Elapsed time:    0:00:01    Mon Oct 24 00:16:03 2022
+313 Elapsed time:    0:00:01    Wed Oct 26 16:12:37 2022
 314 End of simulation at 128500
 315 Memory usage: 409.055 M
-316 Elapsed time:    0:00:01    Mon Oct 24 00:16:03 2022
+316 Elapsed time:    0:00:01    Wed Oct 26 16:12:37 2022
 317 Begin FSDB profile info:
 318 FSDB Writer : bc1(327) bcn(360) mtf/stf(0/0)
-FSDB Writer elapsed time : flush(0.007389) io wait(0.000000) theadpool wait(0.000000)
+FSDB Writer elapsed time : flush(0.012481) io wait(0.000000) theadpool wait(0.000000)
 FSDB Writer cpu time : MT Compression : 0
 319 End FSDB profile info
-320 FSDB closed. Name: dump.fsdb Size: 11226
+320 FSDB closed. Name: dump.fsdb Size: 11228
 321 Parallel profile     - ProducerThread:1 ConsumerThread:1 Buffer:64MB
 322                      - BlockUsed:1 Acquire:778 BufferUsed:11776
 323                      - Flush:3 Expand:0 ProducerWait:0 ConsumerWait:0
-324                      - MainProducerTime:0.363826089 TotalConsumerTime:0.000000000
-325                      - ElapsedTime:0.137969000
+324                      - MainProducerTime:0.499997910 TotalConsumerTime:0.000000000
+325                      - ElapsedTime:0.239851000
 326 Producer   0 profile - BlockUsed:1 Acquire:778 BufferUsed:11776
 327 Consumer   0 profile - Affinity:-1 CPUTime:0.000000000 LifeTime:0.000000000 (-nan%)
 328                      - BlockUsed:1 Acquire:778 BufferUsed:11776
 329 SimExit
-330 Elapsed time:    0:00:01    Mon Oct 24 00:16:03 2022
+330 Elapsed time:    0:00:01    Wed Oct 26 16:12:37 2022
 331 Sim process exit
