@@ -17,7 +17,7 @@ import rv32i_types::*;
 );
 
 logic [31:0] data; // holds current instruction from cache
-logic [31:0] curr_pc; // holds current pc to add to control word
+// logic [31:0] curr_pc; // holds current pc to add to control word
 logic locked_instr_mem_resp; // since i-cache works on the falling edges for some reason
 
 logic [2:0] funct3;
@@ -44,9 +44,9 @@ assign control_word.src1_valid = 1'b0;
 assign control_word.funct3 = funct3;
 assign control_word.funct7 = data[30];
 assign control_word.rd = rd;
-assign control_word.pc = curr_pc;
+assign control_word.pc = pc; //curr_pc;
 
-assign instr_mem_address = curr_pc;
+assign instr_mem_address = pc; //curr_pc;
 
 enum int unsigned {
     RESET = 0,
@@ -116,17 +116,21 @@ begin
     if (rst)
     begin
         data <= '0;
-        curr_pc <= '0;
+        // curr_pc <= '0;
         state <= RESET;
         locked_instr_mem_resp <= 1'b0;
     end
     else if (next_state == FETCH)
     begin
-        data <= in;
-        curr_pc <= pc;
+        // data <= in;
+        // curr_pc <= pc;
         state <= next_state;
     end
-    // else if (next_state == CREATE)
+    else if (next_state == CREATE)
+    begin
+        data <= in;
+        state <= next_state;
+    end
     // else if (next_state == STALL)
     else
         state <= next_state;
@@ -168,8 +172,8 @@ begin : next_state_logic
     case(state)
         RESET: next_state = FETCH;
         FETCH: begin
-            // if (instr_mem_resp)
-            if (locked_instr_mem_resp)
+            if (instr_mem_resp)
+            // if (locked_instr_mem_resp)
                 next_state = CREATE;
         end
         CREATE: begin

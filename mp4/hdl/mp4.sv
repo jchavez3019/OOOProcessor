@@ -33,10 +33,11 @@ import rv32i_types::*;
 );
 
 logic iq_resp, ld_pc, ld_iq;
-    logic [31:0] pc;
-    tomasula_types::ctl_word control_word;
+logic [31:0] pc;
+tomasula_types::ctl_word control_word;
 
-    assign iq_resp = 1'b1;
+assign iq_resp = 1'b1;
+
 
     ir IR (
         .*, 
