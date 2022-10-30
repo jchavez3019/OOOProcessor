@@ -1,11 +1,19 @@
-`ifndef instruction_queue_itf
-`define instruction_queue_itf
+`ifndef tb_itf
+`define tb_itf
 
-interface instruction_queue_itf;
+interface tb_itf;
 import rv32i_types::*;
-bit clk, reset_n, res1_empty, res2_empty, res3_empty, res4_empty, resldst_empty, rob_full, ldst_q_full, rob_load, res1_load, res2_load, res3_load, res4_load, resldst_load, issue_q_full_n, ack_o;
-bit [2:0] regfile_tag1, regfile_tag2;
-tomasula_types::ctl_word control_i, control_o;
+bit clk, reset_n;
+
+/* ir signals */
+logic instr_mem_resp, instr_read, ld_pc;
+logic [31:0] in, pc;
+rv32i_word instr_mem_address;
+
+/* iq signals */
+logic res1_empty, res2_empty, res3_empty, res4_empty, resldst_empty, rob_full, ldst_q_full, enqueue, rob_load, res1_load, res2_load, res3_load, res4_load, resldst_load;
+logic [2:0] regfile_tag1, regfile_tag2;
+tomasula_types::ctl_word control_o;
 
 time timestamp;
 
@@ -32,6 +40,6 @@ function automatic void tb_report_dut_error(error_e err);
     endcase
 endfunction
 
-endinterface : instruction_queue_itf
+endinterface : tb_itf
 
 `endif

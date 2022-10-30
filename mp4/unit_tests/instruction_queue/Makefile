@@ -6,7 +6,7 @@ SRCS := $(PKG_SRCS) $(HDL_SRCS) $(HVL_SRCS)
 
 SYNTH_TCL := $(CURDIR)/synthesis.tcl
 
-VCS_FLAGS= -full64 -sv=2012 +lint=all,noSVA-UA,noNS,noSVA-AECASR -timescale=1ns/10ps -debug_acc+all -kdb -fsdb +v2k +incdir+$(PWD)
+VCS_FLAGS= -full64 -sv=2012 +lint=all,noSVA-UA,noNS,noSVA-AECASR -timescale=1ns/10ps -debug_acc+all -kdb -fsdb +v2k +incdir+$(PWD) -top top
 
 .PHONY: clean
 .PHONY: run

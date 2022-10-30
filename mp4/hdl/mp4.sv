@@ -51,6 +51,17 @@ assign iq_resp = 1'b1;
         .out(pc)
     );
 
+    /* fully debuq iq before finishing connections */
+    // iq IQ (
+    //     .*, 
+    //     .control_i(),
+    //     .res1_empty(),
+    //     .res2_empty(),
+    //     .res3_empty(),
+    //     .res4_empty(),
+        
+    // );
+
     // reservation_station res(
     //     *,
     //     .load_word(),

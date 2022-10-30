@@ -25,51 +25,51 @@ _start:
     and x2, x2, x0
     and x3, x3, x0
 
-    and x6, x0, x6
-    and x7, x0, x7
-    and x8, x0, x8
-    la x10, result
-
-    addi x1, x1, 11 # x1 = 11
-    addi x2, x2, 12
-    addi x3, x3, 13
-
-
-    # /* x6 == 0000 001x xxxx; x7 == 1000 001x xxxx */
-    addi x6, x6, 1
-    slli x6, x6, 5
-    addi x6, x6, 1
-    slli x6, x6, 5
-
-    addi x7, x7, 65
-    slli x7, x7, 5
-    addi x7, x7, 65
-    slli x7, x7, 5
-
-    addi x8, x8, 73
-    slli x8, x8, 5
-    addi x8, x8, 73
-    slli x8, x8, 5
-
-    sw x6, 0(x10)
-    sw x7, 0(x10)
-    sw x8, 0(x10)
-
-    sw x1, 0(x6)
-    sw x2, 0(x7)
-    sw x3, 0(x8)
-
-    lw x1, 0(x6)
-    lw x2, 0(x7)
-    lw x3, 0(x8)
-
-    sw x1, 0(x10)
-    sw x2, 0(x10)
-    sw x3, 0(x10)
-
-    lw x1, 0(x10)
-    lw x2, 0(x10)
-    lw x3, 0(x10)
+    # and x6, x0, x6
+    # and x7, x0, x7
+    # and x8, x0, x8
+    # la x10, result
+# 
+    # addi x1, x1, 11 # x1 = 11
+    # addi x2, x2, 12
+    # addi x3, x3, 13
+# 
+# 
+    # # /* x6 == 0000 001x xxxx; x7 == 1000 001x xxxx */
+    # addi x6, x6, 1
+    # slli x6, x6, 5
+    # addi x6, x6, 1
+    # slli x6, x6, 5
+# 
+    # addi x7, x7, 65
+    # slli x7, x7, 5
+    # addi x7, x7, 65
+    # slli x7, x7, 5
+# 
+    # addi x8, x8, 73
+    # slli x8, x8, 5
+    # addi x8, x8, 73
+    # slli x8, x8, 5
+# 
+    # sw x6, 0(x10)
+    # sw x7, 0(x10)
+    # sw x8, 0(x10)
+# 
+    # sw x1, 0(x6)
+    # sw x2, 0(x7)
+    # sw x3, 0(x8)
+# 
+    # lw x1, 0(x6)
+    # lw x2, 0(x7)
+    # lw x3, 0(x8)
+# 
+    # sw x1, 0(x10)
+    # sw x2, 0(x10)
+    # sw x3, 0(x10)
+# 
+    # lw x1, 0(x10)
+    # lw x2, 0(x10)
+    # lw x3, 0(x10)
 
 #     addi x6, x6, 5
 #     jal x7, jal_test_1  # jump to label and store pc+4 in x7 which should correspond to the next addition
