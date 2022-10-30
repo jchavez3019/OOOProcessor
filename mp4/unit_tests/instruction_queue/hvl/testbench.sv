@@ -5,18 +5,29 @@ import rv32i_types::*;
 
 IQ_2_IR iq_ir_itf();
 
+logic ld_pc;
+logic [31:0] pc;
+
 ir ir (
     .*,
     .clk(itf.clk),
     .rst(~itf.reset_n),
     .instr_mem_resp(itf.instr_mem_resp),
     .in(itf.in),
-    .pc(itf.pc),
+    .pc(pc),
     .instr_mem_address(itf.instr_mem_address),
     .instr_read(itf.instr_read),
-    .ld_pc(itf.ld_pc)
+    .ld_pc(ld_pc)
     // ,.iq_ir_itf(iq_ir_itf.IQ_SIG)
 );
+
+pc_register PC (
+        .clk (itf.clk),
+        .rst (~itf.reset_n),
+        .load(ld_pc),
+        .in(pc + 4),
+        .out(pc)
+    );
 
 iq iq (
     .*,
@@ -30,7 +41,7 @@ iq iq (
     .resldst_empty(itf.resldst_empty),
     .rob_full(itf.rob_full),
     .ldst_q_full(itf.ldst_q_full),
-    .enqueue(itf.enqueue),
+    // .enqueue(itf.enqueue),
     .regfile_tag1(itf.regfile_tag1),
     .regfile_tag2(itf.regfile_tag2),
     .rob_load(itf.rob_load),
@@ -57,6 +68,50 @@ task reset();
     repeat (5) @(tb_clk);
     itf.reset_n <= 1'b1;
     repeat (5) @(tb_clk);
+endtask
+task set_init();
+    itf.reset_n <= 1'b0;
+    /* set up instruction cache to instruction register communication */
+    itf.instr_mem_resp <= 1'b0;
+    itf.in <= 32'h00000000;
+
+    /* set up iq signals */
+    itf.res1_empty <= 1'b0;
+    itf.res2_empty <= 1'b0;
+    itf.res3_empty <= 1'b0;
+    itf.res4_empty <= 1'b0;
+    itf.resldst_empty <= 1'b0;
+    itf.rob_full <= 1'b0;
+    itf.ldst_q_full <= 1'b0;
+
+endtask
+
+task set_instr(logic [31:0] instr);
+    /* here's a list of some instructions to load */
+    /*
+        32'h000170b3; and x1, x2, x0
+        32'h0001f133; and x2, x3, x0
+        32'h000271b3; and x3, x4, x0
+        32'h00b08093; addi x1, x1, 11
+        32'h00c10113; addi x2, x2, 12
+        32'h00d18193; addi x3, x3, 13
+    */
+    itf.in <= instr;
+    itf.instr_mem_resp <= 1'b1;
+    @(tb_clk);
+    itf.instr_mem_resp <= 1'b0;
+    @(tb_clk);
+endtask
+
+task res_empty(bit res1_empty, bit res2_empty, bit res3_empty, bit res4_empty);
+    itf.res1_empty <= res1_empty;
+    itf.res2_empty <= res2_empty;
+    itf.res3_empty <= res3_empty;
+    itf.res4_empty <= res4_empty;
+endtask
+
+task rob_full(bit rob_full);
+    itf.rob_full <= rob_full;
 endtask
 
 // task set_init();
@@ -85,10 +140,6 @@ endtask
 //     itf.alu_free <= 1'b0;
 //     itf.src1 <= 32'h0000;
 //     itf.src2 <= 32'h0000;
-
-// endtask
-
-// task make_instr();
 
 // endtask
 
@@ -124,8 +175,23 @@ endtask
 initial begin
     $display("starting instruction queue test");
 
-    // set_init();
+    set_init();
     reset();
+
+    set_instr(32'h000170b3);
+    set_instr(32'h0001f133);
+    set_instr(32'h000271b3);
+    set_instr(32'h00b08093);
+    set_instr(32'h00c10113);
+    set_instr(32'h00d18193);
+
+    res_empty(1'b0, 1'b0, 1'b1, 1'b1);
+    @(tb_clk);
+
+    rob_full(1'b1);
+    repeat (5) @(tb_clk);
+    rob_full(1'b0);
+    @(tb_clk);
 
     // set_src_data(5, 3);
     // set_robs (1'b1, 3'b001, 0, 3'b000);

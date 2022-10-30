@@ -21,18 +21,18 @@ _start:
 
     /* personal test code for checkpoint 2 */
 
-    and x1, x1, x0
-    and x2, x2, x0
-    and x3, x3, x0
+    and x1, x2, x0
+    and x2, x3, x0
+    and x3, x4, x0
 
     # and x6, x0, x6
     # and x7, x0, x7
     # and x8, x0, x8
     # la x10, result
 # 
-    # addi x1, x1, 11 # x1 = 11
-    # addi x2, x2, 12
-    # addi x3, x3, 13
+    addi x1, x1, 11 # x1 = 11
+    addi x2, x2, 12
+    addi x3, x3, 13
 # 
 # 
     # # /* x6 == 0000 001x xxxx; x7 == 1000 001x xxxx */

@@ -1,9 +1,11 @@
+`ifndef iq
+`define iq
 module iq
 import rv32i_types::*;
 (
     input logic clk,
     input logic rst,
-    input tomasula_types::ctl_word control_i,
+    // input tomasula_types::ctl_word control_i,
     input logic res1_empty,
     input logic res2_empty,
     input logic res3_empty,
@@ -13,8 +15,8 @@ import rv32i_types::*;
     input logic ldst_q_full,
     input logic enqueue,
 
-    output logic [2:0] regfile_tag1, 
-    output logic [2:0] regfile_tag2,
+    output logic [4:0] regfile_tag1, // register one index in regfile
+    output logic [4:0] regfile_tag2, // register two index in regfile
     output logic rob_load,
     output logic res1_load,
     output logic res2_load,
@@ -22,9 +24,13 @@ import rv32i_types::*;
     output logic res4_load,
     output logic resldst_load,
     output tomasula_types::ctl_word control_o,
-    output logic issue_q_full_n,
-    output logic ack_o
+    // output logic issue_q_full_n,
+    // output logic ack_o,
+
+    IQ_2_IR.IQ_SIG iq_ir_itf
 );
+// logic ld_iq;
+// assign ld_iq = iq_ir_interface.ld_iq;
 
 logic [3:0] res_snoop;
 logic control_o_valid, dequeue;
@@ -32,14 +38,17 @@ tomasula_types::ctl_word control_o_buf;
 assign res_snoop = {res4_empty, res3_empty, res2_empty, res1_empty};
 
     
-fifo instruction_queue 
+fifo_synch_1r1w #(.DTYPE(tomasula_types::ctl_word)) instruction_queue
 (
     .clk_i(clk),
     .reset_n_i(~rst),
-    .data_i(control_i),
+    // .data_i(control_i),
+    .data_i(iq_ir_itf.control_word),
     .valid_i(enqueue),
-    .ready_o(issue_q_full_n),
-    .ack_o(ack_o),
+    // .ready_o(issue_q_full_n),
+    .ready_o(iq_ir_itf.issue_q_full_n),
+    // .ack_o(ack_o),
+    .ack_o(iq_ir_itf.ack_o),
     .valid_o(control_o_valid),
     .data_o(control_o_buf),
     .yumi_i(dequeue)
@@ -56,7 +65,7 @@ always_comb begin
     // if the fifo is holding a valid entry
     if (control_o_valid) begin 
         // for load store instructions
-        if (control_o_buf.op == tomasula_types::STORE || control_o_buf.op == tomasula_types::LOAD) begin
+        if (control_o_buf.op == tomasula_types::ST || control_o_buf.op == tomasula_types::LD) begin
             resldst_load = (resldst_empty && !rob_full && !ldst_q_full)? 1'b1 : 1'b0;
             dequeue = (resldst_empty && !rob_full && !ldst_q_full)? 1'b1 : 1'b0;
             control_o = control_o_buf;
@@ -102,3 +111,5 @@ end
 
 
 endmodule : iq
+
+`endif

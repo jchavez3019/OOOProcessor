@@ -1,25 +1,41 @@
 
 module fifo_synch_1r1w
-import fifo_types::*;
+// import fifo_types::*;
+import rv32i_types::*;
+/* 
+DTYPE and ptr_width_p should only ever be modified.
+cap_p and ptr_t were also left to be changed by the user but in reality only depend
+on ptr_width_p and would make no sense if it were changed to any other values hence
+they should be left as their default values. Only included for clarity.
+*/
+#(
+    parameter type DTYPE = logic[7:0],
+    parameter ptr_width_p = 8,
+    parameter cap_p = 1 << ptr_width_p,
+    parameter type ptr_t = logic[ptr_width_p:0]
+)
 (
     input logic clk_i,
     input logic reset_n_i,
 
     // valid-ready input protocol
-    input word_t data_i,
+    // input word_t data_i,
+    input DTYPE data_i,
     input logic valid_i,
     output logic ready_o,
     output logic ack_o,
 
     // valid-yumi output protocol
     output logic valid_o,
-    output word_t data_o,
+    // output word_t data_o,
+    output DTYPE data_o,
     input logic yumi_i
 );
 
 /******************************** Declarations *******************************/
 // Need memory to hold queued data
-logic [width_p-1:0] queue [cap_p-1:0];
+// logic [width_p-1:0] queue [cap_p-1:0];
+DTYPE queue [cap_p-1:0];
 
 // Pointers which point to the read and write ends of the queue
 ptr_t read_ptr, write_ptr, read_ptr_next, write_ptr_next;
@@ -30,7 +46,8 @@ logic  enqueue, dequeue;
 
 // We always know what the next data which will be dequeued is.
 // Thus it only makes sense to register it in an output buffer
-logic [width_p-1:0] output_buffer_r;
+// logic [width_p-1:0] output_buffer_r;
+DTYPE output_buffer_r;
 /*****************************************************************************/
 
 /***************************** Output Assignments ****************************/

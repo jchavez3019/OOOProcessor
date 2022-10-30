@@ -5,15 +5,17 @@ import rv32i_types::*;
     input clk,
     input rst,
     input instr_mem_resp,
-    input iq_resp,
+    // input iq_resp,
     input [31:0] in,
     input [31:0] pc,
 
     output rv32i_word instr_mem_address, // ir will have to communicate with pc to get this, or maybe pc just wires directly to icache
     output logic instr_read,
-    output tomasula_types::ctl_word control_word,
+    // output tomasula_types::ctl_word control_word,
     output logic ld_pc,
-    output logic ld_iq
+    // output logic ld_iq, 
+
+    IQ_2_IR.IR_SIG iq_ir_itf
 );
 
 logic [31:0] data; // holds current instruction from cache
@@ -38,13 +40,13 @@ assign rs1 = data[19:15];
 assign rs2 = data[24:20];
 assign rd = data[11:7];
 
-assign control_word.src1_reg = rs1;
-assign control_word.src2_reg = rs2;
-assign control_word.src1_valid = 1'b0;
-assign control_word.funct3 = funct3;
-assign control_word.funct7 = data[30];
-assign control_word.rd = rd;
-assign control_word.pc = pc; //curr_pc;
+assign iq_ir_itf.control_word.src1_reg = rs1;
+assign iq_ir_itf.control_word.src2_reg = rs2;
+assign iq_ir_itf.control_word.src1_valid = 1'b0;
+assign iq_ir_itf.control_word.funct3 = funct3;
+assign iq_ir_itf.control_word.funct7 = data[30];
+assign iq_ir_itf.control_word.rd = rd;
+assign iq_ir_itf.control_word.pc = pc; //curr_pc;
 
 assign instr_mem_address = pc; //curr_pc;
 
@@ -57,55 +59,55 @@ enum int unsigned {
 
 always_comb
 begin : immediate_op_logic
-    control_word.src2_data = 32'h0000;
-    control_word.src2_valid = 1'b0;
-    control_word.op = tomasula_types::ARITH;
+    iq_ir_itf.control_word.src2_data = 32'h0000;
+    iq_ir_itf.control_word.src2_valid = 1'b0;
+    iq_ir_itf.control_word.op = tomasula_types::ARITH;
     case (opcode)
         op_lui: begin
-            control_word.src2_data = u_imm;
-            control_word.op = tomasula_types::LUI;
-            control_word.src2_valid = 1'b1;
+            iq_ir_itf.control_word.src2_data = u_imm;
+            iq_ir_itf.control_word.op = tomasula_types::LUI;
+            iq_ir_itf.control_word.src2_valid = 1'b1;
         end
         op_auipc: begin 
-            control_word.src2_data = u_imm;
-            control_word.op = tomasula_types::AUIPC;
-            control_word.src2_valid = 1'b1;
+            iq_ir_itf.control_word.src2_data = u_imm;
+            iq_ir_itf.control_word.op = tomasula_types::AUIPC;
+            iq_ir_itf.control_word.src2_valid = 1'b1;
         end
         op_jal: begin
-            control_word.src2_data = j_imm;
-            control_word.src2_valid = 1'b1;
+            iq_ir_itf.control_word.src2_data = j_imm;
+            iq_ir_itf.control_word.src2_valid = 1'b1;
         end
         op_br: begin
-            control_word.src2_data = b_imm;
-            control_word.op = tomasula_types::BRANCH;
-            control_word.src2_valid = 1'b1;
+            iq_ir_itf.control_word.src2_data = b_imm;
+            iq_ir_itf.control_word.op = tomasula_types::BRANCH;
+            iq_ir_itf.control_word.src2_valid = 1'b1;
         end
         op_store: begin
-            control_word.src2_data = s_imm;
-            control_word.op = tomasula_types::ST;
-            control_word.src2_valid = 1'b1;
+            iq_ir_itf.control_word.src2_data = s_imm;
+            iq_ir_itf.control_word.op = tomasula_types::ST;
+            iq_ir_itf.control_word.src2_valid = 1'b1;
         end
         op_imm: begin
-            control_word.src2_data = i_imm;
-            control_word.op = tomasula_types::ARITH;
-            control_word.src2_valid = 1'b1;
+            iq_ir_itf.control_word.src2_data = i_imm;
+            iq_ir_itf.control_word.op = tomasula_types::ARITH;
+            iq_ir_itf.control_word.src2_valid = 1'b1;
         end 
         op_csr: begin
-            control_word.src2_data = i_imm;
-            control_word.src2_valid = 1'b1;
+            iq_ir_itf.control_word.src2_data = i_imm;
+            iq_ir_itf.control_word.src2_valid = 1'b1;
         end
         op_jalr: begin
-            control_word.src2_data = i_imm;
-            control_word.op = tomasula_types::JALR;
-            control_word.src2_valid = 1'b1;
+            iq_ir_itf.control_word.src2_data = i_imm;
+            iq_ir_itf.control_word.op = tomasula_types::JALR;
+            iq_ir_itf.control_word.src2_valid = 1'b1;
         end
         op_load: begin
-            control_word.src2_data = i_imm;
-            control_word.op = tomasula_types::LD;
-            control_word.src2_valid = 1'b1;
+            iq_ir_itf.control_word.src2_data = i_imm;
+            iq_ir_itf.control_word.op = tomasula_types::LD;
+            iq_ir_itf.control_word.src2_valid = 1'b1;
         end
         op_store: begin
-            control_word.op = tomasula_types::ST;
+            iq_ir_itf.control_word.op = tomasula_types::ST;
         end
     endcase
 end
@@ -144,7 +146,7 @@ end
 function void set_defaults();
     instr_read = 1'b0;
     ld_pc = 1'b0;
-    ld_iq = 1'b0;
+    iq_ir_itf.ld_iq = 1'b0;
 endfunction
 
 always_comb
@@ -158,10 +160,10 @@ begin : state_actions
         end
         CREATE: begin
             ld_pc = 1'b1; 
-            ld_iq = 1'b1;
+            iq_ir_itf.ld_iq = 1'b1;
         end
         STALL: begin
-            ld_iq = 1'b1;
+            iq_ir_itf.ld_iq = 1'b1;
         end
     endcase
 end
@@ -177,13 +179,13 @@ begin : next_state_logic
                 next_state = CREATE;
         end
         CREATE: begin
-            if (iq_resp)
+            if (iq_ir_itf.ack_o)
                 next_state = FETCH;
             else
                 next_state = STALL;
         end
         STALL: begin
-            if (iq_resp)
+            if (iq_ir_itf.ack_o)
                 next_state = FETCH;
         end
     endcase
