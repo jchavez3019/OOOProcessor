@@ -9,8 +9,8 @@ module regfile
     input [4:0] src_a, src_b, dest,
     input [2:0] tag_in,
     output logic [31:0] reg_a, reg_b,
-    output logic valid_a, valid_b
-
+    output logic valid_a, valid_b,
+    output logic [2:0] tag_a, tag_b, tag_dest
 );
 
 logic [31:0] data [32];
@@ -43,6 +43,24 @@ end
 
 always_comb
 begin
+    // if ((dest == src_a) &&  allocate ) begin
+    //     tag_a = tag_in;
+    //     tag_b = tag[src_b];
+    //     tag_dest = tag[dest];
+
+    // end
+    // else if ((dest == src_b) &&  allocate ) begin
+    //     tag_b = tag_in;
+    //     tag_a = tag[src_a];
+    //     tag_dest = tag[dest];
+    // end
+    // else begin
+    //     tag_a = tag[src_a];
+    //     tag_b = tag[src_b];
+    //     tag_dest = tag[dest];
+    // end
+
+
     if((dest == src_a) && load ) begin
         reg_a = in;
         reg_b = src_b ? data[src_b] : 0;
@@ -55,6 +73,8 @@ begin
         reg_b = in;
         valid_a = valid [src_a];
         valid_b = 1;
+        tag_a = tag[src_a];
+        tag_b = tag[src_b];
     end
     else  begin
         reg_a = src_a ? data[src_a] : 0;
@@ -62,7 +82,10 @@ begin
         valid_a = valid [src_a];
         valid_b = valid [src_b];
     end
-    // valid_a
+
+    tag_a = tag[src_a];
+    tag_b = tag[src_b];
+    
     
     
 

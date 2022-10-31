@@ -56,10 +56,15 @@ always_comb begin : EXECUTION
         alu_or:   cdb.data = a | b;
         alu_and:  cdb.data = a & b;
     endcase
-    cdb.req = alu_word.load;
+    cdb.request = alu_word.load; // clock these
     cdb.tag = alu_word.tag;
 
-
 end
+
+// always_ff @(posedge clk)
+// begin
+//     // cdb.request = alu_word.load; // clock these
+//     // cdb.tag = alu_word.tag;
+// end
 
 endmodule : alu
