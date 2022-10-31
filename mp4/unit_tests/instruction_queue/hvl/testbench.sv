@@ -56,6 +56,78 @@ iq iq (
     // .ack_o(itf.ack_o)
 );
 
+reservation_station res1(
+    .clk (itf.clk),
+    .rst(~itf.reset_n),
+    .load_word(),
+    .control_word(),
+    .src1(),
+    .src2(),
+    .cdb(),
+    .rob_tag1(),
+    .rob_tag2(),
+    .rob_v1(),
+    .rob_v2(),
+    .alu_free(),
+    .alu_data(),
+    .start_exe(),
+    .res_empty()
+);
+
+reservation_station res2(
+    .clk (itf.clk),
+    .rst(~itf.reset_n),
+    .load_word(),
+    .control_word(),
+    .src1(),
+    .src2(),
+    .cdb(),
+    .rob_tag1(),
+    .rob_tag2(),
+    .rob_v1(),
+    .rob_v2(),
+    .alu_free(),
+    .alu_data(),
+    .start_exe(),
+    .res_empty()
+);
+
+reservation_station res3(
+    .clk (itf.clk),
+    .rst(~itf.reset_n),
+    .load_word(),
+    .control_word(),
+    .src1(),
+    .src2(),
+    .cdb(),
+    .rob_tag1(),
+    .rob_tag2(),
+    .rob_v1(),
+    .rob_v2(),
+    .alu_free(),
+    .alu_data(),
+    .start_exe(),
+    .res_empty()
+);
+
+reservation_station res4(
+    .clk (itf.clk),
+    .rst(~itf.reset_n),
+    .load_word(),
+    .control_word(),
+    .src1(),
+    .src2(),
+    .cdb(),
+    .rob_tag1(),
+    .rob_tag2(),
+    .rob_v1(),
+    .rob_v2(),
+    .alu_free(),
+    .alu_data(),
+    .start_exe(),
+    .res_empty()
+);
+
 default clocking tb_clk @(negedge itf.clk); endclocking
 
 initial begin
