@@ -2,11 +2,11 @@ Magic 271485
 Revision Verdi_R-2020.12-SP1-1
 
 ; Window Layout <x> <y> <width> <height> <signalwidth> <valuewidth>
-viewPort 0 25 1920 438 175 65
+viewPort 0 25 1920 896 175 65
 
 ; File list:
 ; openDirFile [-d delimiter] [-s time_offset] [-rf auto_bus_rule_file] path_name file_name
-openDirFile -d / "" "/home/jorgejc2/Documents/ece411/mp1/cam/sim/dump.fsdb"
+openDirFile -d / "" "/home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/sim/dump.fsdb"
 
 ; file time scale:
 ; fileTimeScale ### s|ms|us|ns|ps
@@ -16,8 +16,8 @@ signalSpacing 5
 
 ; windowTimeUnit is used for zoom, cursor & marker
 ; waveform viewport range
-zoom 38613.920386 53713.420386
-cursor 0.000000
+zoom 14025.543357 29325.281098
+cursor 10500.000000
 marker 0.000000
 
 ; user define markers
@@ -25,7 +25,7 @@ marker 0.000000
 ; visible top row signal index
 top 0
 ; marker line index
-markerPos 9
+markerPos 19
 
 ; event list
 ; addEvent event_name event_expression
@@ -45,18 +45,62 @@ COMPLEX_EVENT_END
 curSTATUS ByChange
 
 
-addGroup "G1"
-activeDirFile "" "/home/jorgejc2/Documents/ece411/mp1/cam/sim/dump.fsdb"
-addSignal -h 15 /top/tb/itf/reset_n
-addSignal -h 15 -holdScope rw_n
-addSignal -h 15 -holdScope valid_i
-addSignal -h 15 -holdScope key[15:0]
-addSignal -h 15 -holdScope val_i[15:0]
-addSignal -h 15 -holdScope val_o[15:0]
-addSignal -h 15 -holdScope valid_o
-addSignal -h 15 /top/tb/read_val[15:0]
-addSignal -h 15 /top/tb/itf/clk
+addGroup "itf(tb_itf)"
+activeDirFile "" "/home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/sim/dump.fsdb"
+addSignal -h 15 /top/itf/clk
+addSignal -h 15 -holdScope reset_n
+addSignal -h 15 -holdScope instr_mem_resp
+addSignal -h 15 -holdScope instr_read
+addSignal -h 15 -holdScope in[31:0]
+addSignal -h 15 -holdScope instr_mem_address[31:0]
+addSignal -h 15 -holdScope res1_empty
+addSignal -h 15 -holdScope res2_empty
+addSignal -h 15 -holdScope res3_empty
+addSignal -h 15 -holdScope res4_empty
+addSignal -h 15 -holdScope resldst_empty
+addSignal -h 15 -holdScope rob_full
+addSignal -h 15 -holdScope ldst_q_full
+addSignal -h 15 -holdScope rob_load
+addSignal -h 15 -holdScope res1_load
+addSignal -h 15 -holdScope res2_load
+addSignal -h 15 -holdScope res3_load
+addSignal -h 15 -holdScope res4_load
+addSignal -h 15 -UNSIGNED -BIN /top/tb/iq/res_snoop[3:0]
+addSignal -h 15 /top/itf/resldst_load
+addSignal -h 15 -holdScope regfile_tag1[2:0]
+addSignal -h 15 -holdScope regfile_tag2[2:0]
+addSignal -expanded -h 15 -holdScope control_o
+addSignal -h 15 -UNSIGNED -holdScope control_o.op[3:0]
+addSignal -h 15 -holdScope control_o.src1_reg[4:0]
+addSignal -h 15 -holdScope control_o.src1_valid
+addSignal -h 15 -holdScope control_o.src2_reg[4:0]
+addSignal -h 15 -holdScope control_o.src2_valid
+addSignal -h 15 -holdScope control_o.src2_data[31:0]
+addSignal -h 15 -holdScope control_o.funct3[2:0]
+addSignal -h 15 -holdScope control_o.funct7
+addSignal -h 15 -holdScope control_o.rd[4:0]
+addSignal -h 15 -holdScope control_o.pc[31:0]
+addSignal -h 15 /top/tb/iq/control_o_valid
 addGroup "G2"
+addSubGroup "iq_ir_itf(IR_SIG)"
+addSignal -h 15 /top/tb/ir/iq_ir_itf/issue_q_full_n
+addSignal -h 15 /top/tb/iq/enqueue
+addSignal -h 15 /top/tb/ir/iq_ir_itf/ack_o
+addSignal -expanded -h 15 -holdScope control_word
+addSignal -h 15 -UNSIGNED -holdScope control_word.op[3:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope control_word.src1_reg[4:0]
+addSignal -h 15 -holdScope control_word.src1_valid
+addSignal -h 15 -UNSIGNED -UDEC -holdScope control_word.src2_reg[4:0]
+addSignal -h 15 -holdScope control_word.src2_valid
+addSignal -h 15 -UNSIGNED -UDEC -holdScope control_word.src2_data[31:0]
+addSignal -h 15 -holdScope control_word.funct3[2:0]
+addSignal -h 15 -holdScope control_word.funct7
+addSignal -h 15 -UNSIGNED -UDEC -holdScope control_word.rd[4:0]
+addSignal -h 15 -holdScope control_word.pc[31:0]
+addSignal -h 15 -holdScope ld_iq
+endSubGroup "iq_ir_itf(IR_SIG)"
+addSignal -h 15 -UNSIGNED /top/tb/ir/state[31:0]
+addGroup "G3"
 
 ; getSignalForm Scope Hierarchy Status
 ; active file of getSignalForm
