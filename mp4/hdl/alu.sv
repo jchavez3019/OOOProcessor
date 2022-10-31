@@ -18,20 +18,13 @@ import rv32i_types::*;
 logic [31:0] a, b;
 rv32i_types::alu_ops aluop;
 
-always_comb begin : MUXES
-    // a = src1_data_buf;
-    // b = src2_data_buf;  
+always_comb begin : OPERATION
     a = alu_word.src1_data;
     b = alu_word.src2_data;
 
     // alu_op = alu_add;
-
-    unique case (alu_word.op)
-        tomasula_types::BRANCH :  begin 
-            aluop = rv32i_types::alu_add;
-        end
-        tomasula_types::ARITH :   begin
-            if (alu_word.funct3 == rv32i_types::sr) begin 
+    if(alu_word.op == tomasula_types::ARITH) begin
+        if (alu_word.funct3 == rv32i_types::sr) begin 
                 if (alu_word.funct7 != 1'b1)
                     aluop = rv32i_types::alu_srl;
                 else
@@ -45,35 +38,14 @@ always_comb begin : MUXES
             end
             else
                 aluop = alu_word.funct3;
-        end
-        tomasula_types::AUIPC :   begin 
-            aluop = rv32i_types::alu_add;
-        end
-        tomasula_types::JAL :     begin 
-            aluop = rv32i_types::alu_add;
-        end
-        tomasula_types::JALR :    begin
-            aluop = rv32i_types::alu_add;
-        end
-        // etc.
-        // default: `BAD_MUX_SEL;
-    endcase
+    end
+    else begin
+        aluop = rv32i_types::alu_add;
+    end
+    
 end
 
-// always_comb begin : ASSIGNMENTS
-//     if(load) begin
-//         op_buf          = op;
-//         src1_data_buf   = src1_data; 
-//         src2_data_buf   = src2_data;
-//         funct3_buf      = funct3;
-//         funct7_buf      = funct7;      
-//         tag_buf         = tag;           
-//     end 
-//     tag_out = tag
-// end
-
-always_comb
-begin
+always_comb begin : EXECUTION
     unique case (aluop)
         alu_add:  cdb.data = a + b;
         alu_sll:  cdb.data = a << b[4:0];
