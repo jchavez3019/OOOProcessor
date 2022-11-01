@@ -3,12 +3,11 @@
 
 interface rob_itf;
 import rv32i_types::*;
-bit clk, reset_n, load_word, rob_v1, rob_v2, alu_free, start_exe, res_empty;
-tomasula_types::ctl_word control_word;
-logic [31:0] src1, src2;
+bit clk, reset_n, rob_load, branch_mispredict, rob0_valid, rob1_valid, rob2_valid, rob3_valid, rob4_valid, rob5_valid, rob6_valid, rob7_valid, regfile_allocate, regfile_load, rob_full, ld_commit_sel, load_pc, pc_sel, data_read, data_write;
 tomasula_types::cdb_data cdb;
-logic [2:0] rob_tag1, rob_tag2;
-tomasula_types::alu_word alu_data;
+opt_t instr_type;
+bit [4:0] rd, st_src, rd_inflight, st_commit;
+bit [2:0] rob_tag;
 
 time timestamp;
 

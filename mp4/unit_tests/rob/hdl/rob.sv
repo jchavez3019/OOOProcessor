@@ -42,7 +42,6 @@ import rv32i_types::*;
 
     // determined by branch output
     output load_pc,
-    output pc_sel,
 
     // to d-cache
     output data_read,
@@ -51,7 +50,7 @@ import rv32i_types::*;
 
 op_t instr_arr [8];
 logic [4:0] rd_arr [8];
-logic [4:0] misc_arr [8];
+logic [4:0] st_arr [8];
 logic valid_arr [8];
 logic flush_ip;
 
@@ -77,7 +76,7 @@ always_ff @(posedge clk) begin
         for (int i=0; i<8; i++) begin
             instr_arr[i] <= '0;
             rd_arr[i] <= '0;
-            misc_arr[i] <= '0;
+            st_arr[i] <= '0;
             valid_arr[i] <= 0;
             branch_arr[i] <= 0;
         end
@@ -93,7 +92,7 @@ always_ff @(posedge clk) begin
            rd_arr[curr_ptr] <= rd; 
            // do not allocate regfile entry for st
            if (instr_type == tomasula_types::ST) begin 
-               misc_arr[curr_ptr] <= st_src;
+               st_arr[curr_ptr] <= st_src;
            end
            else if (instr_type != tomasula_types::BRANCH) begin
                // output to regfile
@@ -109,13 +108,6 @@ always_ff @(posedge clk) begin
         if (valid_arr[head_ptr]) begin
             if(instr_arr[head_ptr] == tomasula_types::BRANCH) begin
                load_pc <= 1'b1; 
-               // if branch taken
-               if (misc_arr[head_ptr]) begin
-                   pc_sel <= 1'b1; 
-               end
-               else begin
-                   pc_sel <= 1'b0; 
-               end
             end
             else if (instr_arr[head_ptr] == tomasula_types::LD) begin
                 data_read <= 1'b1;
@@ -139,7 +131,7 @@ always_ff @(posedge clk) begin
                 // for st address
                 rob_tag <= head_ptr;
                 // send regfile the register file to read from
-                st_commit <= misc_arr[head_ptr];
+                st_commit <= st_arr[head_ptr];
                 // once store has been processed
                 if (data_mem_res) begin
                     data_write <= 1'b0;
@@ -168,6 +160,9 @@ always_ff @(posedge clk) begin
             if (instr_type[br_ptr] == tomasula_types::BRANCH) begin
                 // if we reached the branch, set the valid bit. 
                 // will be committed on the next cycle
+                // FIXME: im dont think the valid bit needs to be set here,
+                // since at this point there was a branch already calculated
+                // which has the valid bit set already.
                 valid_arr[br_ptr] = 1'b1;
                 // flush all instructions after the branch
                 for (int i = br_ptr + 1; i <= (head_ptr + 7) % 8; i++) begin
