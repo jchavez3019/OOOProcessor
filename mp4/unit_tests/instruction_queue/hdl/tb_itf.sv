@@ -15,6 +15,40 @@ logic res1_empty, res2_empty, res3_empty, res4_empty, resldst_empty, rob_full, l
 logic [4:0] regfile_tag1, regfile_tag2;
 tomasula_types::ctl_word control_o;
 
+/* res1 signals */
+logic res1_exec;
+tomasula_types::alu_word res1_alu_out;
+
+/* res2 signals */
+logic res2_exec;
+tomasula_types::alu_word res2_alu_out;
+
+
+/* res3 signals */
+logic res3_exec;
+tomasula_types::alu_word res3_alu_out;
+
+/* res4 signals */
+logic res4_exec;
+tomasula_types::alu_word res4_alu_out;
+
+/* regfile signals */
+logic [31:0] reg_src1_data, reg_src2_data;
+logic src1_valid, src2_valid;
+
+/* rob signals */
+logic [4:0] rd_rob_tag;
+logic robs_calculated[8];
+
+/* cdb signals */
+tomasula_types::cdb_data cdb[8];
+
+/* alu outputs */
+tomasula_types::cdb_data alu1_calculation;
+tomasula_types::cdb_data alu2_calculation;
+tomasula_types::cdb_data alu3_calculation;
+tomasula_types::cdb_data alu4_calculation;
+
 time timestamp;
 
 task finish();

@@ -31,7 +31,7 @@ rv32i_opcode opcode;
 assign funct3 = data[14:12];
 assign funct7 = data[31:25];
 assign opcode = rv32i_opcode'(data[6:0]);
-assign i_imm = {{21{data[31]}}, data[30:20]};
+assign i_imm = {{21{data[31]}}, data[30:20]}; // 32
 assign s_imm = {{21{data[31]}}, data[30:25], data[11:7]};
 assign b_imm = {{20{data[31]}}, data[7], data[30:25], data[11:8], 1'b0};
 assign u_imm = {data[31:12], 12'h000};
