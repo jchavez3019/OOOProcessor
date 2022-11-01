@@ -3,8 +3,7 @@
 
 interface rob_itf;
 import rv32i_types::*;
-bit clk, reset_n, rob_load, branch_mispredict, rob0_valid, rob1_valid, rob2_valid, rob3_valid, rob4_valid, rob5_valid, rob6_valid, rob7_valid, regfile_allocate, regfile_load, rob_full, ld_commit_sel, load_pc, pc_sel, data_read, data_write;
-tomasula_types::cdb_data cdb;
+bit clk, reset_n, rob_load, branch_mispredict, data_mem_resp, rob0_valid, rob1_valid, rob2_valid, rob3_valid, rob4_valid, rob5_valid, rob6_valid, rob7_valid, regfile_allocate, regfile_load, rob_full, ld_commit_sel, load_pc, data_read, data_write;
 opt_t instr_type;
 bit [4:0] rd, st_src, rd_inflight, st_commit;
 bit [2:0] rob_tag;

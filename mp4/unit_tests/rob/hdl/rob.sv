@@ -3,8 +3,6 @@ import rv32i_types::*;
 (
     input clk, 
     input rst, 
-    // snoop cdb
-    input tomasula_types::cdb_data cdb,
     // from iq
     input rob_load,
     // from iq
@@ -162,7 +160,7 @@ always_ff @(posedge clk) begin
                 // will be committed on the next cycle
                 // FIXME: im dont think the valid bit needs to be set here,
                 // since at this point there was a branch already calculated
-                // which has the valid bit set already.
+                // which has the valid bit set already
                 valid_arr[br_ptr] = 1'b1;
                 // flush all instructions after the branch
                 for (int i = br_ptr + 1; i <= (head_ptr + 7) % 8; i++) begin
