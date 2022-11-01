@@ -10,7 +10,11 @@ module regfile
     input [2:0] tag_in,
     output logic [31:0] reg_a, reg_b,
     output logic valid_a, valid_b,
-    output logic [2:0] tag_a, tag_b, tag_dest
+    output logic [2:0] tag_a, tag_b, tag_dest,
+
+    // signals for memory interaction
+    input [4:0]src_c,
+    output data_out
 );
 
 logic [31:0] data [32];
@@ -35,8 +39,8 @@ begin
 
     else if(allocate && dest )
     begin
-        valid[dest] <= 0
-        tag[dest] <= tag_in
+        valid[dest] <= 0;
+        tag[dest] <= tag_in;
     end 
 
 end
@@ -86,9 +90,8 @@ begin
     tag_a = tag[src_a];
     tag_b = tag[src_b];
     
+    data_out = dara[src_c];
     
-    
-
 end
 
 endmodule : regfile
