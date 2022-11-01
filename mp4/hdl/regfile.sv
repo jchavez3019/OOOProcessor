@@ -13,6 +13,7 @@ module regfile
     output logic [2:0] tag_a, tag_b, tag_dest,
 
     // signals for memory interaction
+    
     input [4:0]src_c,
     output data_out
 );
@@ -47,22 +48,6 @@ end
 
 always_comb
 begin
-    // if ((dest == src_a) &&  allocate ) begin
-    //     tag_a = tag_in;
-    //     tag_b = tag[src_b];
-    //     tag_dest = tag[dest];
-
-    // end
-    // else if ((dest == src_b) &&  allocate ) begin
-    //     tag_b = tag_in;
-    //     tag_a = tag[src_a];
-    //     tag_dest = tag[dest];
-    // end
-    // else begin
-    //     tag_a = tag[src_a];
-    //     tag_b = tag[src_b];
-    //     tag_dest = tag[dest];
-    // end
 
 
     if((dest == src_a) && load ) begin
@@ -90,7 +75,7 @@ begin
     tag_a = tag[src_a];
     tag_b = tag[src_b];
     
-    data_out = dara[src_c];
+    data_out = data[src_c];
     
 end
 
