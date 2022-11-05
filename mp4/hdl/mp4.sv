@@ -78,5 +78,18 @@ assign iq_resp = 1'b1;
     //     .start_exe(),
     //     .res_empty()
     // );
+    // regfile registers
+    // (
+    //     .*,
+    //     .load(),
+    //     .allocate(),
+    //     .in(),
+    //     .src_a(),
+    //     .src_b(),
+    //     .dest(),
+    //     .tag_in(),
+    //          // and more
+
+    // );
 
 endmodule : mp4

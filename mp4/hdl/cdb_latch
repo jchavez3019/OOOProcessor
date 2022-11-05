@@ -1,0 +1,16 @@
+module cdb_latch (  input tomasula_types::ctl_word control,
+                    input en,
+                    input rstn,
+                    output tomasula_types::ctl_word q ,
+                    );
+
+always @ (en | rstn | ctl_word) begin
+    if(!rst) begin
+        q <= 0;
+    else
+        if(en)
+            q <= d;
+
+end
+
+endmodule
