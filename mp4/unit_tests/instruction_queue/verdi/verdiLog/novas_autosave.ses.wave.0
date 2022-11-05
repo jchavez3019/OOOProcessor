@@ -2,7 +2,7 @@ Magic 271485
 Revision Verdi_R-2020.12-SP1-1
 
 ; Window Layout <x> <y> <width> <height> <signalwidth> <valuewidth>
-viewPort 0 25 1920 896 175 65
+viewPort 0 25 1920 923 175 65
 
 ; File list:
 ; openDirFile [-d delimiter] [-s time_offset] [-rf auto_bus_rule_file] path_name file_name
@@ -16,16 +16,16 @@ signalSpacing 5
 
 ; windowTimeUnit is used for zoom, cursor & marker
 ; waveform viewport range
-zoom 14025.543357 29325.281098
-cursor 10500.000000
+zoom 0.000000 34996.438936
+cursor 23500.000000
 marker 0.000000
 
 ; user define markers
 ; userMarker time_pos marker_name color linestyle
 ; visible top row signal index
-top 0
+top 49
 ; marker line index
-markerPos 19
+markerPos 50
 
 ; event list
 ; addEvent event_name event_expression
@@ -51,7 +51,25 @@ addSignal -h 15 /top/itf/clk
 addSignal -h 15 -holdScope reset_n
 addSignal -h 15 -holdScope instr_mem_resp
 addSignal -h 15 -holdScope instr_read
-addSignal -h 15 -holdScope in[31:0]
+addSignal -h 15 -UNSIGNED /top/tb/res1/state[31:0]
+addSignal -h 15 -UNSIGNED /top/tb/res2/state[31:0]
+addSignal -h 15 -UNSIGNED /top/tb/res3/state[31:0]
+addSignal -h 15 -UNSIGNED /top/tb/res4/state[31:0]
+addSignal -h 15 /top/tb/res1/res_word
+addSignal -h 15 /top/tb/res2/res_word
+addSignal -h 15 /top/tb/res3/res_word
+addSignal -expanded -h 15 /top/tb/res4/res_word
+addSignal -h 15 -UNSIGNED -holdScope res_word.op[3:0]
+addSignal -h 15 -holdScope res_word.funct3[2:0]
+addSignal -h 15 -holdScope res_word.funct7
+addSignal -h 15 -holdScope res_word.src1_tag[2:0]
+addSignal -h 15 -holdScope res_word.src1_data[31:0]
+addSignal -h 15 -holdScope res_word.src1_valid
+addSignal -h 15 -holdScope res_word.src2_tag[2:0]
+addSignal -h 15 -holdScope res_word.src2_data[31:0]
+addSignal -h 15 -holdScope res_word.src2_valid
+addSignal -h 15 -holdScope res_word.rd_tag[2:0]
+addSignal -h 15 /top/itf/in[31:0]
 addSignal -h 15 -holdScope instr_mem_address[31:0]
 addSignal -h 15 -holdScope res1_empty
 addSignal -h 15 -holdScope res2_empty
@@ -65,10 +83,9 @@ addSignal -h 15 -holdScope res1_load
 addSignal -h 15 -holdScope res2_load
 addSignal -h 15 -holdScope res3_load
 addSignal -h 15 -holdScope res4_load
-addSignal -h 15 -UNSIGNED -BIN /top/tb/iq/res_snoop[3:0]
-addSignal -h 15 /top/itf/resldst_load
-addSignal -h 15 -holdScope regfile_tag1[2:0]
-addSignal -h 15 -holdScope regfile_tag2[2:0]
+addSignal -h 15 -holdScope resldst_load
+addSignal -h 15 -holdScope regfile_tag1[4:0]
+addSignal -h 15 -holdScope regfile_tag2[4:0]
 addSignal -expanded -h 15 -holdScope control_o
 addSignal -h 15 -UNSIGNED -holdScope control_o.op[3:0]
 addSignal -h 15 -holdScope control_o.src1_reg[4:0]
@@ -80,27 +97,44 @@ addSignal -h 15 -holdScope control_o.funct3[2:0]
 addSignal -h 15 -holdScope control_o.funct7
 addSignal -h 15 -holdScope control_o.rd[4:0]
 addSignal -h 15 -holdScope control_o.pc[31:0]
-addSignal -h 15 /top/tb/iq/control_o_valid
+addSignal -expanded -h 15 -holdScope res1_alu_out
+addSignal -h 15 -UNSIGNED -holdScope res1_alu_out.op[3:0]
+addSignal -h 15 -holdScope res1_alu_out.funct3[2:0]
+addSignal -h 15 -holdScope res1_alu_out.funct7
+addSignal -h 15 -holdScope res1_alu_out.src1_data[31:0]
+addSignal -h 15 -holdScope res1_alu_out.src2_data[31:0]
+addSignal -h 15 -holdScope res1_alu_out.pc[31:0]
+addSignal -h 15 -holdScope res1_alu_out.tag[2:0]
+addSignal -expanded -h 15 -holdScope res2_alu_out
+addSignal -h 15 -UNSIGNED -holdScope res2_alu_out.op[3:0]
+addSignal -h 15 -holdScope res2_alu_out.funct3[2:0]
+addSignal -h 15 -holdScope res2_alu_out.funct7
+addSignal -h 15 -holdScope res2_alu_out.src1_data[31:0]
+addSignal -h 15 -holdScope res2_alu_out.src2_data[31:0]
+addSignal -h 15 -holdScope res2_alu_out.pc[31:0]
+addSignal -h 15 -holdScope res2_alu_out.tag[2:0]
+addSignal -h 15 -holdScope res3_alu_out
+addSignal -h 15 -holdScope res4_alu_out
+addSignal -h 15 -holdScope reg_src1_data[31:0]
+addSignal -h 15 -holdScope reg_src2_data[31:0]
+addSignal -h 15 -holdScope src1_valid
+addSignal -h 15 -holdScope src2_valid
+addSignal -h 15 -holdScope rd_rob_tag[4:0]
+addSignal -h 15 -holdScope robs_calculated[0:7]
+addSignal -expanded -h 15 -holdScope cdb[0:7]
+addSignal -h 15 -holdScope cdb[0]
+addSignal -h 15 -holdScope cdb[1]
+addSignal -h 15 -holdScope cdb[2]
+addSignal -h 15 -holdScope cdb[3]
+addSignal -h 15 -holdScope cdb[4]
+addSignal -h 15 -holdScope cdb[5]
+addSignal -h 15 -holdScope cdb[6]
+addSignal -h 15 -holdScope cdb[7]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope alu1_calculation
+addSignal -h 15 -UNSIGNED -UDEC -holdScope alu2_calculation
+addSignal -h 15 -UNSIGNED -UDEC -holdScope alu3_calculation
+addSignal -h 15 -UNSIGNED -UDEC -holdScope alu4_calculation
 addGroup "G2"
-addSubGroup "iq_ir_itf(IR_SIG)"
-addSignal -h 15 /top/tb/ir/iq_ir_itf/issue_q_full_n
-addSignal -h 15 /top/tb/iq/enqueue
-addSignal -h 15 /top/tb/ir/iq_ir_itf/ack_o
-addSignal -expanded -h 15 -holdScope control_word
-addSignal -h 15 -UNSIGNED -holdScope control_word.op[3:0]
-addSignal -h 15 -UNSIGNED -UDEC -holdScope control_word.src1_reg[4:0]
-addSignal -h 15 -holdScope control_word.src1_valid
-addSignal -h 15 -UNSIGNED -UDEC -holdScope control_word.src2_reg[4:0]
-addSignal -h 15 -holdScope control_word.src2_valid
-addSignal -h 15 -UNSIGNED -UDEC -holdScope control_word.src2_data[31:0]
-addSignal -h 15 -holdScope control_word.funct3[2:0]
-addSignal -h 15 -holdScope control_word.funct7
-addSignal -h 15 -UNSIGNED -UDEC -holdScope control_word.rd[4:0]
-addSignal -h 15 -holdScope control_word.pc[31:0]
-addSignal -h 15 -holdScope ld_iq
-endSubGroup "iq_ir_itf(IR_SIG)"
-addSignal -h 15 -UNSIGNED /top/tb/ir/state[31:0]
-addGroup "G3"
 
 ; getSignalForm Scope Hierarchy Status
 ; active file of getSignalForm

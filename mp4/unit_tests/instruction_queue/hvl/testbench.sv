@@ -42,8 +42,8 @@ iq iq (
     .rob_full(itf.rob_full),
     .ldst_q_full(itf.ldst_q_full),
     // .enqueue(itf.enqueue),
-    .regfile_tag1(itf.regfile_tag1),
-    .regfile_tag2(itf.regfile_tag2),
+    // .regfile_tag1(itf.regfile_tag1),
+    // .regfile_tag2(itf.regfile_tag2),
     .rob_load(itf.rob_load),
     .res1_load(itf.res1_load),
     .res2_load(itf.res2_load),
@@ -54,6 +54,93 @@ iq iq (
     // ,.iq_ir_itf(iq_ir_itf.IR_SIG)
     // .issue_q_full_n(itf.issue_q_full_n),
     // .ack_o(itf.ack_o)
+);
+
+tomasula_types::res_word res_word;
+logic [31:0] src2_data;
+logic src2_v;
+assign src2_v = itf.src2_valid | itf.control_o.src2_valid;
+assign src2_data = itf.control_o.src2_valid ? itf.control_o.src2_data : itf.reg_src2_data;
+
+assign res_word = '{
+    itf.control_o.op,
+    itf.control_o.funct3,
+    itf.control_o.funct7,
+    itf.regfile_tag1,
+    itf.reg_src1_data,
+    itf.src1_valid,
+    itf.regfile_tag2,
+    src2_data,
+    src2_v,
+    itf.rd_rob_tag
+};
+
+reservation_station res1(
+    .clk (itf.clk),
+    .rst(~itf.reset_n),
+    .load_word(itf.res1_load),
+    .cdb(itf.cdb),
+    .robs_calculated(itf.robs_calculated),
+    .alu_data(itf.res1_alu_out),
+    .start_exe(itf.res1_exec),
+    .res_empty(itf.res1_empty),
+    .res_in(res_word)
+);
+
+alu alu1(
+    .alu_word(itf.res1_alu_out),
+    .cdb_data(itf.alu1_calculation)
+);
+
+reservation_station res2(
+    .clk (itf.clk),
+    .rst(~itf.reset_n),
+    .load_word(itf.res2_load),
+    .cdb(itf.cdb),
+    .robs_calculated(itf.robs_calculated),
+    .alu_data(itf.res2_alu_out),
+    .start_exe(itf.res2_exec),
+    .res_empty(itf.res2_empty),
+    .res_in(res_word)
+);
+
+alu alu2(
+    .alu_word(itf.res2_alu_out),
+    .cdb_data(itf.alu2_calculation)
+);
+
+reservation_station res3(
+    .clk (itf.clk),
+    .rst(~itf.reset_n),
+    .load_word(itf.res3_load),
+    .cdb(itf.cdb),
+    .robs_calculated(itf.robs_calculated),
+    .alu_data(itf.res3_alu_out),
+    .start_exe(itf.res3_exec),
+    .res_empty(itf.res3_empty),
+    .res_in(res_word)
+);
+
+alu alu3(
+    .alu_word(itf.res3_alu_out),
+    .cdb_data(itf.alu3_calculation)
+);
+
+reservation_station res4(
+    .clk (itf.clk),
+    .rst(~itf.reset_n),
+    .load_word(itf.res4_load),
+    .cdb(itf.cdb),
+    .robs_calculated(itf.robs_calculated),
+    .alu_data(itf.res4_alu_out),
+    .start_exe(itf.res4_exec),
+    .res_empty(itf.res4_empty),
+    .res_in(res_word)
+);
+
+alu alu4(
+    .alu_word(itf.res4_alu_out),
+    .cdb_data(itf.alu4_calculation)
 );
 
 default clocking tb_clk @(negedge itf.clk); endclocking
@@ -76,14 +163,46 @@ task set_init();
     itf.in <= 32'h00000000;
 
     /* set up iq signals */
-    itf.res1_empty <= 1'b0;
-    itf.res2_empty <= 1'b0;
-    itf.res3_empty <= 1'b0;
-    itf.res4_empty <= 1'b0;
+    // itf.res1_empty <= 1'b0;
+    // itf.res2_empty <= 1'b0;
+    // itf.res3_empty <= 1'b0;
+    // itf.res4_empty <= 1'b0;
+    itf.regfile_tag1 <= 5'b00000;
+    itf.regfile_tag2 <= 5'b00000;
     itf.resldst_empty <= 1'b0;
     itf.rob_full <= 1'b0;
     itf.ldst_q_full <= 1'b0;
 
+    /* regfile */
+    itf.reg_src1_data <= 32'h00000000;
+    itf.reg_src2_data <= 32'h00000000;
+    itf.src1_valid <= 1'b0;
+    itf.src2_valid <= 1'b0;
+
+    /* rob signals */
+    itf.rd_rob_tag <= 5'b00000;
+
+    for (int i = 0; i < 8; ++i) begin
+        itf.robs_calculated[i] <= 1'b0;
+    end
+
+    /* cdb signals */
+    for (int i = 0; i < 8; ++i) begin
+        // itf.cdb[i].tag <= 3'b000;
+        itf.cdb[i].data <= 32'h00000000;
+    end
+
+endtask
+
+task robs_calc (logic [7:0] valids);
+    itf.robs_calculated[0] <= valids[0];
+    itf.robs_calculated[1] <= valids[1];
+    itf.robs_calculated[2] <= valids[2];
+    itf.robs_calculated[3] <= valids[3];
+    itf.robs_calculated[4] <= valids[4];
+    itf.robs_calculated[5] <= valids[5];
+    itf.robs_calculated[6] <= valids[6];
+    itf.robs_calculated[7] <= valids[7];
 endtask
 
 task set_instr(logic [31:0] instr);
@@ -103,12 +222,12 @@ task set_instr(logic [31:0] instr);
     @(tb_clk);
 endtask
 
-task res_empty(bit res1_empty, bit res2_empty, bit res3_empty, bit res4_empty);
-    itf.res1_empty <= res1_empty;
-    itf.res2_empty <= res2_empty;
-    itf.res3_empty <= res3_empty;
-    itf.res4_empty <= res4_empty;
-endtask
+// task res_empty(bit res1_empty, bit res2_empty, bit res3_empty, bit res4_empty);
+//     itf.res1_empty <= res1_empty;
+//     itf.res2_empty <= res2_empty;
+//     itf.res3_empty <= res3_empty;
+//     itf.res4_empty <= res4_empty;
+// endtask
 
 task rob_full(bit rob_full);
     itf.rob_full <= rob_full;
@@ -185,12 +304,15 @@ initial begin
     set_instr(32'h00c10113);
     set_instr(32'h00d18193);
 
-    res_empty(1'b0, 1'b0, 1'b1, 1'b1);
+    // res_empty(1'b0, 1'b0, 1'b1, 1'b1);
+    robs_calc(8'b11111111);
     @(tb_clk);
 
-    rob_full(1'b1);
-    repeat (5) @(tb_clk);
-    rob_full(1'b0);
+    
+
+    // rob_full(1'b1);
+    // repeat (5) @(tb_clk);
+    // rob_full(1'b0);
     @(tb_clk);
 
     // set_src_data(5, 3);

@@ -49,15 +49,14 @@ typedef struct {
     logic [2:0] src2_tag;
     logic [31:0] src2_data;
     logic src2_valid;
-    logic [2:0] rd_tag;
-    logic [31:0] imm;
+    logic [2:0] rd_tag; // rob tag where destination will be saved
 } res_word; // totals 82 bits
 
 // databus
 typedef struct packed {
-    logic [2:0] tag;
+    // logic [2:0] tag;
     logic [31:0] data;
-    logic request;
+    // logic request;
 } cdb_data; // totals 35 bits
 
 //ALU interface
@@ -67,10 +66,10 @@ typedef struct packed {
     logic funct7; 
     logic [31:0] src1_data;
     logic [31:0] src2_data;
-    logic [31:0] imm;
+    // logic [31:0] imm;
     logic [31:0] pc;
     logic [2:0] tag;
-    logic load; // make sure to set this back to 0 after you request the adder to do work
+    // logic load; // make sure to set this back to 0 after you request the adder to do work
 } alu_word;
 
 endpackage : tomasula_types;

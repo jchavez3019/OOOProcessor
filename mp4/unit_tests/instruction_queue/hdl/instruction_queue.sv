@@ -15,8 +15,8 @@ import rv32i_types::*;
     input logic ldst_q_full,
     // input logic enqueue,
 
-    output logic [4:0] regfile_tag1, // register one index in regfile
-    output logic [4:0] regfile_tag2, // register two index in regfile
+    // output logic [4:0] regfile_tag1, // register one index in regfile
+    // output logic [4:0] regfile_tag2, // register two index in regfile
     output logic rob_load,
     output logic res1_load,
     output logic res2_load,
@@ -78,11 +78,12 @@ always_comb begin : dequeue_logic
     res2_load = 1'b0;
     res3_load = 1'b0;
     res4_load = 1'b0;
-    regfile_tag1 = 5'b00000;
-    regfile_tag2 = 5'b00000;
+    // control_o_buf.src1_reg = 5'b00000;
+    // control_o_buf.src2_reg = 5'b00000;
     dequeue = 1'b0;
     // rob logic is the same as dequeue, reuse here instead of rechecking
     rob_load = dequeue;
+    resldst_load = 1'b0;
 
     // if the fifo is holding a valid entry
     if (control_o_valid) begin 
@@ -101,8 +102,8 @@ always_comb begin : dequeue_logic
                     dequeue = 1'b1;
                
                     // send read signals to the regfile
-                    regfile_tag1 = control_o_buf.src1_reg;
-                    regfile_tag2 = control_o_buf.src2_reg;
+                    // regfile_tag1 = control_o_buf.src1_reg;
+                    // regfile_tag2 = control_o_buf.src2_reg;
 
                     // assign the output to the output of the queue
                     // control_o = control_o_buf;

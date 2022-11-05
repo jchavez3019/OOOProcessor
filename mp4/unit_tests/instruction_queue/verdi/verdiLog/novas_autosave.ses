@@ -26,15 +26,15 @@ fdb_campaign =
 fdb_tool = 
 [hb]
 postSimFile = /home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/sim/dump.fsdb
-syncTime = 10500
-viewport = 0 27 1920 1026 0 0 1108 2558
-activeNode = "top.tb.iq"
-activeScope = "top.tb.iq"
-activeFile = "/home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/hdl/instruction_queue.sv"
+syncTime = 23500
+viewport = 0 27 1920 1026 0 0 239 1918
+activeNode = "top.tb"
+activeScope = "top.tb"
+activeFile = "/home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/hvl/testbench.sv"
 interactiveMode = False
 viewType = Source
 simulatorMode = False
-sourceBeginLine = 91
+sourceBeginLine = 55
 baMode = False
 srcLineNum = True
 AutoWrap = True
@@ -51,23 +51,23 @@ DnDtraceCrossHierOnly = True
 leadingZero = False
 signalPane = False
 SourceVerticalScrollLines = 5
-Scope1 = "top.tb.iq"
-multipleSelection = 1 2 2 0 0
+Scope1 = "top.tb"
+multipleSelection = 1 0 2 0 0
 sdfCheckUndef = FALSE
 simFlow = FALSE
 [hb.design]
 importCmd = "-dbdir" "/home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/sim/simv.daidir" 
 invokeDir = /home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/verdi
 [hb.sourceTab.1]
-scope = top.tb.iq
-File = /home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/hdl/instruction_queue.sv
-Line = 92
+scope = top.tb
+File = /home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/hvl/testbench.sv
+Line = 56
 [nMemoryManager]
 WaveformFile = /home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/sim/dump.fsdb
 UserActionNum = 0
 nMemWindowNum = 0
 [wave.0]
-viewPort = 0 25 1920 896 175 65
+viewPort = 0 25 1920 923 175 65
 primaryWindow = TRUE
 SessionFile = /home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/verdi/verdiLog/novas_autosave.ses.wave.0
 displayGrid = FALSE
