@@ -56,6 +56,27 @@ iq iq (
     // .ack_o(itf.ack_o)
 );
 
+regfile regfile (
+    .clk(itf.clk),
+    .rst(~itf.reset_n),
+    .load(),
+    .allcoate(),
+    .in(),
+    .src_a(),
+    .src_b(),
+    .dest(),
+    .tag_in(),
+    .reg_a(),
+    .reg_b(),
+    .valid_a(),
+    .valid_b(),
+    .tag_a(),
+    .tag_b(),
+    .tag_dest(),
+    .src_c(),
+    .data_out()
+);
+
 tomasula_types::res_word res_word;
 logic [31:0] src2_data;
 logic src2_v;
