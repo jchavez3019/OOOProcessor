@@ -41,7 +41,8 @@ logic [4:0] rd_rob_tag;
 logic robs_calculated[8];
 
 /* cdb signals */
-tomasula_types::cdb_data cdb[8];
+tomasula_types::cdb_data cdb_in[8];
+tomasula_types::cdb_data cdb_out[8];
 
 /* alu outputs */
 tomasula_types::cdb_data alu1_calculation;

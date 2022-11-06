@@ -79,7 +79,7 @@ reservation_station res1(
     .clk (itf.clk),
     .rst(~itf.reset_n),
     .load_word(itf.res1_load),
-    .cdb(itf.cdb),
+    .cdb(itf.cdb_out),
     .robs_calculated(itf.robs_calculated),
     .alu_data(itf.res1_alu_out),
     .start_exe(itf.res1_exec),
@@ -96,7 +96,7 @@ reservation_station res2(
     .clk (itf.clk),
     .rst(~itf.reset_n),
     .load_word(itf.res2_load),
-    .cdb(itf.cdb),
+    .cdb(itf.cdb_out),
     .robs_calculated(itf.robs_calculated),
     .alu_data(itf.res2_alu_out),
     .start_exe(itf.res2_exec),
@@ -113,7 +113,7 @@ reservation_station res3(
     .clk (itf.clk),
     .rst(~itf.reset_n),
     .load_word(itf.res3_load),
-    .cdb(itf.cdb),
+    .cdb(itf.cdb_out),
     .robs_calculated(itf.robs_calculated),
     .alu_data(itf.res3_alu_out),
     .start_exe(itf.res3_exec),
@@ -130,7 +130,7 @@ reservation_station res4(
     .clk (itf.clk),
     .rst(~itf.reset_n),
     .load_word(itf.res4_load),
-    .cdb(itf.cdb),
+    .cdb(itf.cdb_out),
     .robs_calculated(itf.robs_calculated),
     .alu_data(itf.res4_alu_out),
     .start_exe(itf.res4_exec),
@@ -142,6 +142,27 @@ alu alu4(
     .alu_word(itf.res4_alu_out),
     .cdb_data(itf.alu4_calculation)
 );
+
+logic [7:0] cdb_enable;
+always_comb begin : cdb_enable_logic
+    // set default values to 0
+    for (int i = 0; i < 8; i++) begin
+        itf.cdb_in[i].data[31:0] = 32'h00000000;
+    end
+    itf.cdb_in[itf.res1_alu_out.tag].data[31:0] = itf.alu1_calculation.data[31:0];
+    // itf.cdb_in[itf.res2_alu_out.tag].data[31:0] = itf.alu2_calculation.data[31:0];
+    // itf.cdb_in[itf.res3_alu_out.tag].data[31:0] = itf.alu3_calculation.data[31:0];
+    // itf.cdb_in[itf.res4_alu_out.tag].data[31:0] = itf.alu4_calculation.data[31:0];
+    
+    cdb_enable[7:0] = 8'h00 | itf.res1_exec << itf.res1_alu_out.tag | itf.res2_exec << itf.res2_alu_out.tag | itf.res3_exec << itf.res3_alu_out.tag | itf.res4_exec << itf.res4_alu_out.tag;
+end
+
+cdb cdb(
+    .ctl(itf.cdb_in),
+    .enable(cdb_enable),
+    .rst(~itf.reset_n),
+    .out(itf.cdb_out)
+); 
 
 default clocking tb_clk @(negedge itf.clk); endclocking
 
@@ -187,10 +208,10 @@ task set_init();
     end
 
     /* cdb signals */
-    for (int i = 0; i < 8; ++i) begin
-        // itf.cdb[i].tag <= 3'b000;
-        itf.cdb[i].data <= 32'h00000000;
-    end
+    // for (int i = 0; i < 8; ++i) begin
+    //     // itf.cdb[i].tag <= 3'b000;
+    //     itf.cdb[i].data <= 32'h00000000;
+    // end
 
 endtask
 
