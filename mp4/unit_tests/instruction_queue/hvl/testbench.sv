@@ -55,6 +55,35 @@ iq iq (
     // .issue_q_full_n(itf.issue_q_full_n),
     // .ack_o(itf.ack_o)
 );
+rob rob (
+     .*,
+     .clk (itf.clk),
+     .rst (~itf.reset_n),
+     .rob_load (itf.rob_load),
+     .instr_type (itf.instr_type),
+     .rd (itf.rd),
+     .st_src (itf.sr_src),
+     .branch_mispredict (itf.branch_mispredict),
+     .data_mem_resp (itf.data_mem_resp),
+     .rob0_valid (itf.rob0_valid),
+     .rob1_valid (itf.rob1_valid),
+     .rob2_valid (itf.rob2_valid),
+     .rob3_valid (itf.rob3_valid),
+     .rob4_valid (itf.rob4_valid),
+     .rob5_valid (itf.rob5_valid),
+     .rob6_valid (itf.rob6_valid),
+     .rob7_valid (itf.rob7_valid),
+     .rob_tag (itf.rob_tag), 
+     .rd_inflight (itf.rd_inflight),
+     .st_commit (itf.st_commit),
+     .regfile_allocate (itf.regfile_allocate),
+     .regfile_load (itf.regfile_load),
+     .rob_full (itf.rob_full),
+     .ld_commit_sel (itf.ld_commit_sel),
+     .load_pc (itf.load_pc),
+     .data_read (itf.data_read),
+     .data_write (itf.data_write),
+ );
 
 regfile regfile (
     .clk(itf.clk),
