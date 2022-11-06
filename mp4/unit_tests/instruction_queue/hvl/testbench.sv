@@ -8,7 +8,6 @@ IQ_2_IR iq_ir_itf();
 logic ld_pc;
 logic [31:0] pc;
 
-//TODO: iq needs to output regfile_tag1 and 2
 
 ir ir (
     .*,
@@ -23,11 +22,19 @@ ir ir (
     // ,.iq_ir_itf(iq_ir_itf.IQ_SIG)
 );
 
+logic [31:0] pc_in;
+always_comb begin : pc_mux
+    if (ld_br)
+        pc_in = itf.cdb_out[itf.rob_tag].data[31:0];
+    else 
+        pc_in = pc + 4;
+end
+
 pc_register PC (
         .clk (itf.clk),
         .rst (~itf.reset_n),
-        .load(ld_pc),
-        .in(pc + 4),
+        .load(ld_pc | ld_br),
+        .in(pc_in),
         .out(pc)
     );
 
@@ -44,8 +51,8 @@ iq iq (
     .rob_full(itf.rob_full),
     .ldst_q_full(itf.ldst_q_full),
     // .enqueue(itf.enqueue),
-    .regfile_tag1(itf.regfile_tag1),
-    .regfile_tag2(itf.regfile_tag2),
+    //.regfile_tag1(itf.regfile_tag1),
+    //.regfile_tag2(itf.regfile_tag2),
     .rob_load(itf.rob_load),
     .res1_load(itf.res1_load),
     .res2_load(itf.res2_load),
@@ -66,8 +73,8 @@ rob rob (
      .instr_type (itf.control_o.op),
      .rd (itf.control_o.rd),
      .sr3_reg (itf.control_o.src2_reg),
-     .branch_mispredict (itf.branch_mispredict),
-     .data_mem_resp (itf.data_mem_resp),
+     .branch_mispredict (1'b0),
+     .data_mem_resp (1'b0),
      .rob0_valid (itf.rob0_valid),
      .rob1_valid (itf.rob1_valid),
      .rob2_valid (itf.rob2_valid),
@@ -83,31 +90,41 @@ rob rob (
      .regfile_load (itf.regfile_load),
      .rob_full (itf.rob_full),
      .ld_commit_sel (itf.ld_commit_sel),
-     .load_pc (itf.load_pc),
+     //FIXME: rename load_pc to ld_br
+     .load_pc (itf.ld_br),
      .data_read (itf.data_read),
      .data_write (itf.data_write),
  );
 
+
+logic [31:0] regfile_in, data_mem_wdata;
+assign data_mem_wdata = 32'h600d600d;
+always_comb begin
+    if (itf.ld_commit_sel) 
+        regfile_in = data_mem_wdata;
+    else 
+        regfile_in = itf.cdb_out[itf.rob_tag].data[31:0];
+end
 regfile regfile (
     .*,
     .clk (itf.clk),
     .rst (~itf.reset_n),
     .load (itf.regfile_load),
     .allocate (itf.regfile_allocate),
-    .in (itf.cdb_in[itf.rob_tag].data[31:0]),
+    .in (regfile_in),
     // from iq - sources to read
-    .src_a (itf.regfile_tag1),
-    .src_b (itf.regfile_tag2),
+    .src_a (itf.control_o.src1_reg),
+    .src_b (itf.control_o.src2_reg),
     // from iq - dest to write to
-    .dest (),
+    .dest (itf.control_o.rd),
     .tag_in (itf.rob_tag),
-    .reg_a (),
-    .reg_b (),
-    .valid_a (),
-    .valid_b (),
-    .tag_a (),
-    .tag_b (),
-    .tag_dest (),
+    .reg_a (itf.reg_a),
+    .reg_b (itf.reg_b),
+    .valid_a (itf.valid_a),
+    .valid_b (itf.valid_b),
+    .tag_a (itf.tag_a),
+    .tag_b (itf.tag_b),
+    .tag_dest (itf.tag_dest),
 );
 tomasula_types::res_word res_word;
 logic [31:0] src2_data;
@@ -305,9 +322,9 @@ endtask
 //     itf.res4_empty <= res4_empty;
 // endtask
 
-task rob_full(bit rob_full);
-    itf.rob_full <= rob_full;
-endtask
+//task rob_full(bit rob_full);
+//    itf.rob_full <= rob_full;
+//endtask
 
 // task set_init();
 //     itf.reset_n <= 1'b0;
