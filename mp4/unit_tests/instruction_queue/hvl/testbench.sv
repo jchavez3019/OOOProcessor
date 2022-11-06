@@ -8,6 +8,8 @@ IQ_2_IR iq_ir_itf();
 logic ld_pc;
 logic [31:0] pc;
 
+//TODO: iq needs to output regfile_tag1 and 2
+
 ir ir (
     .*,
     .clk(itf.clk),
@@ -42,8 +44,8 @@ iq iq (
     .rob_full(itf.rob_full),
     .ldst_q_full(itf.ldst_q_full),
     // .enqueue(itf.enqueue),
-    // .regfile_tag1(itf.regfile_tag1),
-    // .regfile_tag2(itf.regfile_tag2),
+    .regfile_tag1(itf.regfile_tag1),
+    .regfile_tag2(itf.regfile_tag2),
     .rob_load(itf.rob_load),
     .res1_load(itf.res1_load),
     .res2_load(itf.res2_load),
@@ -55,14 +57,15 @@ iq iq (
     // .issue_q_full_n(itf.issue_q_full_n),
     // .ack_o(itf.ack_o)
 );
+
 rob rob (
      .*,
      .clk (itf.clk),
      .rst (~itf.reset_n),
      .rob_load (itf.rob_load),
-     .instr_type (itf.instr_type),
-     .rd (itf.rd),
-     .st_src (itf.sr_src),
+     .instr_type (itf.control_o.op),
+     .rd (itf.control_o.rd),
+     .sr3_reg (itf.control_o.src2_reg),
      .branch_mispredict (itf.branch_mispredict),
      .data_mem_resp (itf.data_mem_resp),
      .rob0_valid (itf.rob0_valid),
@@ -85,6 +88,28 @@ rob rob (
      .data_write (itf.data_write),
  );
 
+
+regfile regfile (
+    .*,
+    .clk (itf.clk),
+    .rst (~itf.reset_n),
+    .load (itf.regfile_load),
+    .allocate (itf.regfile_allocate),
+    .in (itf.cdb_in[itf.rob_tag].data[31:0]),
+    // from iq - sources to read
+    .src_a (itf.regfile_tag1),
+    .src_b (itf.regfile_tag2),
+    // from iq - dest to write to
+    .dest (),
+    .tag_in (itf.rob_tag),
+    .reg_a (),
+    .reg_b (),
+    .valid_a (),
+    .valid_b (),
+    .tag_a (),
+    .tag_b (),
+    .tag_dest (),
+);
 tomasula_types::res_word res_word;
 logic [31:0] src2_data;
 logic src2_v;
