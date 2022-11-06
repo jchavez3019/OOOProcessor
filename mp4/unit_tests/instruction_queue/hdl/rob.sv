@@ -6,7 +6,7 @@ import rv32i_types::*;
     // from iq
     input rob_load,
     // from iq
-    input op_t instr_type,
+    input tomasula_types::op_t instr_type,
     input [4:0] rd,
     input [4:0] st_src,
 
@@ -39,26 +39,35 @@ import rv32i_types::*;
     output ld_commit_sel,
 
     // determined by branch output
-    output load_pc,
+    output ld_br,
 
     // to d-cache
     output data_read,
     output data_write
 );
 
-op_t instr_arr [8];
+tomasula_types::op_t instr_arr [8];
 logic [4:0] rd_arr [8];
 logic [4:0] st_arr [8];
 logic valid_arr [8];
+
+logic [2:0] rob_tag;
+logic [4:0] rd_inflight, st_commit;
 logic flush_ip;
+logic ld_commit_sel;
+logic ld_br;
+logic data_read, data_write;
+logic regfile_allocate, regfile_load;
+logic rob_full;
 
 logic [2:0] curr_ptr;
 logic [2:0] head_ptr;
+logic [2:0] br_ptr;
 
-assign rob_full = (head_ptr + 7) % 8 == curr_ptr;
+assign rob_full = head_ptr + 7 == curr_ptr;
 
 always_ff @(posedge clk) begin
-    load_pc <= 1'b0;
+    ld_br <= 1'b0;
     ld_commit_sel <= 1'b0;
     regfile_allocate <= 1'b0;
     valid_arr[0] <= rob0_valid;
@@ -72,14 +81,14 @@ always_ff @(posedge clk) begin
 
     if (rst) begin
         for (int i=0; i<8; i++) begin
-            instr_arr[i] <= '0;
+            instr_arr[i] <= tomasula_types::op_t'(0);
             rd_arr[i] <= '0;
             st_arr[i] <= '0;
-            valid_arr[i] <= 0;
-            branch_arr[i] <= 0;
+            valid_arr[i] <= '0;
         end
         curr_ptr <= 3'b000;
         head_ptr <= 3'b000;
+        br_ptr <= 3'b000;
         flush_ip <= 1'b0;
     end
 
@@ -99,13 +108,14 @@ always_ff @(posedge clk) begin
                regfile_allocate <= 1'b1;
            end
            // increment curr_ptr
-           curr_ptr <= (curr_ptr + 1) % 8;
+           //TODO: beware! overflow may cause errors
+           curr_ptr <= curr_ptr + 1'b1;
         end
 
         // if the head of the rob has been computed
         if (valid_arr[head_ptr]) begin
             if(instr_arr[head_ptr] == tomasula_types::BRANCH) begin
-               load_pc <= 1'b1; 
+               ld_br <= 1'b1; 
             end
             else if (instr_arr[head_ptr] == tomasula_types::LD) begin
                 data_read <= 1'b1;
@@ -119,9 +129,9 @@ always_ff @(posedge clk) begin
                     // use d-cache data
                     ld_commit_sel <= 1'b1;
                     regfile_load <= 1'b1;
-                    rd_inflight <= rd_array[head_ptr];
+                    rd_inflight <= rd_arr[head_ptr];
                     // update head
-                    head_ptr <= (head_ptr + 1) % 8;
+                    head_ptr <= head_ptr + 1'b1;
                 end
             end
             else if (instr_arr[head_ptr] == tomasula_types::ST) begin
@@ -131,10 +141,10 @@ always_ff @(posedge clk) begin
                 // send regfile the register file to read from
                 st_commit <= st_arr[head_ptr];
                 // once store has been processed
-                if (data_mem_res) begin
+                if (data_mem_resp) begin
                     data_write <= 1'b0;
                     valid_arr[head_ptr] <= 1'b0;
-                    head_ptr <= (head_ptr + 1) % 8;
+                    head_ptr <= head_ptr + 1'b1;
                 end
             end
             // for all other instructions
@@ -143,9 +153,9 @@ always_ff @(posedge clk) begin
                 valid_arr[head_ptr] <= 1'b0;
 
                 // increment head_ptr
-                rd_inflight <= rd_array[head_ptr];
+                rd_inflight <= rd_arr[head_ptr];
                 rob_tag <= head_ptr;
-                head_ptr <= (head_ptr + 1) % 8;
+                head_ptr <= head_ptr + 1'b1;
             end
         end
         // branch mispredict handling
@@ -176,7 +186,7 @@ always_ff @(posedge clk) begin
                 regfile_allocate <= 1'b1;
                 rd_inflight <= rd_arr[br_ptr];
                 rob_tag <= br_ptr;
-                br_ptr <= (br_ptr + 1) % 8;
+                br_ptr <= br_ptr + 1'b1;
             end
         end
     end

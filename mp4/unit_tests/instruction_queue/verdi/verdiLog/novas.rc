@@ -230,8 +230,8 @@ autoSaveSession = FALSE
 TclAutoSource = 
 cmd_enter_form = FALSE
 SyncBrowserDir = TRUE
-version = Verdi_R-2020.12-SP1-1
 SignalCaseInSensitive = FALSE
+version = Verdi_R-2020.12-SP1-1
 [GlobalProp]
 ErrWindow_Font = Helvetica_M_R_12
 [Globals]
@@ -381,9 +381,10 @@ savePropStat = FALSE
 savePropDtl = TRUE
 [QtDialog]
 fileWithNote = 631,305,655,543
-QwWarnMsgDlg = 979,841,600,250
-unknownSave = 728,454,461,245
 QwUserAskDlg = 798,513,324,130
+restoreSigDlg = 688,303,551,438
+unknownSave = 731,399,461,245
+QwWarnMsgDlg = 1015,673,600,250
 [Relationship]
 hideRecursiceNode = FALSE
 [Safety]
@@ -469,7 +470,7 @@ bSVTBMode = TRUE
 SimMode = TRUE
 interactiveDebugging = TRUE
 KeepBreakPoints = FALSE
-vcs_svPath = /home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/sim/simv
+vcs_svPath = /home/jiwonl4/ece411_mp4/mp4/mp4/unit_tests/instruction_queue/sim/simv
 vcs_svOption = +lint=all_VERDI0x2C_noSVA-UA_VERDI0x2C_noNS_VERDI0x2C_noSVA-AECASR +v2k
 [SimulationPlus2]
 eventDumpUnfinish = FALSE
@@ -671,9 +672,9 @@ Button1 = "Dump All Signals" "$fsdbDumpvars;\n"
 [VIA]
 viaLogViewerDefaultRuleOneSearchForm = "share/VIA/Apps/PredefinedRules/Misc/Onesearch_rule.rc"
 [VIA.oneSearch.preference]
+isOneSearchVisible = FALSE
 DefaultDisplayTimeUnit = "1.000000ns"
 DefaultLogTimeUnit = "1.000000ns"
-isOneSearchVisible = FALSE
 [VIA.oneSearch.preference.vgifColumnSettingRC]
 [VIA.oneSearch.preference.vgifColumnSettingRC.setting0]
 parRuleSets = ""
@@ -690,21 +691,21 @@ visualIndex = 0
 isHidden = TRUE
 isUserChangeColumnVisible = FALSE
 [VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column2]
+name = Severity
+width = 60
+visualIndex = 1
+isHidden = TRUE
+isUserChangeColumnVisible = FALSE
+[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column3]
 name = Code
 width = 60
 visualIndex = 2
 isHidden = TRUE
 isUserChangeColumnVisible = FALSE
-[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column3]
+[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column4]
 name = Type
 width = 60
 visualIndex = 3
-isHidden = TRUE
-isUserChangeColumnVisible = FALSE
-[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column4]
-name = Severity
-width = 60
-visualIndex = 1
 isHidden = TRUE
 isUserChangeColumnVisible = FALSE
 [Vi]

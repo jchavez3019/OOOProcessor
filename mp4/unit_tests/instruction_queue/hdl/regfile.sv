@@ -14,10 +14,11 @@ module regfile
 
     // signals for memory interaction
     
-    input [4:0]src_c,
-    output data_out
+    input [4:0] src_c,
+    output [31:0] data_out
 );
 
+logic [31:0] data_out;
 logic [31:0] data [32];
 logic [2:0] tag [32];
 logic valid [32];       // 0 means waiting for ROB to fill it up, 1 means its rdy
@@ -29,7 +30,7 @@ begin
         for (int i=0; i<32; i=i+1) begin
             data[i] <= '0;
             tag[i] <= '0;
-            valid[i] = 1
+            valid[i] = 1;
         end
     end
     else if (load && dest)

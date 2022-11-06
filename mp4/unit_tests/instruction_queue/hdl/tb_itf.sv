@@ -11,7 +11,7 @@ logic [31:0] in;
 rv32i_word instr_mem_address;
 
 /* iq signals */
-logic res1_empty, res2_empty, res3_empty, res4_empty, resldst_empty, rob_full, ldst_q_full, rob_load, res1_load, res2_load, res3_load, res4_load, resldst_load;
+logic res1_empty, res2_empty, res3_empty, res4_empty, resldst_empty, ldst_q_full, rob_load, res1_load, res2_load, res3_load, res4_load, resldst_load;
 logic [4:0] regfile_tag1, regfile_tag2;
 tomasula_types::ctl_word control_o;
 
@@ -35,10 +35,17 @@ tomasula_types::alu_word res4_alu_out;
 /* regfile signals */
 logic [31:0] reg_src1_data, reg_src2_data;
 logic src1_valid, src2_valid;
+logic [4:0] src_a, src_b, src_c, dest;
+logic [2:0] tag_in, tag_a, tag_b, tag_dest;
+logic [31:0] reg_a, reg_b;
+logic valid_a, valid_b;
 
 /* rob signals */
 logic [4:0] rd_rob_tag;
 logic robs_calculated[8];
+logic ld_br, rob0_valid, rob1_valid, rob2_valid, rob3_valid, rob4_valid, rob5_valid, rob6_valid, rob7_valid, regfile_allocate, regfile_load, rob_full, ld_commit_sel, data_read, data_write;
+logic [2:0] rob_tag;
+logic [4:0] rd_inflight, st_commit;
 
 /* cdb signals */
 tomasula_types::cdb_data cdb_in[8];

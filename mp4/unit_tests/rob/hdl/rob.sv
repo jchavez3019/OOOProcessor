@@ -48,7 +48,6 @@ import rv32i_types::*;
 
 op_t instr_arr [8];
 logic [4:0] rd_arr [8];
-logic [4:0] st_arr [8];
 logic valid_arr [8];
 logic flush_ip;
 
@@ -74,7 +73,6 @@ always_ff @(posedge clk) begin
         for (int i=0; i<8; i++) begin
             instr_arr[i] <= '0;
             rd_arr[i] <= '0;
-            st_arr[i] <= '0;
             valid_arr[i] <= 0;
             branch_arr[i] <= 0;
         end
@@ -90,7 +88,7 @@ always_ff @(posedge clk) begin
            rd_arr[curr_ptr] <= rd; 
            // do not allocate regfile entry for st
            if (instr_type == tomasula_types::ST) begin 
-               st_arr[curr_ptr] <= st_src;
+               rd_arr[curr_ptr] <= st_src;
            end
            else if (instr_type != tomasula_types::BRANCH) begin
                // output to regfile
@@ -129,7 +127,7 @@ always_ff @(posedge clk) begin
                 // for st address
                 rob_tag <= head_ptr;
                 // send regfile the register file to read from
-                st_commit <= st_arr[head_ptr];
+                st_commit <= dr_arr[head_ptr];
                 // once store has been processed
                 if (data_mem_res) begin
                     data_write <= 1'b0;

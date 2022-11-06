@@ -24,7 +24,7 @@ ir ir (
 
 logic [31:0] pc_in;
 always_comb begin : pc_mux
-    if (ld_br)
+    if (itf.ld_br)
         pc_in = itf.cdb_out[itf.rob_tag].data[31:0];
     else 
         pc_in = pc + 4;
@@ -33,7 +33,7 @@ end
 pc_register PC (
         .clk (itf.clk),
         .rst (~itf.reset_n),
-        .load(ld_pc | ld_br),
+        .load(ld_pc | itf.ld_br),
         .in(pc_in),
         .out(pc)
     );
@@ -72,7 +72,8 @@ rob rob (
      .rob_load (itf.rob_load),
      .instr_type (itf.control_o.op),
      .rd (itf.control_o.rd),
-     .sr3_reg (itf.control_o.src2_reg),
+     //FIXME: rename st_src to sr3_reg
+     .st_src (itf.control_o.src2_reg),
      .branch_mispredict (1'b0),
      .data_mem_resp (1'b0),
      .rob0_valid (itf.rob0_valid),
@@ -91,20 +92,22 @@ rob rob (
      .rob_full (itf.rob_full),
      .ld_commit_sel (itf.ld_commit_sel),
      //FIXME: rename load_pc to ld_br
-     .load_pc (itf.ld_br),
+     .ld_br (itf.ld_br),
      .data_read (itf.data_read),
-     .data_write (itf.data_write),
+     .data_write (itf.data_write)
  );
 
 
-logic [31:0] regfile_in, data_mem_wdata;
-assign data_mem_wdata = 32'h600d600d;
+logic [31:0] regfile_in, ld_data;
+assign ld_data = 32'h600d600d;
 always_comb begin
     if (itf.ld_commit_sel) 
-        regfile_in = data_mem_wdata;
+        regfile_in = ld_data;
     else 
         regfile_in = itf.cdb_out[itf.rob_tag].data[31:0];
 end
+
+logic [31:0] data_mem_wdata;
 regfile regfile (
     .*,
     .clk (itf.clk),
@@ -125,6 +128,8 @@ regfile regfile (
     .tag_a (itf.tag_a),
     .tag_b (itf.tag_b),
     .tag_dest (itf.tag_dest),
+    .src_c (itf.rd_inflight),
+    .data_out (data_mem_wdata)
 );
 tomasula_types::res_word res_word;
 logic [31:0] src2_data;
@@ -263,7 +268,7 @@ task set_init();
     itf.regfile_tag1 <= 5'b00000;
     itf.regfile_tag2 <= 5'b00000;
     itf.resldst_empty <= 1'b0;
-    itf.rob_full <= 1'b0;
+    //itf.rob_full <= 1'b0;
     itf.ldst_q_full <= 1'b0;
 
     /* regfile */
