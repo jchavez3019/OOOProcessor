@@ -5,3 +5,7 @@ Failed to bind ID for line(201) of file(/home/jorgejc2/Documents/mp4/mp4/unit_te
 BeginLine(0) < 1
 BeginLine(0) < 1
 BeginLine(0) < 1
+[MessageBox] The KDB has been updated by other processes. Reload the KDB to update it; otherwise, you may get unexpected results.
+BeginLine(0) < 1
+BeginLine(0) < 1
+BeginLine(0) < 1

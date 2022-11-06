@@ -946,3 +946,135 @@ wvScrollDown -win $_nWave2 0
 wvScrollDown -win $_nWave2 0
 wvScrollDown -win $_nWave2 0
 wvScrollDown -win $_nWave2 0
+wvSelectSignal -win $_nWave2 {( "itf(tb_itf)" 56 )} 
+wvSetCursor -win $_nWave2 19951.507937
+debReload
+wvDisplayGridCount -win $_nWave2 -off
+wvGetSignalClose -win $_nWave2
+wvReloadFile -win $_nWave2
+wvSelectSignal -win $_nWave2 {( "itf(tb_itf)" 44 )} 
+wvSelectSignal -win $_nWave2 {( "itf(tb_itf)" 45 )} 
+wvSetPosition -win $_nWave2 {("itf(tb_itf)" 45)}
+wvCollapseBus -win $_nWave2
+wvSetPosition -win $_nWave2 {("itf(tb_itf)" 45)}
+wvSetPosition -win $_nWave2 {("G3" 0)}
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollUp -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvSetCursor -win $_nWave2 23563.255809 -snap {("itf(tb_itf)" 44)}
+wvSelectSignal -win $_nWave2 {( "itf(tb_itf)" 44 )} 
+wvCut -win $_nWave2
+wvSetPosition -win $_nWave2 {("G4" 0)}
+wvSetPosition -win $_nWave2 {("G3" 0)}
+wvSelectSignal -win $_nWave2 {( "itf(tb_itf)" 43 )} 
+verdiDockWidgetRestore -dock windowDock_nWave_2
+srcHBSelect "top.tb" -win $_nTrace1
+srcSetScope "top.tb" -delim "." -win $_nTrace1
+srcDeselectAll -win $_nTrace1
+srcDeselectAll -win $_nTrace1
+srcAction -pos 156 1 6 -win $_nTrace1 -name "cdb_enable" -ctrlKey off
+debReload
+srcDeselectAll -win $_nTrace1
+srcSelect -signal "cdb_enable" -line 146 -pos 1 -win $_nTrace1
+wvScrollDown -win $_nWave2 5
+wvScrollDown -win $_nWave2 3
+wvSetPosition -win $_nWave2 {("itf(tb_itf)" 0)}
+wvSetPosition -win $_nWave2 {("itf(tb_itf)" 47)}
+wvSetPosition -win $_nWave2 {("itf(tb_itf)" 46)}
+wvSetPosition -win $_nWave2 {("itf(tb_itf)" 45)}
+wvSetPosition -win $_nWave2 {("itf(tb_itf)" 44)}
+wvSetPosition -win $_nWave2 {("itf(tb_itf)" 43)}
+wvAddSignal -win $_nWave2 "/top/tb/cdb_enable\[7:0\]"
+wvSetPosition -win $_nWave2 {("itf(tb_itf)" 43)}
+wvSetPosition -win $_nWave2 {("itf(tb_itf)" 44)}
+verdiDockWidgetMaximize -dock windowDock_nWave_2
+verdiDockWidgetRestore -dock windowDock_nWave_2
+wvSelectSignal -win $_nWave2 {( "itf(tb_itf)" 44 )} 
+wvSetRadix -win $_nWave2 -format Bin
+srcDeselectAll -win $_nTrace1
+srcDeselectAll -win $_nTrace1
+srcSelect -signal "cdb_enable\[7:0\]" -line 157 -pos 1 -win $_nTrace1
+verdiDockWidgetMaximize -dock windowDock_nWave_2
+wvScrollUp -win $_nWave2 27
+wvScrollDown -win $_nWave2 4
+wvScrollDown -win $_nWave2 6
+wvScrollDown -win $_nWave2 1
+wvSelectSignal -win $_nWave2 {( "itf(tb_itf)" 42 )} 
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 1
+wvScrollDown -win $_nWave2 0
+wvScrollDown -win $_nWave2 0
+wvScrollDown -win $_nWave2 0
+wvDisplayGridCount -win $_nWave2 -off
+wvGetSignalClose -win $_nWave2
+wvReloadFile -win $_nWave2
+debReload

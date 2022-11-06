@@ -150,9 +150,9 @@ always_comb begin : cdb_enable_logic
         itf.cdb_in[i].data[31:0] = 32'h00000000;
     end
     itf.cdb_in[itf.res1_alu_out.tag].data[31:0] = itf.alu1_calculation.data[31:0];
-    // itf.cdb_in[itf.res2_alu_out.tag].data[31:0] = itf.alu2_calculation.data[31:0];
-    // itf.cdb_in[itf.res3_alu_out.tag].data[31:0] = itf.alu3_calculation.data[31:0];
-    // itf.cdb_in[itf.res4_alu_out.tag].data[31:0] = itf.alu4_calculation.data[31:0];
+    itf.cdb_in[itf.res2_alu_out.tag].data[31:0] = itf.alu2_calculation.data[31:0];
+    itf.cdb_in[itf.res3_alu_out.tag].data[31:0] = itf.alu3_calculation.data[31:0];
+    itf.cdb_in[itf.res4_alu_out.tag].data[31:0] = itf.alu4_calculation.data[31:0];
     
     cdb_enable[7:0] = 8'h00 | itf.res1_exec << itf.res1_alu_out.tag | itf.res2_exec << itf.res2_alu_out.tag | itf.res3_exec << itf.res3_alu_out.tag | itf.res4_exec << itf.res4_alu_out.tag;
 end
@@ -161,8 +161,10 @@ cdb cdb(
     .ctl(itf.cdb_in),
     .enable(cdb_enable),
     .rst(~itf.reset_n),
-    .out(itf.cdb_out)
+    .out(itf.cdb_out[0:7])
 ); 
+
+
 
 default clocking tb_clk @(negedge itf.clk); endclocking
 
