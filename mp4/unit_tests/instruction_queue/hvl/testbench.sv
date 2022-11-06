@@ -88,7 +88,6 @@ rob rob (
      .data_write (itf.data_write),
  );
 
-
 regfile regfile (
     .*,
     .clk (itf.clk),
