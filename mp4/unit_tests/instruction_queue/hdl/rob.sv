@@ -95,7 +95,9 @@ always_ff @(posedge clk) begin
 
     else begin 
         for (int i = 0; i < 8; i++) begin
-            valid_arr[i] <= set_rob_valid[i];
+            if (set_rob_valid[i]) begin
+                valid_arr[i] <= 1'b1;
+            end
         end
         if (rob_load) begin
            // allocate ROB entry 
