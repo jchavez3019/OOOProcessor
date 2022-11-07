@@ -64,8 +64,6 @@ begin
         reg_b = in;
         valid_a = valid [src_a];
         valid_b = 1'b1;
-        tag_a = tag[src_a];
-        tag_b = tag[src_b];
     end
     else  begin
         reg_a = src_a ? data[src_a] : 0;

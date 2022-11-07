@@ -35,7 +35,7 @@ tomasula_types::alu_word res4_alu_out;
 /* regfile signals */
 logic [31:0] reg_src1_data, reg_src2_data;
 logic src1_valid, src2_valid;
-logic [2:0] tag_in, tag_a, tag_b, tag_dest;
+logic [2:0] tag_a, tag_b;
 // logic [31:0] reg_a, reg_b;
 // logic valid_a, valid_b;
 

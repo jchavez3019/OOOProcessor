@@ -48,9 +48,6 @@ iq iq (
     .res3_empty(itf.res3_empty),
     .res4_empty(itf.res4_empty),
     .rob_full(itf.rob_full),
-    // .enqueue(itf.enqueue),
-    //.regfile_tag1(itf.regfile_tag1),
-    //.regfile_tag2(itf.regfile_tag2),
     .resbr_empty(itf.resbr_empty),
     .resbr_load(itf.resbr_load),
     .rob_load(itf.rob_load),
@@ -129,7 +126,7 @@ regfile regfile (
     .src_a (itf.control_o.src1_reg),
     .src_b (itf.control_o.src2_reg),
     // from iq - dest to write to
-    .dest (itf.control_o.rd),
+    .dest (itf.rd_inflight),
     .tag_in (itf.rob_tag),
     .reg_a (itf.reg_src1_data),
     .reg_b (itf.reg_src2_data),
@@ -137,7 +134,6 @@ regfile regfile (
     .valid_b (itf.src2_valid),
     .tag_a (itf.tag_a),
     .tag_b (itf.tag_b),
-    // .tag_dest (itf.tag_dest),
     .src_c (itf.rd_inflight),
     .data_out (data_mem_wdata)
 );
@@ -147,30 +143,18 @@ logic src2_v;
 assign src2_v = itf.src2_valid | itf.control_o.src2_valid;
 assign src2_data = itf.control_o.src2_valid ? itf.control_o.src2_data : itf.reg_src2_data;
 
-assign res_word = '{
-    itf.control_o.op,
-    itf.control_o.funct3,
-    itf.control_o.funct7,
-    // itf.regfile_tag1,
-    itf.tag_a,
-    itf.reg_src1_data,
-    itf.src1_valid,
-    // itf.regfile_tag2,
-    itf.tag_b,
-    src2_data,
-    src2_v,
-    itf.rob_tag
-};
-
-// logic robs_calculated [8];
-// assign robs_calculated[0] = itf.status_rob0_valid;
-// assign robs_calculated[1] = itf.status_rob1_valid;
-// assign robs_calculated[2] = itf.status_rob2_valid;
-// assign robs_calculated[3] = itf.status_rob3_valid;
-// assign robs_calculated[4] = itf.status_rob4_valid;
-// assign robs_calculated[5] = itf.status_rob5_valid;
-// assign robs_calculated[6] = itf.status_rob6_valid;
-// assign robs_calculated[7] = itf.status_rob7_valid;
+always_comb begin : assign_res_word
+    res_word.op = itf.control_o.op;
+    res_word.funct3 = itf.control_o.funct3;
+    res_word.funct7 = itf.control_o.funct7;
+    res_word.src1_tag = itf.tag_a;
+    res_word.src1_data = itf.reg_src1_data;
+    res_word.src1_valid = itf.src1_valid;
+    res_word.src2_tag = itf.tag_b;
+    res_word.src2_data = src2_data;
+    res_word.src2_valid = src2_v;
+    res_word.rd_tag = itf.rob_tag;
+end
 
 reservation_station res1(
     .clk (itf.clk),
