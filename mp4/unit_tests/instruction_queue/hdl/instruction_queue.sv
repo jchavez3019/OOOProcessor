@@ -38,6 +38,7 @@ logic ready_o;
 assign ready_o = iq_ir_itf.issue_q_full_n;
 assign control_o = control_o_buf;
 
+
     
 fifo_synch_1r1w #(.DTYPE(tomasula_types::ctl_word)) instruction_queue
 (
@@ -73,8 +74,6 @@ always_comb begin : dequeue_logic
     res4_load = 1'b0;
     dequeue = 1'b0;
     resbr_load = 1'b0;
-    // rob logic is the same as dequeue, reuse here instead of rechecking
-    rob_load = dequeue;
 
     // if the fifo is holding a valid entry
     if (control_o_valid) begin 
@@ -111,6 +110,8 @@ always_comb begin : dequeue_logic
             end
         end
     end
+    // rob logic is the same as dequeue, reuse here instead of rechecking
+    rob_load = dequeue;
 end
 
 

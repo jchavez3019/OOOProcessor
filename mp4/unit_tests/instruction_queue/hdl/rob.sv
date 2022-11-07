@@ -69,7 +69,7 @@ logic [2:0] curr_ptr;
 logic [2:0] head_ptr;
 logic [2:0] br_ptr;
 
-assign _rob_full = head_ptr + 7 == curr_ptr;
+assign _rob_full = head_ptr + 3'h7 == curr_ptr;
 
 always_comb begin : assign_rob_valids
     for (int i = 0; i < 8; i++) begin
