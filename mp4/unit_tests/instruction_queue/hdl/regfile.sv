@@ -48,7 +48,9 @@ end
 
 always_comb
 begin
-
+    // default values
+    valid_a = 1'b0;
+    valid_b = 1'b0;
 
     if((dest == src_a) && load ) begin
         reg_a = in;

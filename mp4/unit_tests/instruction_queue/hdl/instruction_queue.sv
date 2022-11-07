@@ -36,7 +36,24 @@ assign res_snoop = {res4_empty, res3_empty, res2_empty, res1_empty};
 
 logic ready_o;
 assign ready_o = iq_ir_itf.issue_q_full_n;
-assign control_o = control_o_buf;
+// assign control_o = control_o_buf;
+
+always_comb begin : control_o_logic
+    if (control_o_valid)
+        control_o = control_o_buf;
+    else begin
+        control_o.op = tomasula_types::BRANCH;
+        control_o.src1_reg = 5'b00000;
+        control_o.src1_valid = 1'b0;
+        control_o.src2_reg = 5'b00000;
+        control_o.src2_valid = 1'b0;
+        control_o.src2_data = 32'h00000000;
+        control_o.funct3 = 3'b000;
+        control_o.funct7 = 1'b0;
+        control_o.rd = 5'b00000;
+        control_o.pc = 32'h00000000;
+    end
+end
 
 
     

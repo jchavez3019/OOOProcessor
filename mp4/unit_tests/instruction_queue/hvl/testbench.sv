@@ -110,7 +110,7 @@ rob rob (
 
 logic [31:0] regfile_in, ld_data;
 assign ld_data = 32'h600d600d;
-always_comb begin
+always_comb begin 
     if (itf.ld_commit_sel) 
         regfile_in = ld_data;
     else 
