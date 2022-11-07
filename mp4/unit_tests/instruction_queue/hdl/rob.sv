@@ -25,7 +25,6 @@ import rv32i_types::*;
     output [2:0] rob_tag,
     output [4:0] rd_inflight,
     output [4:0] st_commit,
-    output regfile_allocate,
     output regfile_load,
     output rob_full,
 
@@ -51,7 +50,7 @@ logic flush_ip;
 logic _ld_commit_sel;
 logic _ld_br;
 logic _data_read, _data_write;
-logic _regfile_allocate, _regfile_load;
+logic _regfile_load;
 logic _rob_full;
 
 assign rob_tag = _rob_tag;
@@ -61,7 +60,6 @@ assign ld_commit_sel = _ld_commit_sel;
 assign ld_br = _ld_br;
 assign data_read = _data_read;
 assign data_write = _data_write;
-assign regfile_allocate = _regfile_allocate;
 assign regfile_load = _regfile_load;
 assign rob_full = _rob_full;
 
@@ -80,7 +78,7 @@ end
 always_ff @(posedge clk) begin
     _ld_br <= 1'b0;
     _ld_commit_sel <= 1'b0;
-    _regfile_allocate <= 1'b0;
+    _regfile_load <= 1'b0;
 
     if (rst) begin
         for (int i=0; i<8; i++) begin
@@ -97,7 +95,7 @@ always_ff @(posedge clk) begin
 
     else begin 
         for (int i = 0; i < 8; i++) begin
-            valid_arr[i] = set_rob_valid[i];
+            valid_arr[i] <= set_rob_valid[i];
         end
         if (rob_load) begin
            // allocate ROB entry 
@@ -111,7 +109,6 @@ always_ff @(posedge clk) begin
                // output to regfile
                _rd_inflight <= rd;
                _rob_tag <= curr_ptr;
-               _regfile_allocate <= 1'b1;
            end
            // increment curr_ptr
            //TODO: beware! overflow may cause errors
@@ -189,7 +186,6 @@ always_ff @(posedge clk) begin
             end
             // if we haven't reached the branch yet
             else begin
-                _regfile_allocate <= 1'b1;
                 _rd_inflight <= rd_arr[br_ptr];
                 _rob_tag <= br_ptr;
                 br_ptr <= br_ptr + 1'b1;
