@@ -96,6 +96,8 @@ rob rob (
      .status_rob_valid (itf.status_rob_valid),
      .set_rob_valid (itf.set_rob_valid),
      .rob_tag (itf.rob_tag), 
+     .curr_ptr (itf.curr_ptr), 
+     .head_ptr (itf.head_ptr), 
      .rd_inflight (itf.rd_inflight),
      .st_commit (itf.st_commit),
      .regfile_load (itf.regfile_load),
@@ -114,7 +116,7 @@ always_comb begin
     if (itf.ld_commit_sel) 
         regfile_in = ld_data;
     else 
-        regfile_in = itf.cdb_out[itf.rob_tag].data[31:0];
+        regfile_in = itf.cdb_out[itf.head_ptr].data[31:0];
 end
 
 logic [31:0] data_mem_wdata;

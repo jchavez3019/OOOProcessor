@@ -23,6 +23,8 @@ import rv32i_types::*;
 
     // to regfile
     output [2:0] rob_tag,
+    output [2:0] curr_ptr,
+    output [2:0] head_ptr,
     output [4:0] rd_inflight,
     output [4:0] st_commit,
     output regfile_load,
@@ -62,12 +64,15 @@ assign data_read = _data_read;
 assign data_write = _data_write;
 assign regfile_load = _regfile_load;
 assign rob_full = _rob_full;
+assign curr_ptr = _curr_ptr;
+assign head_ptr = _head_ptr;
+//TODO: also output branch pointer?
 
-logic [2:0] curr_ptr;
-logic [2:0] head_ptr;
+logic [2:0] _curr_ptr;
+logic [2:0] _head_ptr;
 logic [2:0] br_ptr;
 
-assign _rob_full = head_ptr + 3'h7 == curr_ptr;
+assign _rob_full = _head_ptr + 3'h7 == _curr_ptr;
 
 always_comb begin : assign_rob_valids
     for (int i = 0; i < 8; i++) begin
@@ -87,8 +92,8 @@ always_ff @(posedge clk) begin
             st_arr[i] <= '0;
             valid_arr[i] <= '0;
         end
-        curr_ptr <= 3'b000;
-        head_ptr <= 3'b000;
+        _curr_ptr <= 3'b000;
+        _head_ptr <= 3'b000;
         br_ptr <= 3'b000;
         flush_ip <= 1'b0;
     end
@@ -101,72 +106,72 @@ always_ff @(posedge clk) begin
         end
         if (rob_load) begin
            // allocate ROB entry 
-           instr_arr[curr_ptr] <= instr_type; 
-           rd_arr[curr_ptr] <= rd; 
+           instr_arr[_curr_ptr] <= instr_type; 
+           rd_arr[_curr_ptr] <= rd; 
            // do not allocate regfile entry for st
            if (instr_type == tomasula_types::ST) begin 
-               st_arr[curr_ptr] <= st_src;
+               st_arr[_curr_ptr] <= st_src;
            end
            else if (instr_type != tomasula_types::BRANCH) begin
                // output to regfile
                _rd_inflight <= rd;
-               _rob_tag <= curr_ptr;
+               _rob_tag <= _curr_ptr;
            end
-           // increment curr_ptr
+           // increment _curr_ptr
            //TODO: beware! overflow may cause errors
-           curr_ptr <= curr_ptr + 1'b1;
+           _curr_ptr <= _curr_ptr + 1'b1;
         end
 
         // if the head of the rob has been computed
-        if (valid_arr[head_ptr]) begin
-            if(instr_arr[head_ptr] == tomasula_types::BRANCH) begin
+        if (valid_arr[_head_ptr]) begin
+            if(instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
                _ld_br <= 1'b1; 
             end
-            else if (instr_arr[head_ptr] == tomasula_types::LD) begin
+            else if (instr_arr[_head_ptr] == tomasula_types::LD) begin
                 _data_read <= 1'b1;
-                _rob_tag <= head_ptr;
+                _rob_tag <= _head_ptr;
                 // address comes from cdb, determined by _rob_tag
                 // make sure instruction is not committed until data returned
                 // from d-cache...
                 if (data_mem_resp) begin
                     _data_read <= 1'b0;
-                    valid_arr[head_ptr] <= 1'b0;
+                    valid_arr[_head_ptr] <= 1'b0;
                     // use d-cache data
                     _ld_commit_sel <= 1'b1;
                     _regfile_load <= 1'b1;
-                    _rd_inflight <= rd_arr[head_ptr];
+                    _rd_inflight <= rd_arr[_head_ptr];
                     // update head
-                    head_ptr <= head_ptr + 1'b1;
+                    _head_ptr <= _head_ptr + 1'b1;
                 end
             end
-            else if (instr_arr[head_ptr] == tomasula_types::ST) begin
+            else if (instr_arr[_head_ptr] == tomasula_types::ST) begin
                 _data_write <= 1'b1;
                 // for st address
-                _rob_tag <= head_ptr;
+                _rob_tag <= _head_ptr;
                 // send regfile the register file to read from
-                _st_commit <= st_arr[head_ptr];
+                _st_commit <= st_arr[_head_ptr];
                 // once store has been processed
                 if (data_mem_resp) begin
                     _data_write <= 1'b0;
-                    valid_arr[head_ptr] <= 1'b0;
-                    head_ptr <= head_ptr + 1'b1;
+                    valid_arr[_head_ptr] <= 1'b0;
+                    _head_ptr <= _head_ptr + 1'b1;
                 end
             end
             // for all other instructions
             else begin
                 _regfile_load <= 1'b1;
-                valid_arr[head_ptr] <= 1'b0;
+                valid_arr[_head_ptr] <= 1'b0;
 
-                // increment head_ptr
-                _rd_inflight <= rd_arr[head_ptr];
-                _rob_tag <= head_ptr;
-                head_ptr <= head_ptr + 1'b1;
+                // increment _head_ptr
+                _rd_inflight <= rd_arr[_head_ptr];
+                _rob_tag <= _head_ptr;
+                _head_ptr <= _head_ptr + 1'b1;
             end
         end
         // branch mispredict handling
         if (branch_mispredict) begin
             flush_ip <= 1'b1;
-            br_ptr <= head_ptr;
+            br_ptr <= _head_ptr;
         end 
         // FIXME: does this if get processed on the same cycle flush_ip is set?
         if (flush_ip) begin
@@ -178,11 +183,11 @@ always_ff @(posedge clk) begin
                 // which has the valid bit set already
                 valid_arr[br_ptr] = 1'b1;
                 // flush all instructions after the branch
-                for (int i = br_ptr + 1; i <= (head_ptr + 7) % 8; i++) begin
+                for (int i = br_ptr + 1; i <= (_head_ptr + 7) % 8; i++) begin
                     valid_arr[i] <= 1'b0;
                 end
                 // update current pointer
-                curr_ptr = br_ptr;
+                _curr_ptr = br_ptr;
                 // flush now finished processing
                 flush_ip <= 1'b0;
             end
