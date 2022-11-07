@@ -5,6 +5,7 @@ module regfile
     input rst,
     input load,
     input allocate,
+    input logic [4:0] reg_allocate,
     input logic [31:0] in, // data to place into dest register
     input logic [4:0] src_a, src_b, dest, // src registers to read and dest register to change
     input logic [2:0] tag_in, // rob tag that will right into dest register next
@@ -32,17 +33,22 @@ begin
             valid[i] = 1'b1;
         end
     end
-    else if (load && dest)
-    begin
-        data[dest] <= in;
-        valid[dest] <= 1'b1;
-    end
+    //FIXME: must support simultaneous load and allocate
+    // allocate: read in from control_o (instruction queue)
+    // load: read in from cdb, get register from rob.
+    else begin
+        if (load && dest)
+        begin
+            data[dest] <= in;
+            valid[dest] <= 1'b1;
+        end
 
-    else if(allocate && dest )
-    begin
-        valid[dest] <= 1'b0;
-        tag[dest] <= tag_in;
-    end 
+        if(allocate && reg_allocate)
+        begin
+            valid[reg_allocate] <= 1'b0;
+            tag[reg_allocate] <= tag_in;
+        end 
+    end
 
 end
 

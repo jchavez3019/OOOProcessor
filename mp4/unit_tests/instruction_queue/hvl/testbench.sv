@@ -123,12 +123,13 @@ regfile regfile (
     .rst (~itf.reset_n),
     .load (itf.regfile_load),
     .allocate (itf.rob_load), // rob_load from instruction queue, more appropiate to call it allocate
+    .reg_allocate (itf.control_o.rd), // gets register to allocate from control word of instruction queue
     .in (regfile_in),
     // from iq - sources to read
     .src_a (itf.control_o.src1_reg),
     .src_b (itf.control_o.src2_reg),
     // from iq - dest to write to
-    .dest (itf.rd_inflight),
+    .dest (itf.rd_inflight), 
     .tag_in (itf.rob_tag),
     .reg_a (itf.reg_src1_data),
     .reg_b (itf.reg_src2_data),
