@@ -11,7 +11,7 @@ logic [31:0] in;
 rv32i_word instr_mem_address;
 
 /* iq signals */
-logic res1_empty, res2_empty, res3_empty, res4_empty, resldst_empty, ldst_q_full, rob_load, res1_load, res2_load, res3_load, res4_load, resldst_load;
+logic res1_empty, res2_empty, res3_empty, res4_empty, ldst_q_full, rob_load, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;
 logic [4:0] regfile_tag1, regfile_tag2;
 tomasula_types::ctl_word control_o;
 

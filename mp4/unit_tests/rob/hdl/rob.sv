@@ -6,7 +6,7 @@ import rv32i_types::*;
     // from iq
     input rob_load,
     // from iq
-    input op_t instr_type,
+    input tomasula_types::op_t instr_type,
     input [4:0] rd,
     input [4:0] st_src,
 
@@ -51,20 +51,30 @@ import rv32i_types::*;
     output ld_commit_sel,
 
     // determined by branch output
-    output load_pc,
+    output ld_br,
 
     // to d-cache
     output data_read,
     output data_write
 );
 
-op_t instr_arr [8];
+tomasula_types::op_t instr_arr [8];
+logic 
 logic [4:0] rd_arr [8];
+logic [4:0] st_arr [8];
 logic valid_arr [8];
+
+logic [2:0] rob_tag;
+logic [4:0] rd_inflight, st_commit;
 logic flush_ip;
+logic ld_br;
+logic data_read, data_write;
+logic regfile_allocate, regfile_load;
+logic rob_full
 
 logic [2:0] curr_ptr;
 logic [2:0] head_ptr;
+logic [2:0] br_ptr;
 
 assign rob_full = (head_ptr + 7) % 8 == curr_ptr;
 
@@ -83,11 +93,12 @@ always_ff @(posedge clk) begin
         for (int i=0; i<8; i++) begin
             instr_arr[i] <= '0;
             rd_arr[i] <= '0;
+            st_arr[i] <= '0;
             valid_arr[i] <= 0;
-            branch_arr[i] <= 0;
         end
         curr_ptr <= 3'b000;
         head_ptr <= 3'b000;
+        br_ptr <= 3'b000;
         flush_ip <= 1'b0;
     end
 
@@ -96,14 +107,6 @@ always_ff @(posedge clk) begin
         for (int i = 0; i < 8; i++) begin
             valid_arr[i] <= set_rob_valid[i];
         end
-        // valid_arr[0] <= set_rob0_valid;
-        // valid_arr[1] <= set_rob1_valid;
-        // valid_arr[2] <= set_rob2_valid;
-        // valid_arr[3] <= set_rob3_valid;
-        // valid_arr[4] <= set_rob4_valid;
-        // valid_arr[5] <= set_rob5_valid;
-        // valid_arr[6] <= set_rob6_valid;
-        // valid_arr[7] <= set_rob7_valid;
         
         if (rob_load) begin
            // allocate ROB entry 
@@ -152,7 +155,7 @@ always_ff @(posedge clk) begin
                 // send regfile the register file to read from
                 st_commit <= dr_arr[head_ptr];
                 // once store has been processed
-                if (data_mem_res) begin
+                if (data_mem_resp) begin
                     data_write <= 1'b0;
                     valid_arr[head_ptr] <= 1'b0;
                     head_ptr <= (head_ptr + 1) % 8;

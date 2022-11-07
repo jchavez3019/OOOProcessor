@@ -18,26 +18,8 @@ import rv32i_types::*;
 
     // determines if rob entry has been computed
     // from reservation station
-    // input set_rob0_valid,
-    // input set_rob1_valid,
-    // input set_rob2_valid,
-    // input set_rob3_valid,
-    // input set_rob4_valid,
-    // input set_rob5_valid,
-    // input set_rob6_valid,
-    // input set_rob7_valid,
-    
     input logic set_rob_valid[8],
     output logic status_rob_valid[8],
-
-    // output status_rob0_valid,
-    // output status_rob1_valid,
-    // output status_rob2_valid,
-    // output status_rob3_valid,
-    // output status_rob4_valid,
-    // output status_rob5_valid,
-    // output status_rob6_valid,
-    // output status_rob7_valid,
 
     // to regfile
     output [2:0] rob_tag,
@@ -51,7 +33,7 @@ import rv32i_types::*;
     output ld_commit_sel,
 
     // determined by branch output
-    output load_pc,
+    output ld_br,
 
     // to d-cache
     output data_read,
@@ -59,15 +41,35 @@ import rv32i_types::*;
 );
 
 tomasula_types::op_t instr_arr [8];
-logic 
 logic [4:0] rd_arr [8];
+logic [4:0] st_arr [8];
 logic valid_arr [8];
+
+logic [2:0] _rob_tag;
+logic [4:0] _rd_inflight, _st_commit;
 logic flush_ip;
+logic _ld_commit_sel;
+logic _ld_br;
+logic _data_read, _data_write;
+logic _regfile_allocate, _regfile_load;
+logic _rob_full;
+
+assign rob_tag = _rob_tag;
+assign rd_inflight = _rd_inflight;
+assign st_commit = _st_commit;
+assign ld_commit_sel = _ld_commit_sel;
+assign ld_br = _ld_br;
+assign data_read = _data_read;
+assign data_write = _data_write;
+assign regfile_allocate = _regfile_allocate;
+assign regfile_load = _regfile_load;
+assign rob_full = _rob_full;
 
 logic [2:0] curr_ptr;
 logic [2:0] head_ptr;
+logic [2:0] br_ptr;
 
-assign rob_full = (head_ptr + 7) % 8 == curr_ptr;
+assign _rob_full = head_ptr + 7 == curr_ptr;
 
 always_comb begin : assign_rob_valids
     for (int i = 0; i < 8; i++) begin
@@ -76,98 +78,90 @@ always_comb begin : assign_rob_valids
 end
 
 always_ff @(posedge clk) begin
-    load_pc <= 1'b0;
-    ld_commit_sel <= 1'b0;
-    regfile_allocate <= 1'b0;
+    _ld_br <= 1'b0;
+    _ld_commit_sel <= 1'b0;
+    _regfile_allocate <= 1'b0;
 
     if (rst) begin
         for (int i=0; i<8; i++) begin
-            instr_arr[i] <= '0;
+            instr_arr[i] <= tomasula_types::op_t'(0);
             rd_arr[i] <= '0;
-            valid_arr[i] <= 0;
-            branch_arr[i] <= 0;
+            st_arr[i] <= '0;
+            valid_arr[i] <= '0;
         end
         curr_ptr <= 3'b000;
         head_ptr <= 3'b000;
+        br_ptr <= 3'b000;
         flush_ip <= 1'b0;
     end
 
     else begin 
-        // initialize valids
         for (int i = 0; i < 8; i++) begin
-            valid_arr[i] <= set_rob_valid[i];
+            valid_arr[i] = set_rob_valid[i];
         end
-        // valid_arr[0] <= set_rob0_valid;
-        // valid_arr[1] <= set_rob1_valid;
-        // valid_arr[2] <= set_rob2_valid;
-        // valid_arr[3] <= set_rob3_valid;
-        // valid_arr[4] <= set_rob4_valid;
-        // valid_arr[5] <= set_rob5_valid;
-        // valid_arr[6] <= set_rob6_valid;
-        // valid_arr[7] <= set_rob7_valid;
-        
         if (rob_load) begin
            // allocate ROB entry 
            instr_arr[curr_ptr] <= instr_type; 
            rd_arr[curr_ptr] <= rd; 
            // do not allocate regfile entry for st
            if (instr_type == tomasula_types::ST) begin 
-               rd_arr[curr_ptr] <= st_src;
+               st_arr[curr_ptr] <= st_src;
            end
            else if (instr_type != tomasula_types::BRANCH) begin
                // output to regfile
-               rd_inflight <= rd;
-               rob_tag <= curr_ptr;
-               regfile_allocate <= 1'b1;
+               _rd_inflight <= rd;
+               _rob_tag <= curr_ptr;
+               _regfile_allocate <= 1'b1;
            end
            // increment curr_ptr
-           curr_ptr <= (curr_ptr + 1) % 8;
+           //TODO: beware! overflow may cause errors
+           curr_ptr <= curr_ptr + 1'b1;
         end
 
         // if the head of the rob has been computed
         if (valid_arr[head_ptr]) begin
             if(instr_arr[head_ptr] == tomasula_types::BRANCH) begin
-               load_pc <= 1'b1; 
+               _ld_br <= 1'b1; 
             end
             else if (instr_arr[head_ptr] == tomasula_types::LD) begin
-                data_read <= 1'b1;
-                rob_tag <= head_ptr;
-                // address comes from cdb, determined by rob_tag
+                _data_read <= 1'b1;
+                _rob_tag <= head_ptr;
+                // address comes from cdb, determined by _rob_tag
                 // make sure instruction is not committed until data returned
                 // from d-cache...
                 if (data_mem_resp) begin
-                    data_read <= 1'b0;
+                    _data_read <= 1'b0;
                     valid_arr[head_ptr] <= 1'b0;
                     // use d-cache data
-                    ld_commit_sel <= 1'b1;
-                    regfile_load <= 1'b1;
-                    rd_inflight <= rd_array[head_ptr];
+                    _ld_commit_sel <= 1'b1;
+                    _regfile_load <= 1'b1;
+                    _rd_inflight <= rd_arr[head_ptr];
                     // update head
-                    head_ptr <= (head_ptr + 1) % 8;
+                    head_ptr <= head_ptr + 1'b1;
                 end
             end
             else if (instr_arr[head_ptr] == tomasula_types::ST) begin
-                data_write <= 1'b1;
+                _data_write <= 1'b1;
                 // for st address
-                rob_tag <= head_ptr;
+                _rob_tag <= head_ptr;
                 // send regfile the register file to read from
-                st_commit <= dr_arr[head_ptr];
+                _st_commit <= st_arr[head_ptr];
                 // once store has been processed
-                if (data_mem_res) begin
-                    data_write <= 1'b0;
+                if (data_mem_resp) begin
+                    _data_write <= 1'b0;
                     valid_arr[head_ptr] <= 1'b0;
-                    head_ptr <= (head_ptr + 1) % 8;
+                    head_ptr <= head_ptr + 1'b1;
                 end
             end
             // for all other instructions
             else begin
-                regfile_load <= 1'b1;
+                _regfile_load <= 1'b1;
                 valid_arr[head_ptr] <= 1'b0;
 
                 // increment head_ptr
-                rd_inflight <= rd_array[head_ptr];
-                rob_tag <= head_ptr;
-                head_ptr <= (head_ptr + 1) % 8;
+                _rd_inflight <= rd_arr[head_ptr];
+                _rob_tag <= head_ptr;
+                head_ptr <= head_ptr + 1'b1;
             end
         end
         // branch mispredict handling
@@ -177,7 +171,7 @@ always_ff @(posedge clk) begin
         end 
         // FIXME: does this if get processed on the same cycle flush_ip is set?
         if (flush_ip) begin
-            if (instr_type[br_ptr] == tomasula_types::BRANCH) begin
+            if (instr_arr[br_ptr] == tomasula_types::BRANCH) begin
                 // if we reached the branch, set the valid bit. 
                 // will be committed on the next cycle
                 // FIXME: im dont think the valid bit needs to be set here,
@@ -195,10 +189,10 @@ always_ff @(posedge clk) begin
             end
             // if we haven't reached the branch yet
             else begin
-                regfile_allocate <= 1'b1;
-                rd_inflight <= rd_arr[br_ptr];
-                rob_tag <= br_ptr;
-                br_ptr <= (br_ptr + 1) % 8;
+                _regfile_allocate <= 1'b1;
+                _rd_inflight <= rd_arr[br_ptr];
+                _rob_tag <= br_ptr;
+                br_ptr <= br_ptr + 1'b1;
             end
         end
     end

@@ -12,7 +12,6 @@ import rv32i_types::*;
     input logic res4_empty,
     input logic resbr_empty,
     input logic rob_full,
-    input logic ldst_q_full,
     // input logic enqueue,
 
     // output logic [4:0] regfile_tag1, // register one index in regfile

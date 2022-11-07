@@ -47,18 +47,17 @@ iq iq (
     .res2_empty(itf.res2_empty),
     .res3_empty(itf.res3_empty),
     .res4_empty(itf.res4_empty),
-    .resldst_empty(itf.resldst_empty),
     .rob_full(itf.rob_full),
-    .ldst_q_full(itf.ldst_q_full),
     // .enqueue(itf.enqueue),
     //.regfile_tag1(itf.regfile_tag1),
     //.regfile_tag2(itf.regfile_tag2),
+    .resbr_empty(itf.resbr_empty),
+    .resbr_load(itf.resbr_load),
     .rob_load(itf.rob_load),
     .res1_load(itf.res1_load),
     .res2_load(itf.res2_load),
     .res3_load(itf.res3_load),
     .res4_load(itf.res4_load),
-    .resldst_load(itf.resldst_load),
     .control_o(itf.control_o)
     // ,.iq_ir_itf(iq_ir_itf.IR_SIG)
     // .issue_q_full_n(itf.issue_q_full_n),
@@ -291,9 +290,7 @@ task set_init();
     // itf.res4_empty <= 1'b0;
     // itf.regfile_tag1 <= 5'b00000;
     // itf.regfile_tag2 <= 5'b00000;
-    itf.resldst_empty <= 1'b0;
     //itf.rob_full <= 1'b0;
-    itf.ldst_q_full <= 1'b0;
 
     /* regfile */
     // itf.reg_src1_data <= 32'h00000000;

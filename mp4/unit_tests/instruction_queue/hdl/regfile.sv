@@ -5,9 +5,9 @@ module regfile
     input rst,
     input load,
     input allocate,
-    input logic [31:0] in,
-    input logic [4:0] src_a, src_b, dest,
-    input logic [2:0] tag_in,
+    input logic [31:0] in, // data to place into dest register
+    input logic [4:0] src_a, src_b, dest, // src registers to read and dest register to change
+    input logic [2:0] tag_in, // rob tag that will right into dest register next
     output logic [31:0] reg_a, reg_b,
     output logic valid_a, valid_b,
     output logic [2:0] tag_a, tag_b, //tag_dest,
