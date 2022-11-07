@@ -65,6 +65,24 @@ iq iq (
     // .ack_o(itf.ack_o)
 );
 
+always_comb begin : set_rob_valids
+    for (int i = 0; i < 8; i++) begin
+        itf.set_rob_valid[i] = 1'b0;
+    end
+    if (itf.res1_exec) begin
+        itf.set_rob_valid[itf.res1_alu_out.tag] = 1'b1;
+    end
+    if (itf.res2_exec) begin
+        itf.set_rob_valid[itf.res2_alu_out.tag] = 1'b1;
+    end
+    if (itf.res3_exec) begin
+        itf.set_rob_valid[itf.res3_alu_out.tag] = 1'b1;
+    end
+    if (itf.res4_exec) begin
+        itf.set_rob_valid[itf.res4_alu_out.tag] = 1'b1;
+    end
+end
+
 rob rob (
      .*,
      .clk (itf.clk),
@@ -76,14 +94,8 @@ rob rob (
      .st_src (itf.control_o.src2_reg),
      .branch_mispredict (1'b0),
      .data_mem_resp (1'b0),
-     .rob0_valid (itf.rob0_valid),
-     .rob1_valid (itf.rob1_valid),
-     .rob2_valid (itf.rob2_valid),
-     .rob3_valid (itf.rob3_valid),
-     .rob4_valid (itf.rob4_valid),
-     .rob5_valid (itf.rob5_valid),
-     .rob6_valid (itf.rob6_valid),
-     .rob7_valid (itf.rob7_valid),
+     .status_rob_valid (itf.status_rob_valid),
+     .set_rob_valid (itf.set_rob_valid),
      .rob_tag (itf.rob_tag), 
      .rd_inflight (itf.rd_inflight),
      .st_commit (itf.st_commit),
@@ -121,13 +133,13 @@ regfile regfile (
     // from iq - dest to write to
     .dest (itf.control_o.rd),
     .tag_in (itf.rob_tag),
-    .reg_a (itf.reg_a),
-    .reg_b (itf.reg_b),
-    .valid_a (itf.valid_a),
-    .valid_b (itf.valid_b),
+    .reg_a (itf.reg_src1_data),
+    .reg_b (itf.reg_src2_data),
+    .valid_a (itf.src1_valid),
+    .valid_b (itf.src2_valid),
     .tag_a (itf.tag_a),
     .tag_b (itf.tag_b),
-    .tag_dest (itf.tag_dest),
+    // .tag_dest (itf.tag_dest),
     .src_c (itf.rd_inflight),
     .data_out (data_mem_wdata)
 );
@@ -141,21 +153,33 @@ assign res_word = '{
     itf.control_o.op,
     itf.control_o.funct3,
     itf.control_o.funct7,
-    itf.regfile_tag1,
+    // itf.regfile_tag1,
+    itf.tag_a,
     itf.reg_src1_data,
     itf.src1_valid,
-    itf.regfile_tag2,
+    // itf.regfile_tag2,
+    itf.tag_b,
     src2_data,
     src2_v,
-    itf.rd_rob_tag
+    itf.rob_tag
 };
+
+// logic robs_calculated [8];
+// assign robs_calculated[0] = itf.status_rob0_valid;
+// assign robs_calculated[1] = itf.status_rob1_valid;
+// assign robs_calculated[2] = itf.status_rob2_valid;
+// assign robs_calculated[3] = itf.status_rob3_valid;
+// assign robs_calculated[4] = itf.status_rob4_valid;
+// assign robs_calculated[5] = itf.status_rob5_valid;
+// assign robs_calculated[6] = itf.status_rob6_valid;
+// assign robs_calculated[7] = itf.status_rob7_valid;
 
 reservation_station res1(
     .clk (itf.clk),
     .rst(~itf.reset_n),
     .load_word(itf.res1_load),
     .cdb(itf.cdb_out),
-    .robs_calculated(itf.robs_calculated),
+    .robs_calculated(itf.status_rob_valid),
     .alu_data(itf.res1_alu_out),
     .start_exe(itf.res1_exec),
     .res_empty(itf.res1_empty),
@@ -229,7 +253,7 @@ always_comb begin : cdb_enable_logic
     itf.cdb_in[itf.res3_alu_out.tag].data[31:0] = itf.alu3_calculation.data[31:0];
     itf.cdb_in[itf.res4_alu_out.tag].data[31:0] = itf.alu4_calculation.data[31:0];
     
-    cdb_enable[7:0] = 8'h00 | itf.res1_exec << itf.res1_alu_out.tag | itf.res2_exec << itf.res2_alu_out.tag | itf.res3_exec << itf.res3_alu_out.tag | itf.res4_exec << itf.res4_alu_out.tag;
+    cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag);
 end
 
 cdb cdb(
@@ -265,24 +289,22 @@ task set_init();
     // itf.res2_empty <= 1'b0;
     // itf.res3_empty <= 1'b0;
     // itf.res4_empty <= 1'b0;
-    itf.regfile_tag1 <= 5'b00000;
-    itf.regfile_tag2 <= 5'b00000;
+    // itf.regfile_tag1 <= 5'b00000;
+    // itf.regfile_tag2 <= 5'b00000;
     itf.resldst_empty <= 1'b0;
     //itf.rob_full <= 1'b0;
     itf.ldst_q_full <= 1'b0;
 
     /* regfile */
-    itf.reg_src1_data <= 32'h00000000;
-    itf.reg_src2_data <= 32'h00000000;
-    itf.src1_valid <= 1'b0;
-    itf.src2_valid <= 1'b0;
+    // itf.reg_src1_data <= 32'h00000000;
+    // itf.reg_src2_data <= 32'h00000000;
 
     /* rob signals */
-    itf.rd_rob_tag <= 5'b00000;
+    // itf.rd_rob_tag <= 5'b00000;
 
-    for (int i = 0; i < 8; ++i) begin
-        itf.robs_calculated[i] <= 1'b0;
-    end
+    // for (int i = 0; i < 8; ++i) begin
+    //     itf.robs_calculated[i] <= 1'b0;
+    // end
 
     /* cdb signals */
     // for (int i = 0; i < 8; ++i) begin
@@ -292,16 +314,16 @@ task set_init();
 
 endtask
 
-task robs_calc (logic [7:0] valids);
-    itf.robs_calculated[0] <= valids[0];
-    itf.robs_calculated[1] <= valids[1];
-    itf.robs_calculated[2] <= valids[2];
-    itf.robs_calculated[3] <= valids[3];
-    itf.robs_calculated[4] <= valids[4];
-    itf.robs_calculated[5] <= valids[5];
-    itf.robs_calculated[6] <= valids[6];
-    itf.robs_calculated[7] <= valids[7];
-endtask
+// task robs_calc (logic [7:0] valids);
+//     itf.robs_calculated[0] <= valids[0];
+//     itf.robs_calculated[1] <= valids[1];
+//     itf.robs_calculated[2] <= valids[2];
+//     itf.robs_calculated[3] <= valids[3];
+//     itf.robs_calculated[4] <= valids[4];
+//     itf.robs_calculated[5] <= valids[5];
+//     itf.robs_calculated[6] <= valids[6];
+//     itf.robs_calculated[7] <= valids[7];
+// endtask
 
 task set_instr(logic [31:0] instr);
     /* here's a list of some instructions to load */
@@ -403,7 +425,7 @@ initial begin
     set_instr(32'h00d18193);
 
     // res_empty(1'b0, 1'b0, 1'b1, 1'b1);
-    robs_calc(8'b11111111);
+    // robs_calc(8'b11111111);
     @(tb_clk);
 
     

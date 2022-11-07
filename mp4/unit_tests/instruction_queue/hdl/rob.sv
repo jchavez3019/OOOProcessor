@@ -18,14 +18,26 @@ import rv32i_types::*;
 
     // determines if rob entry has been computed
     // from reservation station
-    input rob0_valid,
-    input rob1_valid,
-    input rob2_valid,
-    input rob3_valid,
-    input rob4_valid,
-    input rob5_valid,
-    input rob6_valid,
-    input rob7_valid,
+    // input set_rob0_valid,
+    // input set_rob1_valid,
+    // input set_rob2_valid,
+    // input set_rob3_valid,
+    // input set_rob4_valid,
+    // input set_rob5_valid,
+    // input set_rob6_valid,
+    // input set_rob7_valid,
+    
+    input logic set_rob_valid[8],
+    output logic status_rob_valid[8],
+
+    // output status_rob0_valid,
+    // output status_rob1_valid,
+    // output status_rob2_valid,
+    // output status_rob3_valid,
+    // output status_rob4_valid,
+    // output status_rob5_valid,
+    // output status_rob6_valid,
+    // output status_rob7_valid,
 
     // to regfile
     output [2:0] rob_tag,
@@ -39,7 +51,7 @@ import rv32i_types::*;
     output ld_commit_sel,
 
     // determined by branch output
-    output ld_br,
+    output load_pc,
 
     // to d-cache
     output data_read,
@@ -47,59 +59,60 @@ import rv32i_types::*;
 );
 
 tomasula_types::op_t instr_arr [8];
+logic 
 logic [4:0] rd_arr [8];
-logic [4:0] st_arr [8];
 logic valid_arr [8];
-
-logic [2:0] rob_tag;
-logic [4:0] rd_inflight, st_commit;
 logic flush_ip;
-logic ld_commit_sel;
-logic ld_br;
-logic data_read, data_write;
-logic regfile_allocate, regfile_load;
-logic rob_full;
 
 logic [2:0] curr_ptr;
 logic [2:0] head_ptr;
-logic [2:0] br_ptr;
 
-assign rob_full = head_ptr + 7 == curr_ptr;
+assign rob_full = (head_ptr + 7) % 8 == curr_ptr;
+
+always_comb begin : assign_rob_valids
+    for (int i = 0; i < 8; i++) begin
+        status_rob_valid[i] = valid_arr[i];
+    end
+end
 
 always_ff @(posedge clk) begin
-    ld_br <= 1'b0;
+    load_pc <= 1'b0;
     ld_commit_sel <= 1'b0;
     regfile_allocate <= 1'b0;
-    valid_arr[0] <= rob0_valid;
-    valid_arr[1] <= rob1_valid;
-    valid_arr[2] <= rob2_valid;
-    valid_arr[3] <= rob3_valid;
-    valid_arr[4] <= rob4_valid;
-    valid_arr[5] <= rob5_valid;
-    valid_arr[6] <= rob6_valid;
-    valid_arr[7] <= rob7_valid;
 
     if (rst) begin
         for (int i=0; i<8; i++) begin
-            instr_arr[i] <= tomasula_types::op_t'(0);
+            instr_arr[i] <= '0;
             rd_arr[i] <= '0;
-            st_arr[i] <= '0;
-            valid_arr[i] <= '0;
+            valid_arr[i] <= 0;
+            branch_arr[i] <= 0;
         end
         curr_ptr <= 3'b000;
         head_ptr <= 3'b000;
-        br_ptr <= 3'b000;
         flush_ip <= 1'b0;
     end
 
     else begin 
+        // initialize valids
+        for (int i = 0; i < 8; i++) begin
+            valid_arr[i] <= set_rob_valid[i];
+        end
+        // valid_arr[0] <= set_rob0_valid;
+        // valid_arr[1] <= set_rob1_valid;
+        // valid_arr[2] <= set_rob2_valid;
+        // valid_arr[3] <= set_rob3_valid;
+        // valid_arr[4] <= set_rob4_valid;
+        // valid_arr[5] <= set_rob5_valid;
+        // valid_arr[6] <= set_rob6_valid;
+        // valid_arr[7] <= set_rob7_valid;
+        
         if (rob_load) begin
            // allocate ROB entry 
            instr_arr[curr_ptr] <= instr_type; 
            rd_arr[curr_ptr] <= rd; 
            // do not allocate regfile entry for st
            if (instr_type == tomasula_types::ST) begin 
-               st_arr[curr_ptr] <= st_src;
+               rd_arr[curr_ptr] <= st_src;
            end
            else if (instr_type != tomasula_types::BRANCH) begin
                // output to regfile
@@ -108,14 +121,13 @@ always_ff @(posedge clk) begin
                regfile_allocate <= 1'b1;
            end
            // increment curr_ptr
-           //TODO: beware! overflow may cause errors
-           curr_ptr <= curr_ptr + 1'b1;
+           curr_ptr <= (curr_ptr + 1) % 8;
         end
 
         // if the head of the rob has been computed
         if (valid_arr[head_ptr]) begin
             if(instr_arr[head_ptr] == tomasula_types::BRANCH) begin
-               ld_br <= 1'b1; 
+               load_pc <= 1'b1; 
             end
             else if (instr_arr[head_ptr] == tomasula_types::LD) begin
                 data_read <= 1'b1;
@@ -129,9 +141,9 @@ always_ff @(posedge clk) begin
                     // use d-cache data
                     ld_commit_sel <= 1'b1;
                     regfile_load <= 1'b1;
-                    rd_inflight <= rd_arr[head_ptr];
+                    rd_inflight <= rd_array[head_ptr];
                     // update head
-                    head_ptr <= head_ptr + 1'b1;
+                    head_ptr <= (head_ptr + 1) % 8;
                 end
             end
             else if (instr_arr[head_ptr] == tomasula_types::ST) begin
@@ -139,12 +151,12 @@ always_ff @(posedge clk) begin
                 // for st address
                 rob_tag <= head_ptr;
                 // send regfile the register file to read from
-                st_commit <= st_arr[head_ptr];
+                st_commit <= dr_arr[head_ptr];
                 // once store has been processed
-                if (data_mem_resp) begin
+                if (data_mem_res) begin
                     data_write <= 1'b0;
                     valid_arr[head_ptr] <= 1'b0;
-                    head_ptr <= head_ptr + 1'b1;
+                    head_ptr <= (head_ptr + 1) % 8;
                 end
             end
             // for all other instructions
@@ -153,9 +165,9 @@ always_ff @(posedge clk) begin
                 valid_arr[head_ptr] <= 1'b0;
 
                 // increment head_ptr
-                rd_inflight <= rd_arr[head_ptr];
+                rd_inflight <= rd_array[head_ptr];
                 rob_tag <= head_ptr;
-                head_ptr <= head_ptr + 1'b1;
+                head_ptr <= (head_ptr + 1) % 8;
             end
         end
         // branch mispredict handling
@@ -186,7 +198,7 @@ always_ff @(posedge clk) begin
                 regfile_allocate <= 1'b1;
                 rd_inflight <= rd_arr[br_ptr];
                 rob_tag <= br_ptr;
-                br_ptr <= br_ptr + 1'b1;
+                br_ptr <= (br_ptr + 1) % 8;
             end
         end
     end

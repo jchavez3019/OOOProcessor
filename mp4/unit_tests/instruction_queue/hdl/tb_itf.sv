@@ -37,13 +37,15 @@ logic [31:0] reg_src1_data, reg_src2_data;
 logic src1_valid, src2_valid;
 logic [4:0] src_a, src_b, src_c, dest;
 logic [2:0] tag_in, tag_a, tag_b, tag_dest;
-logic [31:0] reg_a, reg_b;
-logic valid_a, valid_b;
+// logic [31:0] reg_a, reg_b;
+// logic valid_a, valid_b;
 
 /* rob signals */
 logic [4:0] rd_rob_tag;
 logic robs_calculated[8];
-logic ld_br, rob0_valid, rob1_valid, rob2_valid, rob3_valid, rob4_valid, rob5_valid, rob6_valid, rob7_valid, regfile_allocate, regfile_load, rob_full, ld_commit_sel, data_read, data_write;
+logic ld_br,  regfile_allocate, regfile_load, rob_full, ld_commit_sel, data_read, data_write;
+logic status_rob_valid[8];
+logic set_rob_valid[8];
 logic [2:0] rob_tag;
 logic [4:0] rd_inflight, st_commit;
 

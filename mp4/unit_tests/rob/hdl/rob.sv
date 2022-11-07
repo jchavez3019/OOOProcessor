@@ -18,14 +18,26 @@ import rv32i_types::*;
 
     // determines if rob entry has been computed
     // from reservation station
-    input rob0_valid,
-    input rob1_valid,
-    input rob2_valid,
-    input rob3_valid,
-    input rob4_valid,
-    input rob5_valid,
-    input rob6_valid,
-    input rob7_valid,
+    // input set_rob0_valid,
+    // input set_rob1_valid,
+    // input set_rob2_valid,
+    // input set_rob3_valid,
+    // input set_rob4_valid,
+    // input set_rob5_valid,
+    // input set_rob6_valid,
+    // input set_rob7_valid,
+    
+    input logic set_rob_valid[8],
+    output logic status_rob_valid[8],
+
+    // output status_rob0_valid,
+    // output status_rob1_valid,
+    // output status_rob2_valid,
+    // output status_rob3_valid,
+    // output status_rob4_valid,
+    // output status_rob5_valid,
+    // output status_rob6_valid,
+    // output status_rob7_valid,
 
     // to regfile
     output [2:0] rob_tag,
@@ -56,18 +68,16 @@ logic [2:0] head_ptr;
 
 assign rob_full = (head_ptr + 7) % 8 == curr_ptr;
 
+always_comb begin : assign_rob_valids
+    for (int i = 0; i < 8; i++) begin
+        status_rob_valid[i] = valid_arr[i];
+    end
+end
+
 always_ff @(posedge clk) begin
     load_pc <= 1'b0;
     ld_commit_sel <= 1'b0;
     regfile_allocate <= 1'b0;
-    valid_arr[0] <= rob0_valid;
-    valid_arr[1] <= rob1_valid;
-    valid_arr[2] <= rob2_valid;
-    valid_arr[3] <= rob3_valid;
-    valid_arr[4] <= rob4_valid;
-    valid_arr[5] <= rob5_valid;
-    valid_arr[6] <= rob6_valid;
-    valid_arr[7] <= rob7_valid;
 
     if (rst) begin
         for (int i=0; i<8; i++) begin
@@ -82,6 +92,19 @@ always_ff @(posedge clk) begin
     end
 
     else begin 
+        // initialize valids
+        for (int i = 0; i < 8; i++) begin
+            valid_arr[i] <= set_rob_valid[i];
+        end
+        // valid_arr[0] <= set_rob0_valid;
+        // valid_arr[1] <= set_rob1_valid;
+        // valid_arr[2] <= set_rob2_valid;
+        // valid_arr[3] <= set_rob3_valid;
+        // valid_arr[4] <= set_rob4_valid;
+        // valid_arr[5] <= set_rob5_valid;
+        // valid_arr[6] <= set_rob6_valid;
+        // valid_arr[7] <= set_rob7_valid;
+        
         if (rob_load) begin
            // allocate ROB entry 
            instr_arr[curr_ptr] <= instr_type; 

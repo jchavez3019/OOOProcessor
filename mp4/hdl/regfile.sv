@@ -10,7 +10,7 @@ module regfile
     input [2:0] tag_in,
     output logic [31:0] reg_a, reg_b,
     output logic valid_a, valid_b,
-    output logic [2:0] tag_a, tag_b, tag_dest,
+    output logic [2:0] tag_a, tag_b, //tag_dest,
 
     // signals for memory interaction
     
@@ -29,18 +29,18 @@ begin
         for (int i=0; i<32; i=i+1) begin
             data[i] <= '0;
             tag[i] <= '0;
-            valid[i] = 1
+            valid[i] = 1'b1;
         end
     end
     else if (load && dest)
     begin
         data[dest] <= in;
-        valid[dest] <= 1;
+        valid[dest] <= 1'b1;
     end
 
     else if(allocate && dest )
     begin
-        valid[dest] <= 0;
+        valid[dest] <= 1'b0;
         tag[dest] <= tag_in;
     end 
 
@@ -53,7 +53,7 @@ begin
     if((dest == src_a) && load ) begin
         reg_a = in;
         reg_b = src_b ? data[src_b] : 0;
-        valid_a = 1;
+        valid_a = 1'b1;
         valid_b = valid[src_b];
     end
 
