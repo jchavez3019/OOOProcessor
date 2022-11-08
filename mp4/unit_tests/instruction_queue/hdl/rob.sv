@@ -56,7 +56,7 @@ logic _rob_full;
 logic [2:0] _curr_ptr, _head_ptr, br_ptr;
 
 // assign rd_commit = _rd_commit;
-assign rd_commit = _rd_commit <= rd_arr[_head_ptr];
+assign rd_commit = rd_arr[_head_ptr];
 assign st_src_commit = _st_src_commit;
 assign ld_commit_sel = _ld_commit_sel;
 assign ld_br = _ld_br;
