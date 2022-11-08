@@ -176,7 +176,11 @@ begin : state_actions
             if (res_in.src1_valid & (res_word.src2_valid | res_in.src2_valid))
                 start_exe = 1'b1;
 
-            alu_data.src1_data = res_in.src1_data;
+            if (res_word.src1_valid)
+                alu_data.src1_data = res_word.src1_data;
+            else
+                alu_data.src1_data = res_in.src1_data;
+                
             if (res_word.src2_valid)
                 alu_data.src2_data = res_word.src2_data;
             else
