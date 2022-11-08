@@ -39,6 +39,7 @@ IQ_2_IR iq_ir_itf();
 /* pc signals */
 logic ld_pc;
 logic [31:0] pc;
+logic [31:0] pc_calc; // this is the output of the ir register which does address calculation for branches
 
 /* harness containing all module signals */
 debug_itf itf();
@@ -54,15 +55,19 @@ ir ir (
     .pc(pc),
     .instr_mem_address(instr_mem_address),
     .instr_read(instr_read),
-    .ld_pc(ld_pc)
+    .ld_pc(ld_pc),
+    .pc_calc(pc_calc)
 );
 
 logic [31:0] pc_in;
 always_comb begin : pc_mux
-    if (itf.ld_br)
+    if (ld_pc)
+        pc_in = pc_calc;
+    if (itf.ld_br)    // idk what this is but im not gonna touch it \
         pc_in = itf.cdb_out[itf.head_ptr].data[31:0];
-    else 
-        pc_in = pc + 4;
+    
+    // else 
+    //     pc_in = pc + 4;
 end
 
 pc_register PC (

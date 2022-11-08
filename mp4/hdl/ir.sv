@@ -9,10 +9,14 @@ import rv32i_types::*;
     input [31:0] in,
     input [31:0] pc,
 
+    input executing_jalr,
+
     output rv32i_word instr_mem_address, // ir will have to communicate with pc to get this, or maybe pc just wires directly to icache
     output logic instr_read,
     // output tomasula_types::ctl_word control_word,
     output logic ld_pc,
+    output logic [31:0] pc_calc,
+    // output logic ld_pc_calc,
     // output logic ld_iq, 
 
     IQ_2_IR.IR_SIG iq_ir_itf
@@ -54,7 +58,8 @@ enum int unsigned {
     RESET = 0,
     FETCH = 1,
     CREATE = 2,
-    STALL = 3
+    STALL = 3,
+    STALL_JALR = 4
 } state, next_state;
 
 always_comb
@@ -80,6 +85,7 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_data = j_imm;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_reg = 5'b00000;
+            ld_pc_calc = 1'b1;
         end
         op_br: begin
             iq_ir_itf.control_word.src2_data = b_imm;
@@ -169,10 +175,27 @@ begin : state_actions
             instr_read = 1'b1;
         end
         CREATE: begin
+            // address calculation 
+            if(opcode == op_jal) begin
+                pc_calc = pc + j_imm;
+                ld_pc = 1'b1; 
+            end
+            if(opcode == op_br) begin
+                pc_calc = pc + b_imm;
+                ld_pc = 1'b1; 
+            end
+            // if(opcode == op_jalr) begin
+                
+            // end 
+            else begin
+                pc_calc = pc+4
+                ld_pc = 1'b1; 
+            end
             ld_pc = 1'b1; 
             iq_ir_itf.ld_iq = 1'b1;
         end
         STALL: begin
+
             iq_ir_itf.ld_iq = 1'b1;
         end
     endcase
@@ -189,14 +212,22 @@ begin : next_state_logic
                 next_state = CREATE;
         end
         CREATE: begin
-            if (iq_ir_itf.ack_o)
+            if(opcode == op_jalr) begin
+                next_state = STALL_JALR
+            end
+            else if (iq_ir_itf.ack_o) 
                 next_state = FETCH;
             else
                 next_state = STALL;
         end
         STALL: begin
-            if (iq_ir_itf.ack_o)
+            if (iq_ir_itf.ack_o) 
                 next_state = FETCH;
+        end
+        STALL_JALR: begin
+            if(executing_jalr == 1) begin
+                next_state = FETCH;
+            end
         end
     endcase
 end
