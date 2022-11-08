@@ -141,6 +141,8 @@ begin
 
         state <= next_state;
     end
+    else
+        state <= next_state;
 end
 
 function void set_defaults();

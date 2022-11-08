@@ -6,13 +6,15 @@ import rv32i_types::*;
                     output tomasula_types::cdb_data q
                     );
 
-// always @ (en or rst or control.data) begin
-    always @ (en or rst) begin
+tomasula_types::cdb_data _q;
+assign q = _q;
+always @ (en or rst or control.data) begin
+    // always @ (en or rst) begin
     if(rst) 
-        q.data <= 32'h00000000;
+        _q.data <= 32'h00000000;
     else begin
         if(en)
-            q.data <= control.data;
+            _q.data <= control.data;
     end
 end
 
