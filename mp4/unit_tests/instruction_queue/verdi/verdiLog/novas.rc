@@ -230,8 +230,8 @@ autoSaveSession = FALSE
 TclAutoSource = 
 cmd_enter_form = FALSE
 SyncBrowserDir = TRUE
-SignalCaseInSensitive = FALSE
 version = Verdi_R-2020.12-SP1-1
+SignalCaseInSensitive = FALSE
 [GlobalProp]
 ErrWindow_Font = Helvetica_M_R_12
 [Globals]
@@ -381,10 +381,10 @@ savePropStat = FALSE
 savePropDtl = TRUE
 [QtDialog]
 fileWithNote = 631,305,655,543
-QwWarnMsgDlg = 979,841,600,250
-unknownSave = 728,454,461,245
-QwUserAskDlg = 798,514,324,128
 restoreSigDlg = 688,303,551,438
+unknownSave = 728,454,461,245
+QwWarnMsgDlg = 979,841,600,250
+QwUserAskDlg = 798,513,324,130
 [Relationship]
 hideRecursiceNode = FALSE
 [Safety]
@@ -398,9 +398,9 @@ HighlightSafetyObject = TRUE
 [Session Cache]
 4 = string (session file name)
 5 = string (session file name)
-1 = /home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/verdi/verdiLog/novas_autosave.ses
-2 = /home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/sim/ir_iq.ses
 3 = /home/jorgejc2/Documents/ece411/mp1/cam/verdi/verdiLog/novas_autosave.ses
+1 = /home/jorgejc2/Documents/mp4/mp4/unit_tests/instruction_queue/verdi/verdiLog/novas_autosave.ses
+2 = /home/jorgejc2/Documents/ece411/mp1/cam/verdi/verdiLog/novas_autosave.ses
 [Simulation]
 scsPath = scsim
 scsOption = 
@@ -672,34 +672,34 @@ Button1 = "Dump All Signals" "$fsdbDumpvars;\n"
 [VIA]
 viaLogViewerDefaultRuleOneSearchForm = "share/VIA/Apps/PredefinedRules/Misc/Onesearch_rule.rc"
 [VIA.oneSearch.preference]
-isOneSearchVisible = FALSE
 DefaultDisplayTimeUnit = "1.000000ns"
 DefaultLogTimeUnit = "1.000000ns"
+isOneSearchVisible = TRUE
 [VIA.oneSearch.preference.vgifColumnSettingRC]
 [VIA.oneSearch.preference.vgifColumnSettingRC.setting0]
 parRuleSets = ""
 [VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column0]
-name = Code
-width = 60
-visualIndex = 2
-isHidden = TRUE
-isUserChangeColumnVisible = FALSE
-[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column1]
-name = Type
-width = 60
-visualIndex = 3
-isHidden = TRUE
-isUserChangeColumnVisible = FALSE
-[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column2]
 name = Message
 width = 2000
 visualIndex = 4
 isHidden = FALSE
 isUserChangeColumnVisible = FALSE
-[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column3]
+[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column1]
 name = Time
 width = 60
 visualIndex = 0
+isHidden = TRUE
+isUserChangeColumnVisible = FALSE
+[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column2]
+name = Code
+width = 60
+visualIndex = 2
+isHidden = TRUE
+isUserChangeColumnVisible = FALSE
+[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column3]
+name = Type
+width = 60
+visualIndex = 3
 isHidden = TRUE
 isUserChangeColumnVisible = FALSE
 [VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column4]
@@ -789,6 +789,7 @@ AutoApplySeverityColor = TRUE
 scope_to_save_with_macro
 open_file_dir
 open_rc_file_dir
+getSignalForm = 0 0 800 479 100 30 100 30
 viewPort = 0 25 1920 923 175 65
 legendBackground = -c ID_BLACK
 valueBackground = -c ID_BLACK
@@ -985,7 +986,6 @@ maskFsaRegRule = TRUE
 maskFsaCoreRule = TRUE
 maskFsaSfsmRule = TRUE
 maskFsaEcrRule = TRUE
-getSignalForm = 0 0 800 479 100 30 100 30
 [cov_hier_name_column]
 justify = TRUE
 [coverageColors]

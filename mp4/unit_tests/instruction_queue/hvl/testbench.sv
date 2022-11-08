@@ -106,6 +106,15 @@ rob rob (
      .data_write (itf.data_write)
  );
 
+ /*rob
+    //////////////////////////////////////////////////////
+    // rob_tag | instr_type | rob_valid | rd | valid    //                                    //
+    //                                                  //
+    //                                                  //
+    //                                                  //
+    //////////////////////////////////////////////////////
+ */
+
 
 logic [31:0] regfile_in, ld_data;
 assign ld_data = 32'h600d600d;
@@ -137,7 +146,8 @@ regfile regfile (
     .valid_b (itf.src2_valid),
     .tag_a (itf.tag_a),
     .tag_b (itf.tag_b),
-    .src_c (itf.rd_inflight),
+    // .src_c (itf.rd_inflight),
+    .src_c (itf.st_commit), // register to read data from to store into memory
     .data_out (data_mem_wdata)
 );
 tomasula_types::res_word res_word;
@@ -181,7 +191,7 @@ reservation_station res2(
     .rst(~itf.reset_n),
     .load_word(itf.res2_load),
     .cdb(itf.cdb_out),
-    .robs_calculated(itf.robs_calculated),
+    .robs_calculated(itf.status_rob_valid),
     .alu_data(itf.res2_alu_out),
     .start_exe(itf.res2_exec),
     .res_empty(itf.res2_empty),
@@ -198,7 +208,7 @@ reservation_station res3(
     .rst(~itf.reset_n),
     .load_word(itf.res3_load),
     .cdb(itf.cdb_out),
-    .robs_calculated(itf.robs_calculated),
+    .robs_calculated(itf.status_rob_valid),
     .alu_data(itf.res3_alu_out),
     .start_exe(itf.res3_exec),
     .res_empty(itf.res3_empty),
@@ -215,7 +225,7 @@ reservation_station res4(
     .rst(~itf.reset_n),
     .load_word(itf.res4_load),
     .cdb(itf.cdb_out),
-    .robs_calculated(itf.robs_calculated),
+    .robs_calculated(itf.status_rob_valid),
     .alu_data(itf.res4_alu_out),
     .start_exe(itf.res4_exec),
     .res_empty(itf.res4_empty),

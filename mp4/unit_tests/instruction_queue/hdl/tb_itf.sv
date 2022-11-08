@@ -12,7 +12,6 @@ rv32i_word instr_mem_address;
 
 /* iq signals */
 logic res1_empty, res2_empty, res3_empty, res4_empty, rob_load, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;
-logic [4:0] regfile_tag1, regfile_tag2;
 tomasula_types::ctl_word control_o;
 
 /* res1 signals */
@@ -40,8 +39,7 @@ logic [2:0] tag_a, tag_b;
 // logic valid_a, valid_b;
 
 /* rob signals */
-logic [4:0] rd_rob_tag;
-logic robs_calculated[8];
+// logic robs_calculated[8];
 logic ld_br, regfile_load, rob_full, ld_commit_sel, data_read, data_write;
 logic status_rob_valid[8];
 logic set_rob_valid[8];
