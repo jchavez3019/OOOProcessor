@@ -45,8 +45,8 @@ logic robs_calculated[8];
 logic ld_br, regfile_load, rob_full, ld_commit_sel, data_read, data_write;
 logic status_rob_valid[8];
 logic set_rob_valid[8];
-logic [2:0] rob_tag, curr_ptr, head_ptr;
-logic [4:0] rd_inflight, st_commit;
+logic [2:0] rob_tag, curr_ptr, head_ptr, br_ptr;
+logic [4:0] rd_commit, st_src_commit;
 
 /* cdb signals */
 tomasula_types::cdb_data cdb_in[8];

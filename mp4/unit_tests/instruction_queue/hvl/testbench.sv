@@ -95,8 +95,9 @@ rob rob (
      .rob_tag (itf.rob_tag), 
      .curr_ptr (itf.curr_ptr), 
      .head_ptr (itf.head_ptr), 
-     .rd_inflight (itf.rd_inflight),
-     .st_commit (itf.st_commit),
+     .br_ptr (itf.br_ptr), 
+     .rd_commit (itf.rd_commit),
+     .st_src_commit (itf.st_src_commit),
      .regfile_load (itf.regfile_load),
      .rob_full (itf.rob_full),
      .ld_commit_sel (itf.ld_commit_sel),
@@ -129,15 +130,15 @@ regfile regfile (
     .src_a (itf.control_o.src1_reg),
     .src_b (itf.control_o.src2_reg),
     // from iq - dest to write to
-    .dest (itf.rd_inflight), 
-    .tag_in (itf.rob_tag),
+    .dest (itf.rd_commit), 
+    .tag_in (itf.curr_ptr),
     .reg_a (itf.reg_src1_data),
     .reg_b (itf.reg_src2_data),
     .valid_a (itf.src1_valid),
     .valid_b (itf.src2_valid),
     .tag_a (itf.tag_a),
     .tag_b (itf.tag_b),
-    .src_c (itf.rd_inflight),
+    .src_c (itf.st_src_commit),
     .data_out (data_mem_wdata)
 );
 tomasula_types::res_word res_word;
