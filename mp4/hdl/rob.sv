@@ -22,23 +22,23 @@ import rv32i_types::*;
     output logic [7:0] status_rob_valid,
 
     // to regfile
-    output [2:0] curr_ptr,
-    output [2:0] head_ptr,
-    output [2:0] br_ptr,
-    output [4:0] rd_commit,
-    output [4:0] st_src_commit,
-    output regfile_load,
-    output rob_full,
+    output logic [2:0] curr_ptr,
+    output logic [2:0] head_ptr,
+    output logic [2:0] br_ptr,
+    output logic [4:0] rd_commit,
+    output logic [4:0] st_src_commit,
+    output logic regfile_load,
+    output logic rob_full,
 
     // signal to select between using data from cdb or d-cache
     output ld_commit_sel,
 
     // determined by branch output
-    output ld_br,
+    output logic ld_br,
 
     // to d-cache
-    output data_read,
-    output data_write
+    output logic data_read,
+    output logic data_write
 );
 
 tomasula_types::op_t instr_arr [8];
@@ -79,9 +79,9 @@ assign status_rob_valid[6] = valid_arr[6];
 assign status_rob_valid[7] = valid_arr[7];
 
 always_ff @(posedge clk) begin
-    _ld_br <= 1'b0;
-    _ld_commit_sel <= 1'b0;
-    _regfile_load <= 1'b0;
+    // _ld_br <= 1'b0;
+    // _ld_commit_sel <= 1'b0;
+    // _regfile_load <= 1'b0;
 
     if (rst) begin
         for (int i=0; i<8; i++) begin
@@ -121,38 +121,38 @@ always_ff @(posedge clk) begin
         // if the head of the rob has been computed
         if (valid_arr[_head_ptr]) begin
             if(instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
-               _ld_br <= 1'b1; 
+            //    _ld_br <= 1'b1; 
             end
             else if (instr_arr[_head_ptr] == tomasula_types::LD) begin
-                _data_read <= 1'b1;
+                // _data_read <= 1'b1;
                 // make sure instruction is not committed until data returned
                 // from d-cache...
                 if (data_mem_resp) begin
-                    _data_read <= 1'b0;
+                    // _data_read <= 1'b0;
                     valid_arr[_head_ptr] <= 1'b0;
                     // use d-cache data
-                    _ld_commit_sel <= 1'b1;
-                    _regfile_load <= 1'b1;
+                    // _ld_commit_sel <= 1'b1;
+                    // _regfile_load <= 1'b1;
                     // _rd_commit <= rd_arr[_head_ptr];
                     // update head
                     _head_ptr <= _head_ptr + 1'b1;
                 end
             end
             else if (instr_arr[_head_ptr] == tomasula_types::ST) begin
-                _data_write <= 1'b1;
+                // _data_write <= 1'b1;
                 // for st address
                 // send regfile the register file to read from
                 _st_src_commit <= rd_arr[_head_ptr];
                 // once store has been processed
                 if (data_mem_resp) begin
-                    _data_write <= 1'b0;
+                    // _data_write <= 1'b0;
                     valid_arr[_head_ptr] <= 1'b0;
                     _head_ptr <= _head_ptr + 1'b1;
                 end
             end
             // for all other instructions
             else begin
-                _regfile_load <= 1'b1;
+                // _regfile_load <= 1'b1;
                 valid_arr[_head_ptr] <= 1'b0;
 
                 // increment _head_ptr
@@ -190,6 +190,60 @@ always_ff @(posedge clk) begin
             end
         end
     end
+end
+
+function void set_defaults();
+    _ld_br = 1'b0;
+    _data_read = 1'b0;
+    _ld_commit_sel = 1'b0;
+    _regfile_load = 1'b0;
+    _data_write = 1'b0;
+endfunction
+
+always_comb begin
+
+            set_defaults();
+
+            if((instr_arr[_head_ptr] == tomasula_types::BRANCH) & (valid_arr[_head_ptr])) begin
+            _ld_br = 1'b1; 
+            end
+            else if (instr_arr[_head_ptr] == tomasula_types::LD) begin
+                _data_read = 1'b1;
+                // make sure instruction is not committed until data returned
+                // from d-cache...
+                if (data_mem_resp) begin
+                    _data_read = 1'b0;
+                    // valid_arr[_head_ptr] <= 1'b0;
+                    // use d-cache data
+                    _ld_commit_sel = 1'b1;
+                    _regfile_load = 1'b1;
+                    // _rd_commit <= rd_arr[_head_ptr];
+                    // update head
+                    // _head_ptr <= _head_ptr + 1'b1;
+                end
+            end
+            else if ((instr_arr[_head_ptr] == tomasula_types::ST) & (valid_arr[_head_ptr])) begin
+                _data_write = 1'b1;
+                // for st address
+                // send regfile the register file to read from
+                // _st_src_commit <= rd_arr[_head_ptr];
+                // once store has been processed
+                if (data_mem_resp) begin
+                    _data_write = 1'b0;
+                    // valid_arr[_head_ptr] <= 1'b0;
+                    // _head_ptr <= _head_ptr + 1'b1;
+                end
+            end
+            // for all other instructions
+            else if (valid_arr[_head_ptr]) begin
+                _regfile_load = 1'b1;
+                // valid_arr[_head_ptr] <= 1'b0;
+
+                // increment _head_ptr
+                // _rd_commit <= rd_arr[_head_ptr];
+                // _head_ptr <= _head_ptr + 1'b1;
+            end
+
 end
 
 endmodule : rob

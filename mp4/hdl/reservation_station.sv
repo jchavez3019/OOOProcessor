@@ -122,7 +122,11 @@ begin : state_actions
             if (start_exe & res_word.op == tomasula_types::JALR)
                 jalr_executed = 1'b1;
 
-            alu_data.src1_data = res_in.src1_data;
+            if (res_word.src1_valid)
+                alu_data.src1_data = res_word.src1_data;
+            else
+                alu_data.src1_data = res_in.src1_data;
+                
             if (res_word.src2_valid)
                 alu_data.src2_data = res_word.src2_data;
             else
