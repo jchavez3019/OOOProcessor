@@ -37,7 +37,7 @@ always_comb begin : OPERATION
                     aluop = rv32i_types::alu_sub;
             end
             else
-                aluop = alu_word.funct3;
+                aluop = rv32i_types::alu_ops'(alu_word.funct3);
     end
     else begin
         aluop = rv32i_types::alu_add;
@@ -47,24 +47,19 @@ end
 
 always_comb begin : EXECUTION
     unique case (aluop)
-        alu_add:  cdb.data = a + b;
-        alu_sll:  cdb.data = a << b[4:0];
-        alu_sra:  cdb.data = $signed(a) >>> b[4:0];
-        alu_sub:  cdb.data = a - b;
-        alu_xor:  cdb.data = a ^ b;
-        alu_srl:  cdb.data = a >> b[4:0];
-        alu_or:   cdb.data = a | b;
-        alu_and:  cdb.data = a & b;
+        alu_add:  cdb_data.data = a + b;
+        alu_sll:  cdb_data.data = a << b[4:0];
+        alu_sra:  cdb_data.data = $signed(a) >>> b[4:0];
+        alu_sub:  cdb_data.data = a - b;
+        alu_xor:  cdb_data.data = a ^ b;
+        alu_srl:  cdb_data.data = a >> b[4:0];
+        alu_or:   cdb_data.data = a | b;
+        alu_and:  cdb_data.data = a & b;
     endcase
-    cdb.request = alu_word.load; // clock these
-    cdb.tag = alu_word.tag;
+    // cdb_data.req = alu_word.load;
+    // cdb_data.tag = alu_word.tag;
+
 
 end
-
-// always_ff @(posedge clk)
-// begin
-//     // cdb.request = alu_word.load; // clock these
-//     // cdb.tag = alu_word.tag;
-// end
 
 endmodule : alu

@@ -23,7 +23,7 @@ they should be left as their default values. Only included for clarity.
     input DTYPE data_i,
     input logic valid_i,
     output logic ready_o,
-    output logic ack_o,
+    // output logic ack_o,
 
     // valid-yumi output protocol
     output logic valid_o,
@@ -69,7 +69,7 @@ assign read_ptr_next = read_ptr + '1;
 
 /*************************** Non-Blocking Assignments ************************/
 always_ff @(posedge clk_i, negedge reset_n_i) begin
-    ack_o <= 1'b0;
+    // ack_o <= 1'b0;
     // The `n` in the `reset_n_i` means the reset signal is active low
     if (~reset_n_i) begin
         read_ptr  <= '0;
@@ -84,7 +84,7 @@ always_ff @(posedge clk_i, negedge reset_n_i) begin
             end
             2'b10: begin : enqueue_case
                 queue[write_ptr[ptr_width_p-1:0]] <= data_i;
-                ack_o <= 1'b1;
+                // ack_o <= 1'b1;
                 write_ptr <= write_ptr_next;
                 if (empty) begin
                     output_buffer_r <= data_i;
@@ -104,7 +104,7 @@ always_ff @(posedge clk_i, negedge reset_n_i) begin
 
                 // Enqueue portion
                 queue[write_ptr[ptr_width_p-1:0]] <= data_i;
-                ack_o <= 1'b1;
+                // ack_o <= 1'b1;
                 write_ptr <= write_ptr_next;
                 // No need to check empty, since can't dequeue from empty
             end

@@ -5,17 +5,18 @@ module regfile
     input rst,
     input load,
     input allocate,
-    input [31:0] in,
-    input [4:0] src_a, src_b, dest,
-    input [2:0] tag_in,
+    input logic [4:0] reg_allocate,
+    input logic [31:0] in, // data to place into dest register
+    input logic [4:0] src_a, src_b, dest, // src registers to read and dest register to change
+    input logic [2:0] tag_in, // rob tag that will right into dest register next
     output logic [31:0] reg_a, reg_b,
     output logic valid_a, valid_b,
     output logic [2:0] tag_a, tag_b, //tag_dest,
 
     // signals for memory interaction
     
-    input [4:0]src_c,
-    output data_out
+    input logic [4:0]src_c,
+    output logic [31:0] data_out
 );
 
 logic [31:0] data [32];
@@ -32,23 +33,30 @@ begin
             valid[i] = 1'b1;
         end
     end
-    else if (load && dest)
-    begin
-        data[dest] <= in;
-        valid[dest] <= 1'b1;
-    end
+    //FIXME: must support simultaneous load and allocate
+    // allocate: read in from control_o (instruction queue)
+    // load: read in from cdb, get register from rob.
+    else begin
+        if (load && dest)
+        begin
+            data[dest] <= in;
+            valid[dest] <= 1'b1;
+        end
 
-    else if(allocate && dest )
-    begin
-        valid[dest] <= 1'b0;
-        tag[dest] <= tag_in;
-    end 
+        if(allocate && reg_allocate)
+        begin
+            valid[reg_allocate] <= 1'b0;
+            tag[reg_allocate] <= tag_in;
+        end 
+    end
 
 end
 
 always_comb
 begin
-
+    // default values
+    valid_a = 1'b0;
+    valid_b = 1'b0;
 
     if((dest == src_a) && load ) begin
         reg_a = in;
@@ -61,9 +69,7 @@ begin
         reg_a = src_a ? data[src_a] : 0;
         reg_b = in;
         valid_a = valid [src_a];
-        valid_b = 1;
-        tag_a = tag[src_a];
-        tag_b = tag[src_b];
+        valid_b = 1'b1;
     end
     else  begin
         reg_a = src_a ? data[src_a] : 0;
