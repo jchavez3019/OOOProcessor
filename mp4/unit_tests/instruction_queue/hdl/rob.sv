@@ -22,7 +22,6 @@ import rv32i_types::*;
     output logic status_rob_valid[8],
 
     // to regfile
-    output [2:0] rob_tag,
     output [2:0] curr_ptr,
     output [2:0] head_ptr,
     output [2:0] br_ptr,
@@ -46,7 +45,6 @@ tomasula_types::op_t instr_arr [8];
 logic [4:0] rd_arr [8];
 logic valid_arr [8];
 
-logic [2:0] _rob_tag;
 logic [4:0] _rd_commit, _st_src_commit;
 logic flush_ip;
 logic _ld_commit_sel;
@@ -57,7 +55,6 @@ logic _rob_full;
 
 logic [2:0] _curr_ptr, _head_ptr, br_ptr;
 
-assign rob_tag = _rob_tag;
 assign rd_commit = _rd_commit;
 assign st_src_commit = _st_src_commit;
 assign ld_commit_sel = _ld_commit_sel;
@@ -111,7 +108,6 @@ always_ff @(posedge clk) begin
            else if (instr_type != tomasula_types::BRANCH) begin
                // output to regfile
                _rd_commit <= rd;
-               _rob_tag <= _curr_ptr;
            end
            // increment _curr_ptr
            //TODO: beware! overflow may cause errors
@@ -125,8 +121,6 @@ always_ff @(posedge clk) begin
             end
             else if (instr_arr[_head_ptr] == tomasula_types::LD) begin
                 _data_read <= 1'b1;
-                _rob_tag <= _head_ptr;
-                // address comes from cdb, determined by _rob_tag
                 // make sure instruction is not committed until data returned
                 // from d-cache...
                 if (data_mem_resp) begin
@@ -143,7 +137,6 @@ always_ff @(posedge clk) begin
             else if (instr_arr[_head_ptr] == tomasula_types::ST) begin
                 _data_write <= 1'b1;
                 // for st address
-                _rob_tag <= _head_ptr;
                 // send regfile the register file to read from
                 _st_src_commit <= rd_arr[_head_ptr];
                 // once store has been processed
@@ -160,7 +153,6 @@ always_ff @(posedge clk) begin
 
                 // increment _head_ptr
                 _rd_commit <= rd_arr[_head_ptr];
-                _rob_tag <= _head_ptr;
                 _head_ptr <= _head_ptr + 1'b1;
             end
         end
@@ -190,7 +182,6 @@ always_ff @(posedge clk) begin
             // if we haven't reached the branch yet
             else begin
                 _rd_commit <= rd_arr[br_ptr];
-                _rob_tag <= br_ptr;
                 br_ptr <= br_ptr + 1'b1;
             end
         end
