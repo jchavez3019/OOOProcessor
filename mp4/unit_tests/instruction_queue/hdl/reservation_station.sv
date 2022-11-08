@@ -227,12 +227,12 @@ begin : next_state_logic
                 next_state = EMPTY;
             else
                 next_state = PEEK_ONE;
+        end
         PEEK_ONE, PEEK_REST: begin
             if ((res_word.src1_valid | robs_calculated[res_word.src1_tag]) & (res_word.src2_valid | robs_calculated[res_word.src2_tag]))
                 next_state = EMPTY;
             else
                 next_state = PEEK_REST;
-        end
         end
     endcase
 end
