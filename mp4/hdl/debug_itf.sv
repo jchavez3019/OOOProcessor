@@ -56,31 +56,6 @@ tomasula_types::cdb_data alu2_calculation;
 tomasula_types::cdb_data alu3_calculation;
 tomasula_types::cdb_data alu4_calculation;
 
-// time timestamp;
-
-// task finish();
-//     repeat (100) @(posedge clk);
-//     $finish;
-// endtask : finish
-
-// // Generate clk signal
-// always #5 clk = (clk === 1'b0);
-
-// initial timestamp = '0;
-// always @(posedge clk) timestamp = timestamp + time'(1);
-
-// struct {
-//     logic read_error [time];
-// } stu_errors;
-
-// function automatic void tb_report_dut_error(error_e err);
-//     $display("%0t: TB: Reporting %s at %0t", $time, err.name, timestamp);
-//     case (err)
-//         READ_ERROR: stu_errors.read_error[timestamp] = 1'b1;
-//         default: $fatal("TB reporting Unknown error");
-//     endcase
-// endfunction
-
 endinterface : debug_itf
 
 `endif
