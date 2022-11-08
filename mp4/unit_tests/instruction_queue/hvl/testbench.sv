@@ -25,7 +25,7 @@ ir ir (
 logic [31:0] pc_in;
 always_comb begin : pc_mux
     if (itf.ld_br)
-        pc_in = itf.cdb_out[itf.rob_tag].data[31:0];
+        pc_in = itf.cdb_out[itf.head_ptr].data[31:0];
     else 
         pc_in = pc + 4;
 end
@@ -86,13 +86,11 @@ rob rob (
      .rob_load (itf.rob_load),
      .instr_type (itf.control_o.op),
      .rd (itf.control_o.rd),
-     //FIXME: rename st_src to sr3_reg
-     .st_src (itf.control_o.src2_reg),
+     .st_src (itf.control_o.src1_reg),
      .branch_mispredict (1'b0),
      .data_mem_resp (1'b0),
      .status_rob_valid (itf.status_rob_valid),
      .set_rob_valid (itf.set_rob_valid),
-     .rob_tag (itf.rob_tag), 
      .curr_ptr (itf.curr_ptr), 
      .head_ptr (itf.head_ptr), 
      .br_ptr (itf.br_ptr), 
@@ -101,7 +99,6 @@ rob rob (
      .regfile_load (itf.regfile_load),
      .rob_full (itf.rob_full),
      .ld_commit_sel (itf.ld_commit_sel),
-     //FIXME: rename load_pc to ld_br
      .ld_br (itf.ld_br),
      .data_read (itf.data_read),
      .data_write (itf.data_write)
@@ -166,7 +163,7 @@ always_comb begin : assign_res_word
     res_word.src2_tag = itf.tag_b;
     res_word.src2_data = src2_data;
     res_word.src2_valid = src2_v;
-    res_word.rd_tag = itf.rob_tag;
+    res_word.rd_tag = itf.curr_ptr;
 end
 
 reservation_station res1(

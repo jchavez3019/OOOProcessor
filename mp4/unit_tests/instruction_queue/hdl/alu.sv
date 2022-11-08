@@ -37,7 +37,7 @@ always_comb begin : OPERATION
                     aluop = rv32i_types::alu_sub;
             end
             else
-                aluop = alu_word.funct3[2:0];
+                aluop = rv32i_types::alu_ops'(alu_word.funct3);
     end
     else begin
         aluop = rv32i_types::alu_add;
