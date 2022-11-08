@@ -25,8 +25,9 @@ import rv32i_types::*;
     output [2:0] rob_tag,
     output [2:0] curr_ptr,
     output [2:0] head_ptr,
-    output [4:0] rd_inflight,
-    output [4:0] st_commit,
+    output [2:0] br_ptr,
+    output [4:0] rd_commit,
+    output [4:0] st_src_commit,
     output regfile_load,
     output rob_full,
 
@@ -43,11 +44,10 @@ import rv32i_types::*;
 
 tomasula_types::op_t instr_arr [8];
 logic [4:0] rd_arr [8];
-logic [4:0] st_arr [8];
 logic valid_arr [8];
 
 logic [2:0] _rob_tag;
-logic [4:0] _rd_inflight, _st_commit;
+logic [4:0] _rd_commit, _st_src_commit;
 logic flush_ip;
 logic _ld_commit_sel;
 logic _ld_br;
@@ -58,8 +58,8 @@ logic _rob_full;
 logic [2:0] _curr_ptr, _head_ptr, br_ptr;
 
 assign rob_tag = _rob_tag;
-assign rd_inflight = _rd_inflight;
-assign st_commit = _st_commit;
+assign rd_commit = _rd_commit;
+assign st_src_commit = _st_src_commit;
 assign ld_commit_sel = _ld_commit_sel;
 assign ld_br = _ld_br;
 assign data_read = _data_read;
@@ -68,7 +68,7 @@ assign regfile_load = _regfile_load;
 assign rob_full = _rob_full;
 assign curr_ptr = _curr_ptr;
 assign head_ptr = _head_ptr;
-//TODO: also output branch pointer?
+
 assign _rob_full = _head_ptr + 3'h7 == _curr_ptr;
 
 always_comb begin : assign_rob_valids
@@ -86,7 +86,6 @@ always_ff @(posedge clk) begin
         for (int i=0; i<8; i++) begin
             instr_arr[i] <= tomasula_types::op_t'(0);
             rd_arr[i] <= '0;
-            st_arr[i] <= '0;
             valid_arr[i] <= '0;
         end
         _curr_ptr <= 3'b000;
@@ -107,11 +106,11 @@ always_ff @(posedge clk) begin
            rd_arr[_curr_ptr] <= rd; 
            // do not allocate regfile entry for st
            if (instr_type == tomasula_types::ST) begin 
-               st_arr[_curr_ptr] <= st_src;
+               rd_arr[_curr_ptr] <= st_src;
            end
            else if (instr_type != tomasula_types::BRANCH) begin
                // output to regfile
-               _rd_inflight <= rd;
+               _rd_commit <= rd;
                _rob_tag <= _curr_ptr;
            end
            // increment _curr_ptr
@@ -136,7 +135,7 @@ always_ff @(posedge clk) begin
                     // use d-cache data
                     _ld_commit_sel <= 1'b1;
                     _regfile_load <= 1'b1;
-                    _rd_inflight <= rd_arr[_head_ptr];
+                    _rd_commit <= rd_arr[_head_ptr];
                     // update head
                     _head_ptr <= _head_ptr + 1'b1;
                 end
@@ -146,7 +145,7 @@ always_ff @(posedge clk) begin
                 // for st address
                 _rob_tag <= _head_ptr;
                 // send regfile the register file to read from
-                _st_commit <= st_arr[_head_ptr];
+                _st_src_commit <= rd_arr[_head_ptr];
                 // once store has been processed
                 if (data_mem_resp) begin
                     _data_write <= 1'b0;
@@ -160,7 +159,7 @@ always_ff @(posedge clk) begin
                 valid_arr[_head_ptr] <= 1'b0;
 
                 // increment _head_ptr
-                _rd_inflight <= rd_arr[_head_ptr];
+                _rd_commit <= rd_arr[_head_ptr];
                 _rob_tag <= _head_ptr;
                 _head_ptr <= _head_ptr + 1'b1;
             end
@@ -190,7 +189,7 @@ always_ff @(posedge clk) begin
             end
             // if we haven't reached the branch yet
             else begin
-                _rd_inflight <= rd_arr[br_ptr];
+                _rd_commit <= rd_arr[br_ptr];
                 _rob_tag <= br_ptr;
                 br_ptr <= br_ptr + 1'b1;
             end
