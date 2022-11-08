@@ -29,6 +29,10 @@ import rv32i_types::*;
     IQ_2_IR.IQ_SIG iq_ir_itf
 );
 
+/* NOTE:
+don't send rob_load/allocate to register file for a branch
+*/
+
 logic [3:0] res_snoop;
 logic control_o_valid, dequeue, enqueue;
 tomasula_types::ctl_word control_o_buf;

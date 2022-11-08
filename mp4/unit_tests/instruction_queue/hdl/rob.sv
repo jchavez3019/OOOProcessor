@@ -19,7 +19,7 @@ import rv32i_types::*;
     // determines if rob entry has been computed
     // from reservation station
     input logic set_rob_valid[8],
-    output logic status_rob_valid[8],
+    output logic [7:0] status_rob_valid,
 
     // to regfile
     output [2:0] curr_ptr,
@@ -55,7 +55,8 @@ logic _rob_full;
 
 logic [2:0] _curr_ptr, _head_ptr, br_ptr;
 
-assign rd_commit = _rd_commit;
+// assign rd_commit = _rd_commit;
+assign rd_commit = _rd_commit <= rd_arr[_head_ptr];
 assign st_src_commit = _st_src_commit;
 assign ld_commit_sel = _ld_commit_sel;
 assign ld_br = _ld_br;
@@ -68,11 +69,14 @@ assign head_ptr = _head_ptr;
 
 assign _rob_full = _head_ptr + 3'h7 == _curr_ptr;
 
-always_comb begin : assign_rob_valids
-    for (int i = 0; i < 8; i++) begin
-        status_rob_valid[i] = valid_arr[i];
-    end
-end
+assign status_rob_valid[0] = valid_arr[0];
+assign status_rob_valid[1] = valid_arr[1];
+assign status_rob_valid[2] = valid_arr[2];
+assign status_rob_valid[3] = valid_arr[3];
+assign status_rob_valid[4] = valid_arr[4];
+assign status_rob_valid[5] = valid_arr[5];
+assign status_rob_valid[6] = valid_arr[6];
+assign status_rob_valid[7] = valid_arr[7];
 
 always_ff @(posedge clk) begin
     _ld_br <= 1'b0;
@@ -107,7 +111,7 @@ always_ff @(posedge clk) begin
            end
            else if (instr_type != tomasula_types::BRANCH) begin
                // output to regfile
-               _rd_commit <= rd;
+            //    _rd_commit <= rd;
            end
            // increment _curr_ptr
            //TODO: beware! overflow may cause errors
@@ -129,7 +133,7 @@ always_ff @(posedge clk) begin
                     // use d-cache data
                     _ld_commit_sel <= 1'b1;
                     _regfile_load <= 1'b1;
-                    _rd_commit <= rd_arr[_head_ptr];
+                    // _rd_commit <= rd_arr[_head_ptr];
                     // update head
                     _head_ptr <= _head_ptr + 1'b1;
                 end
@@ -152,7 +156,7 @@ always_ff @(posedge clk) begin
                 valid_arr[_head_ptr] <= 1'b0;
 
                 // increment _head_ptr
-                _rd_commit <= rd_arr[_head_ptr];
+                // _rd_commit <= rd_arr[_head_ptr];
                 _head_ptr <= _head_ptr + 1'b1;
             end
         end
@@ -181,7 +185,7 @@ always_ff @(posedge clk) begin
             end
             // if we haven't reached the branch yet
             else begin
-                _rd_commit <= rd_arr[br_ptr];
+                // _rd_commit <= rd_arr[br_ptr];
                 br_ptr <= br_ptr + 1'b1;
             end
         end

@@ -41,7 +41,7 @@ logic [2:0] tag_a, tag_b;
 /* rob signals */
 // logic robs_calculated[8];
 logic ld_br, regfile_load, rob_full, ld_commit_sel, data_read, data_write;
-logic status_rob_valid[8];
+logic [7:0] status_rob_valid;
 logic set_rob_valid[8];
 logic [2:0] curr_ptr, head_ptr, br_ptr;
 logic [4:0] rd_commit, st_src_commit;
