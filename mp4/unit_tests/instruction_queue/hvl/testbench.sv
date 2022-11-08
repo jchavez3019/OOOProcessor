@@ -25,7 +25,7 @@ ir ir (
 logic [31:0] pc_in;
 always_comb begin : pc_mux
     if (itf.ld_br)
-        pc_in = itf.cdb_out[itf.rob_tag].data[31:0];
+        pc_in = itf.cdb_out[itf.head_ptr].data[31:0];
     else 
         pc_in = pc + 4;
 end
@@ -157,7 +157,7 @@ always_comb begin : assign_res_word
     res_word.src2_tag = itf.tag_b;
     res_word.src2_data = src2_data;
     res_word.src2_valid = src2_v;
-    res_word.rd_tag = itf.rob_tag;
+    res_word.rd_tag = itf.curr_ptr;
 end
 
 reservation_station res1(
