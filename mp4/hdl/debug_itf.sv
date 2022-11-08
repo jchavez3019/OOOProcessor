@@ -1,14 +1,14 @@
-`ifndef tb_itf
-`define tb_itf
+`ifndef debug_itf
+`define debug_itf
 
-interface tb_itf;
+interface debug_itf;
 import rv32i_types::*;
-bit clk, reset_n;
+// bit clk, reset_n;
 
 /* ir signals */
-logic instr_mem_resp, instr_read;
-logic [31:0] in;
-rv32i_word instr_mem_address;
+// logic instr_mem_resp, instr_read;
+// logic [31:0] in;
+// rv32i_word instr_mem_address;
 
 /* iq signals */
 logic res1_empty, res2_empty, res3_empty, res4_empty, rob_load, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;
@@ -56,31 +56,31 @@ tomasula_types::cdb_data alu2_calculation;
 tomasula_types::cdb_data alu3_calculation;
 tomasula_types::cdb_data alu4_calculation;
 
-time timestamp;
+// time timestamp;
 
-task finish();
-    repeat (100) @(posedge clk);
-    $finish;
-endtask : finish
+// task finish();
+//     repeat (100) @(posedge clk);
+//     $finish;
+// endtask : finish
 
-// Generate clk signal
-always #5 clk = (clk === 1'b0);
+// // Generate clk signal
+// always #5 clk = (clk === 1'b0);
 
-initial timestamp = '0;
-always @(posedge clk) timestamp = timestamp + time'(1);
+// initial timestamp = '0;
+// always @(posedge clk) timestamp = timestamp + time'(1);
 
-struct {
-    logic read_error [time];
-} stu_errors;
+// struct {
+//     logic read_error [time];
+// } stu_errors;
 
-function automatic void tb_report_dut_error(error_e err);
-    $display("%0t: TB: Reporting %s at %0t", $time, err.name, timestamp);
-    case (err)
-        READ_ERROR: stu_errors.read_error[timestamp] = 1'b1;
-        default: $fatal("TB reporting Unknown error");
-    endcase
-endfunction
+// function automatic void tb_report_dut_error(error_e err);
+//     $display("%0t: TB: Reporting %s at %0t", $time, err.name, timestamp);
+//     case (err)
+//         READ_ERROR: stu_errors.read_error[timestamp] = 1'b1;
+//         default: $fatal("TB reporting Unknown error");
+//     endcase
+// endfunction
 
-endinterface : tb_itf
+endinterface : debug_itf
 
 `endif
