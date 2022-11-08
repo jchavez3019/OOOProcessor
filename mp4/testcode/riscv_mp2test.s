@@ -33,6 +33,17 @@ _start:
     addi x1, x1, 11 # x1 = 11
     addi x2, x2, 12
     addi x3, x3, 13
+
+    add x4, x1, x2 # x4 = 23
+    add x5, x2, x3 # x5 = 25
+
+    and x1, x2, x0
+    and x2, x3, x0
+    and x3, x4, x0
+
+    addi x1, x1, -2
+    addi x2, x2, 5
+    sra x3, x1, x2
 # 
 # 
     # # /* x6 == 0000 001x xxxx; x7 == 1000 001x xxxx */
