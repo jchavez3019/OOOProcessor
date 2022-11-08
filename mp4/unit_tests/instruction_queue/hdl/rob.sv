@@ -55,6 +55,8 @@ logic _data_read, _data_write;
 logic _regfile_load;
 logic _rob_full;
 
+logic [2:0] _curr_ptr, _head_ptr, br_ptr;
+
 assign rob_tag = _rob_tag;
 assign rd_inflight = _rd_inflight;
 assign st_commit = _st_commit;
@@ -67,11 +69,6 @@ assign rob_full = _rob_full;
 assign curr_ptr = _curr_ptr;
 assign head_ptr = _head_ptr;
 //TODO: also output branch pointer?
-
-logic [2:0] _curr_ptr;
-logic [2:0] _head_ptr;
-logic [2:0] br_ptr;
-
 assign _rob_full = _head_ptr + 3'h7 == _curr_ptr;
 
 always_comb begin : assign_rob_valids
