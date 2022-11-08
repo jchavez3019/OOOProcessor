@@ -9,17 +9,11 @@ import rv32i_types::*;
     output tomasula_types::alu_word alu_data,
     output logic start_exe,
     output logic res_empty,
+    output logic jalr_executed, // only instruction that does a jump relative to a register instead of pc
     input tomasula_types::res_word res_in
 );
 
 tomasula_types::res_word res_word;
-
-// enum int unsigned {
-//     EMPTY = 0,
-//     LOAD  = 1,
-//     PEEK  = 2,
-//     EXEC  = 3
-// } state, next_state;
 
 enum int unsigned {
     EMPTY = 0,
@@ -33,18 +27,6 @@ begin : assign_alu_data
     alu_data.op = res_word.op;
     alu_data.funct3 = res_word.funct3;
     alu_data.funct7 = res_word.funct7;
-
-    /* forwards data from register file if res_word does not have the data but a valid is present */
-    // if (res_word.src1_valid)
-    //     alu_data.src1_data = res_word.src1_data;
-    // else if ()
-    //     alu_data.src1_data = res_in.src1_data;
-
-    // if (res_word.src2_valid)
-    //     alu_data.src2_data = res_word.src2_data;
-    // else
-    //     alu_data.src2_data = res_in.src2_data;
-
     alu_data.tag = res_word.rd_tag;
 end
 
@@ -66,37 +48,6 @@ begin
 
         state <= EMPTY;
     end
-    // // now cover EMPTY cases
-    // else if (next_state == EMPTY)
-    // begin
-    //     state <= next_state;
-    // end
-    // // LOAD cases
-    // else if (next_state == LOAD)
-    // begin
-    //     res_word <= res_in;
-    //     state <= next_state;
-    // end
-    // // PEEK cases - check if the sources are ready
-    // // if they are, load in the data and set the valid
-    // else if (next_state == PEEK)
-    // begin
-    //     if (robs_calculated[res_word.src1_tag] & ~res_word.src1_valid)
-    //     begin
-    //         res_word.src1_data <= cdb[res_word.src1_tag].data;
-    //         res_word.src1_valid <= 1'b1;
-    //     end
-    //     if (robs_calculated[res_word.src2_tag] & ~res_word.src2_valid)
-    //     begin
-    //         res_word.src2_data <= cdb[res_word.src2_tag].data;
-    //         res_word.src2_valid <= 1'b1;
-    //     end
-    //     state <= next_state;
-    // end
-    // else
-    // begin
-    //     state <= next_state;
-    // end
     else if (next_state == CHECK) begin
         /* clock data coming in from instruction register and ROB */
         res_word <= res_in;
@@ -148,6 +99,7 @@ end
 function void set_defaults();
     res_empty = 1'b0;
     start_exe = 1'b0;
+    jalr_executed = 1'b0;
     alu_data.src1_data = 32'h00000000;
     alu_data.src2_data = 32'h00000000;
 endfunction
@@ -158,15 +110,6 @@ begin : state_actions
     set_defaults();
 
     /* Actions for each state */
-    // case(state)
-    //     EMPTY: begin
-    //         res_empty = 1'b1;
-    //     end
-    //     LOAD, PEEK: ; // do nothing
-    //     EXEC: begin
-    //         start_exe = 1'b1;
-    //     end
-    // endcase
     case (state)
         EMPTY: begin
             res_empty = 1'b1;
@@ -175,6 +118,9 @@ begin : state_actions
             /* both source registers are valid and we can execute in this same cycle */
             if (res_in.src1_valid & (res_word.src2_valid | res_in.src2_valid))
                 start_exe = 1'b1;
+
+            if (start_exe & res_word.op == tomasula_types::JALR)
+                jalr_executed = 1'b1;
 
             alu_data.src1_data = res_in.src1_data;
             if (res_word.src2_valid)
@@ -186,6 +132,9 @@ begin : state_actions
             /* check if data is valid and execute */
             if ((res_word.src1_valid | robs_calculated[res_word.src1_tag]) & (res_word.src2_valid | robs_calculated[res_word.src2_tag]))
                 start_exe = 1'b1;
+
+            if (start_exe & res_word.op == tomasula_types::JALR)
+                jalr_executed = 1'b1;
 
             if (res_word.src1_valid)
                 alu_data.src1_data = res_word.src1_data;
@@ -204,22 +153,6 @@ always_comb
 begin : next_state_logic
     next_state = state;
     case (state)
-        // EMPTY: begin
-        //     if (load_word)
-        //         next_state = LOAD;
-        //     else
-        //         next_state = EMPTY;
-        // end
-        // LOAD, PEEK: begin
-        //     /* if the source register data is ready and the alu unit is ready, start execution on next clk cycle */
-        //     if (res_word.src1_valid & res_word.src2_valid) 
-        //         next_state = EXEC;
-        //     // else if (res_word.src1_valid & res_word.src2_valid)
-        //     //     next_state = STALL;
-        //     else
-        //         next_state = PEEK;
-        // end
-        // EXEC: next_state = EMPTY;
         EMPTY: begin
             if (load_word)
                 next_state = CHECK;
