@@ -50,6 +50,7 @@ typedef struct {
     logic [31:0] src2_data;
     logic src2_valid;
     logic [2:0] rd_tag; // rob tag where destination will be saved
+    logic [31:0] pc;
 } res_word; // totals 82 bits
 
 // databus
