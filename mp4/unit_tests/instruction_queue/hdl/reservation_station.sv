@@ -18,7 +18,6 @@ enum int unsigned {
     EMPTY = 0,
     LOAD  = 1,
     PEEK  = 2,
-    // STALL = 3,
     EXEC  = 3
 } state, next_state;
 
@@ -55,58 +54,30 @@ begin
     // now cover EMPTY cases
     else if (next_state == EMPTY)
     begin
-        res_word <= res_in;
-
-        // res_word.op <= control_word.op;
-        // res_word.funct3 <= control_word.funct3;
-        // res_word.funct7 <= control_word.funct7;
-        // res_word.src1_tag <= control_word.src1_reg;
-        // res_word.src1_data <= 32'h0000;
-        // res_word.src1_valid <= 1'b0;
-        // res_word.src2_tag <= control_word.src2_reg;
-        // /* src2_data will come in from a mux, one input from iq, one from regfile */
-        // res_word.src2_data <= 32'h0000;
-        // /* src2_valid will be an OR between iq and regfile */
-        // res_word.src2_valid <= 1'b0;
-        // res_word.rd_tag <= control_word.rd;
-        // res_word.imm <= control_word.imm;
-
         state <= next_state;
     end
     // LOAD cases
     else if (next_state == LOAD)
     begin
         res_word <= res_in;
-        // res_word.src1_data <= src1;
-        // res_word.src1_valid <= ~rob_v1;
-        // res_word.src1_tag <= rob_tag1;
-        // res_word.src2_data <= src2;
-        // res_word.src2_valid <= ~rob_v2;
-        // res_word.src2_tag <= rob_tag2;
         state <= next_state;
     end
-    // PEEK cases
+    // PEEK cases - check if the sources are ready
+    // if they are, load in the data and set the valid
     else if (next_state == PEEK)
     begin
-    // if (cdb.tag == res_word.src1_tag & ~res_word.src1_valid)
-    if (robs_calculated[res_word.src1_tag] & ~res_word.src1_valid)
-    begin
-        res_word.src1_data <= cdb[res_word.src1_tag].data;
-        res_word.src1_valid <= 1'b1;
+        if (robs_calculated[res_word.src1_tag] & ~res_word.src1_valid)
+        begin
+            res_word.src1_data <= cdb[res_word.src1_tag].data;
+            res_word.src1_valid <= 1'b1;
+        end
+        if (robs_calculated[res_word.src2_tag] & ~res_word.src2_valid)
+        begin
+            res_word.src2_data <= cdb[res_word.src2_tag].data;
+            res_word.src2_valid <= 1'b1;
+        end
+        state <= next_state;
     end
-    // if (cdb.tag == res_word.src2_tag & ~res_word.src2_valid)
-    if (robs_calculated[res_word.src2_tag] & ~res_word.src2_valid)
-    begin
-        res_word.src2_data <= cdb[res_word.src2_tag].data;
-        res_word.src2_valid <= 1'b1;
-    end
-    state <= next_state;
-    end
-    // STALL cases -- do nothing
-    // EXEC cases -- do nothing
-    // else if (state == EXEC)
-    // begin
-    // end
     else
     begin
         state <= next_state;
@@ -154,12 +125,6 @@ begin : next_state_logic
             else
                 next_state = PEEK;
         end
-        // STALL: begin
-        //     if (alu_free)
-        //         next_state = EXEC;
-        //     else
-        //         next_state = STALL;
-        // end
         EXEC: next_state = EMPTY;
     endcase
 end
