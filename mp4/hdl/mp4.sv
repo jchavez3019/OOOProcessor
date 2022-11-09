@@ -20,16 +20,16 @@ import rv32i_types::*;
 
 	
 	// For CP2
-	/* 
+    /*
     input pmem_resp,
     input [63:0] pmem_rdata,
 
-	To physical memory
+	//To physical memory
     output logic pmem_read,
     output logic pmem_write,
     output rv32i_word pmem_address,
     output [63:0] pmem_wdata
-	*/
+    */
 );
 
 /***************************************** Listing all signals *****************************************/
@@ -44,6 +44,51 @@ logic [31:0] pc;
 debug_itf itf();
 
 /***************************************** Modules ***************************************************/
+
+logic [31:0] regfile_mem_in;
+
+`define mbe_calc(RES_STATION, OFFSET, DATA) \
+    if (``RES_STATION.op == tomasula_types::ST) begin \
+        if (``RES_STATION.tag == itf.head_ptr) begin \
+            case(store_funct3_t'(``RES_STATION.funct3)) \
+                sw: data_mbe = 4'b1111; \
+                sh: data_mbe =  4'b0011 << ``OFFSET; \
+                sb: data_mbe =  4'b0001 << ``OFFSET; \
+            endcase \
+        end \
+    end \
+    else if (``RES_STATION.op == tomasula_types::LD) begin \
+        if (``RES_STATION.tag == itf.head_ptr) begin \
+            case(load_funct3_t'(``RES_STATION.funct3)) \
+                lw: regfile_mem_in = ``DATA; \
+                lh: regfile_mem_in = {{16{``DATA[16 * ((``OFFSET/2)+1) - 1]}}, ``DATA[8 * ``OFFSET+:16]}; \
+                lhu: regfile_mem_in = {{16{0}}, ``DATA[8 * ``OFFSET+:16]}; \
+                lb: regfile_mem_in = {{24{``DATA[(8 * (``OFFSET+1)) - 1]}}, ``DATA[8 * ``OFFSET+:8]}; \
+                lbu: regfile_mem_in = {{24{'0}}, ``DATA[8 * ``OFFSET+:8]}; \
+                default: regfile_mem_in = ``DATA; \
+            endcase \
+        end \
+    end
+
+// only request memory on a commit, where address is on cdb
+//
+logic [1:0] memaddr_offset; 
+
+always_comb begin : data_mem_req
+    //data_mem_address = 32'h98;
+    data_mem_address = {itf.cdb_out[itf.head_ptr].data[31:2], 2'b00};
+    memaddr_offset = itf.cdb_out[itf.head_ptr].data[1:0];
+    //memaddr_offset = 2'b0;
+
+    // default byte enable value
+    data_mbe = 4'b0000;
+    `mbe_calc(itf.res1_alu_out, memaddr_offset, data_mem_rdata);
+    `mbe_calc(itf.res2_alu_out, memaddr_offset, data_mem_rdata);
+    `mbe_calc(itf.res3_alu_out, memaddr_offset, data_mem_rdata);
+    `mbe_calc(itf.res4_alu_out, memaddr_offset, data_mem_rdata);
+end
+
+
 ir ir (
     .*,
     .clk(clk),
@@ -181,7 +226,7 @@ logic [31:0] regfile_in, ld_data;
 assign ld_data = 32'h600d600d;
 always_comb begin 
     if (itf.ld_commit_sel) 
-        regfile_in = ld_data;
+        regfile_in = regfile_mem_in;
     else 
         regfile_in = itf.cdb_out[itf.head_ptr].data[31:0];
 end
