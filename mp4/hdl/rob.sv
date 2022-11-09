@@ -68,7 +68,6 @@ logic branch_mispredict; // set high when branch is committing and there was a m
 
 assign flush_in_prog = flush_ip;
 
-// assign rd_commit = _rd_commit;
 assign rd_commit = rd_arr[_head_ptr];
 assign st_src_commit = _st_src_commit;
 assign ld_commit_sel = _ld_commit_sel;
@@ -134,29 +133,34 @@ always_ff @(posedge clk) begin
                 valid_arr[i] <= 1'b1;
         end
 
+        /* ----- ALLOCATE -----*/
         /* when branch wants to update rd for a branch taken/not taken */
         if (update_br)
             rd_arr[br_entry] <= rd_arr[br_entry] | {4'b0000,br_taken};
 
+        /* 
+        **because of rob_full logic, if branch_mispredict happend in the previous cycle, 
+        **rob_load can't be sent since res station should stall thus no new allocates should be happening
+        */
         if (rob_load) begin
-           // allocate ROB entry 
+           // stored to handle memory and branching
            instr_arr[_curr_ptr] <= instr_type; 
+
+           // store - need to save register that holds data
            rd_arr[_curr_ptr] <= rd; 
            _allocated_entries[_curr_ptr] <= 1'b1; // indicate an entry has been issued for the curr ptr
            // do not allocate regfile entry for st
            if (instr_type == tomasula_types::ST) begin 
                rd_arr[_curr_ptr] <= st_src;
            end
-           else if (instr_type != tomasula_types::BRANCH) begin
-               // output to regfile
-            //    _rd_commit <= rd;
+           // branch - hold taken/not taken (initialized to not taken)
+           else if (instr_type == tomasula_types::BRANCH) begin 
+               rd_arr[_curr_ptr] <= 3'b000;
            end
            /* keep track of where branch is, currently rob only supports one branch at a time */
            else if (instr_type == tomasula_types::BRANCH) begin
             _br_ptr <= _curr_ptr;
            end
-           // increment _curr_ptr
-           //TODO: beware! overflow may cause errors
            _curr_ptr <= _curr_ptr + 1'b1;
         end
 
