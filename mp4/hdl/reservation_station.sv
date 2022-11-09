@@ -176,6 +176,11 @@ begin : state_actions
                 ld_pc_to_cdb = 1'b1;
             end
 
+            if (start_exe & res_word.op == tomasula_types::AUIPC) begin
+                ld_pc_to_cdb = 1'b1;
+            end
+
+
             /* deal with branches */
             if (start_exe & res_word.op == tomasula_types::BRANCH) begin
                 ld_pc_to_cdb = 1'b1;
