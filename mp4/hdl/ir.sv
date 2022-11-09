@@ -95,10 +95,7 @@ begin : immediate_op_logic
             // ld_pc_calc = 1'b1;
         end
         op_br: begin
-            iq_ir_itf.control_word.src2_data = b_imm;
             iq_ir_itf.control_word.op = tomasula_types::BRANCH;
-            iq_ir_itf.control_word.src2_valid = 1'b1;
-            iq_ir_itf.control_word.src2_reg = 5'b00000;
             /* if branch not taken, need address that would've been taken in case of branch mispredict; by default will have pc + 4 */
             if (~br_pr_take) begin
                 iq_ir_itf.control_word.pc = pc_calc;

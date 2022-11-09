@@ -156,7 +156,7 @@ always_ff @(posedge clk) begin
         end
 
         // if the head of the rob has been computed
-        if (valid_arr[_head_ptr]) begin
+        if (valid_arr[_head_ptr] & ~flush_in_prog & ~branch_mispredict) begin
             // if(instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
             // //    _ld_pc <= 1'b1; 
             // end
@@ -176,7 +176,7 @@ always_ff @(posedge clk) begin
                     _head_ptr <= _head_ptr + 1'b1;
                 end
             end
-            else if (instr_arr[_head_ptr] == tomasula_types::ST) begin
+            else if (instr_arr[_head_ptr] == tomasula_types::ST & ~flush_in_prog & ~branch_mispredict) begin
                 // _data_write <= 1'b1;
                 // for st address
                 // send regfile the register file to read from
@@ -190,7 +190,7 @@ always_ff @(posedge clk) begin
                 end
             end
             // for all other instructions
-            else begin
+            else if (~flush_in_prog & ~branch_mispredict) begin
                 // _regfile_load <= 1'b1;
                 valid_arr[_head_ptr] <= 1'b0;
                 _allocated_entries[_head_ptr] <= 1'b0;
@@ -207,6 +207,10 @@ always_ff @(posedge clk) begin
         end 
         // this doesn't start until the cycle after a branch mispredict has been found
         if (flush_ip) begin
+
+            /* sacrifice a few cycles to delay head pointer from moving past branch */
+            _head_ptr <= _head_ptr;
+
             if (instr_arr[_br_flush_ptr] == tomasula_types::BRANCH) begin
                 // if we reached the branch, set the valid bit. 
                 // will be committed on the next cycle
@@ -224,6 +228,7 @@ always_ff @(posedge clk) begin
                 _curr_ptr = _br_flush_ptr;
                 // flush now finished processing
                 flush_ip <= 1'b0;
+
             end
             // if we haven't reached the branch yet
             else begin
@@ -256,7 +261,7 @@ always_comb begin
 
             end
             /* check if rob entry at head pointer has been calculated */
-            if (instr_arr[_head_ptr] == tomasula_types::LD) begin
+            if (instr_arr[_head_ptr] == tomasula_types::LD & ~flush_in_prog) begin
                 _data_read = 1'b1;
                 // make sure instruction is not committed until data returned
                 // from d-cache...
@@ -271,7 +276,7 @@ always_comb begin
                     // _head_ptr <= _head_ptr + 1'b1;
                 end
             end
-            else if ((instr_arr[_head_ptr] == tomasula_types::ST) & (valid_arr[_head_ptr])) begin
+            else if ((instr_arr[_head_ptr] == tomasula_types::ST) & (valid_arr[_head_ptr]) & ~flush_in_prog) begin
                 _data_write = 1'b1;
                 // for st address
                 // send regfile the register file to read from
@@ -284,7 +289,7 @@ always_comb begin
                 end
             end
             // for all other instructions except branch since branch doesn't load regfile
-            else if (valid_arr[_head_ptr] & (instr_arr[_head_ptr] != tomasula_types::BRANCH)) begin
+            else if (valid_arr[_head_ptr] & (instr_arr[_head_ptr] != tomasula_types::BRANCH) & ~flush_in_prog) begin
                 _regfile_load = 1'b1;
                 // valid_arr[_head_ptr] <= 1'b0;
 

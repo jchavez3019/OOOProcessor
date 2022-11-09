@@ -104,6 +104,7 @@ always_comb begin : dequeue_logic
             if (control_o_buf.op == tomasula_types::BRANCH) begin
                 if (resbr_empty) begin
                     dequeue = 1'b1;
+                    resbr_load = 1'b1;
                 end
             end
             else begin

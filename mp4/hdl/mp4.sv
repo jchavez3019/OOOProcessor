@@ -130,6 +130,9 @@ always_comb begin : set_rob_valids
     if (itf.res4_exec) begin
         itf.set_rob_valid[itf.res4_alu_out.tag] = 1'b1;
     end
+    if (itf.resbr_exec) begin
+        itf.set_rob_valid[itf.resbr_alu_out.tag] = 1'b1;
+    end
 end
 
 rob rob (
