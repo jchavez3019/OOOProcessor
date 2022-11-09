@@ -52,7 +52,7 @@ logic [31:0] regfile_mem_in;
         sh: data_mbe =  4'b0011 << ``OFFSET; \
         sb: data_mbe =  4'b0001 << ``OFFSET; \
     endcase \
-    */
+*/
 
 `define mbe_calc(RES_STATION, OFFSET, DATA) \
     if (``RES_STATION.op == tomasula_types::LD) begin \
@@ -78,19 +78,31 @@ logic [31:0] regfile_mem_in;
 logic [1:0] memaddr_offset; 
 
 always_comb begin : data_mem_req
-    //data_mem_address = 32'h98;
     data_mem_address = {itf.cdb_out[itf.head_ptr].data[31:2], 2'b00};
     memaddr_offset = itf.cdb_out[itf.head_ptr].data[1:0];
-    //memaddr_offset = 2'b0;
-
+    
     // default byte enable value
-    data_mbe = 4'b1111;
+    //wmask = 4'b0000;
     `mbe_calc(itf.res1_alu_out, memaddr_offset, data_mem_rdata);
-    //`mbe_calc(itf.res2_alu_out, memaddr_offset, data_mem_rdata);
-    //`mbe_calc(itf.res3_alu_out, memaddr_offset, data_mem_rdata);
-    //`mbe_calc(itf.res4_alu_out, memaddr_offset, data_mem_rdata);
+    `mbe_calc(itf.res2_alu_out, memaddr_offset, data_mem_rdata);
+    `mbe_calc(itf.res3_alu_out, memaddr_offset, data_mem_rdata);
+    `mbe_calc(itf.res4_alu_out, memaddr_offset, data_mem_rdata);
+
 end
 
+/*
+always_ff @(posedge clk) begin
+    if (rst) begin 
+        _data_mbe <= 4'b0000;
+    end
+    else begin
+        if (regfile_allocate) begin
+        end
+        else begin
+        end
+    end
+end
+*/
 
 ir ir (
     .*,
@@ -194,6 +206,7 @@ rob rob (
      .st_src (itf.control_o.src2_reg),
     //  .branch_mispredict (1'b0),
      .data_mem_resp (data_mem_resp),
+     .memaddr_offset (memaddr_offset),
      .status_rob_valid (itf.status_rob_valid),
      .set_rob_valid (itf.set_rob_valid),
      .allocated_rob_entries (itf.allocated_rob_entries),
@@ -212,7 +225,8 @@ rob rob (
      .ld_commit_sel (itf.ld_commit_sel),
      .ld_pc (itf.rob_ld_pc),
      .data_read (data_read),
-     .data_write (data_write)
+     .data_write (data_write),
+     .wmask (data_mbe)
  );
 
  /*rob

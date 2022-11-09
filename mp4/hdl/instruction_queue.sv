@@ -106,7 +106,7 @@ always_comb begin : dequeue_logic
                     dequeue = 1'b1;
 
                     // allocate to register file
-                    if (control_o_buf.op != tomasula_types::ST) begin
+                    if (!control_o_buf.op[3]) begin
                         regfile_allocate = 1'b1;
                     end
                

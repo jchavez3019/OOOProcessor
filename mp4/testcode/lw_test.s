@@ -5,7 +5,7 @@ ldst_mp2test.s:
 
     la x1, result               # X1 <= addr(result)
     lw x2, cooleceb             # X2 <= 0xc001eceb
-    sw x2, 0(x1)                # result <= c001eceb
+    sh x2, 0(x1)                # result <= c001eceb
     lw x3, result               # X3 <= c001eceb
 
 done:

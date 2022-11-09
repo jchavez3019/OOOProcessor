@@ -98,7 +98,11 @@ begin : immediate_op_logic
             // for stores, src2_reg is not correlated with s_imm
             // src2_reg is the register holding data that we will write
             // src2_data used to calculate effective address
-            iq_ir_itf.control_word.op = tomasula_types::ST;
+            case (funct3) 
+                sw: iq_ir_itf.control_word.op = tomasula_types::SW;
+                sh: iq_ir_itf.control_word.op = tomasula_types::SH;
+                sb: iq_ir_itf.control_word.op = tomasula_types::SB;
+            endcase
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_data = s_imm;
         end

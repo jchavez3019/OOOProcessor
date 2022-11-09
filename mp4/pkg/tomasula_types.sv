@@ -7,18 +7,12 @@ typedef enum bit[3:0] {
     JAL = 4'b0011, 
     JALR = 4'b0100,
     LD = 4'b0101,
-    ST = 4'b0110, 
-    CSR = 4'b0111,
-    LUI = 4'b1000
-/* julie's definition of operation */
-// typedef enum bit[2:0] {
-//     BRANCH = 3'b000,
-//     ARITH = 3'b001, 
-//     AUIPC = 3'b010, 
-//     JAL = 3'b011, 
-//     JALR = 3'b100
-//     LOAD = 3'b101,
-//     STORE = 3'b110 
+    CSR = 4'b0110, 
+    LUI = 4'b0111,
+    /* stores and only stores can have the MSB set. */
+    SB = 4'b1001,
+    SH = 4'b1011,
+    SW = 4'b1111
 } op_t;
 
 /* remember to take out rob id's later since they are unnecessary */

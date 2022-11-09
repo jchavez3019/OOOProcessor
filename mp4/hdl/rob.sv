@@ -17,6 +17,7 @@ import rv32i_types::*;
     // from d-cache
     input data_mem_resp,
 
+    input [1:0] memaddr_offset,
     // determines if rob entry has been computed
     // from reservation station
     input logic set_rob_valid[8],
@@ -45,7 +46,8 @@ import rv32i_types::*;
 
     // to d-cache
     output logic data_read,
-    output logic data_write
+    output logic data_write,
+    output logic [3:0] wmask
 );
 
 tomasula_types::op_t instr_arr [8];
@@ -142,7 +144,7 @@ always_ff @(posedge clk) begin
            rd_arr[_curr_ptr] <= rd; 
            _allocated_entries[_curr_ptr] <= 1'b1; // indicate an entry has been issued for the curr ptr
            // do not allocate regfile entry for st
-           if (instr_type == tomasula_types::ST) begin 
+           if (instr_type[3]) begin 
                rd_arr[_curr_ptr] <= st_src;
            end
            // branch - hold taken/not taken (initialized to not taken)
@@ -180,7 +182,7 @@ always_ff @(posedge clk) begin
                     _head_ptr <= _head_ptr + 1'b1;
                 end
             end
-            else if (instr_arr[_head_ptr] == tomasula_types::ST & ~flush_in_prog & ~branch_mispredict) begin
+            else if (instr_arr[_head_ptr][3]& ~flush_in_prog & ~branch_mispredict) begin
                 // _data_write <= 1'b1;
                 // for st address
                 // send regfile the register file to read from
@@ -251,6 +253,13 @@ function void set_defaults();
     branch_mispredict = 1'b0;
 endfunction
 
+always_comb begin 
+    case(tomasula_types::op_t'(instr_arr[_head_ptr])) 
+        tomasula_types::SW: wmask = 4'b1111;
+        tomasula_types::SH: wmask = 4'b0011 << memaddr_offset;
+        tomasula_types::SB: wmask = 4'b0001 << memaddr_offset;
+    endcase
+end
 always_comb begin
 
             set_defaults();
@@ -279,7 +288,7 @@ always_comb begin
                     // _head_ptr <= _head_ptr + 1'b1;
                 end
             end
-            else if ((instr_arr[_head_ptr] == tomasula_types::ST) & (valid_arr[_head_ptr]) & ~flush_in_prog) begin
+            else if ((instr_arr[_head_ptr][3]) & (valid_arr[_head_ptr]) & ~flush_in_prog) begin
                 _data_write = 1'b1;
                 // for st address
                 // send regfile the register file to read from
