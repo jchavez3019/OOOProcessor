@@ -3,7 +3,10 @@ ldst_mp2test.s:
 .section .text
 .globl _start
 
-    lw x1, cooleceb             # X1 <= 0x1111eceb
+    la x1, result               # X1 <= addr(result)
+    lw x2, cooleceb             # X2 <= 0xc001eceb
+    sw x2, 0(x1)                # result <= c001eceb
+    lw x3, result               # X3 <= c001eceb
 
 done:
     lw x7, good
