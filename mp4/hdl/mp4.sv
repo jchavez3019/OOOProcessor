@@ -20,16 +20,16 @@ import rv32i_types::*;
 
 	
 	// For CP2
-	/* 
+    /*
     input pmem_resp,
     input [63:0] pmem_rdata,
 
-	To physical memory
+	//To physical memory
     output logic pmem_read,
     output logic pmem_write,
     output rv32i_word pmem_address,
     output [63:0] pmem_wdata
-	*/
+    */
 );
 
 /***************************************** Listing all signals *****************************************/
@@ -91,6 +91,7 @@ iq iq (
     .resbr_empty(itf.resbr_empty),
     .resbr_load(itf.resbr_load),
     .rob_load(itf.rob_load),
+    .regfile_allocate(itf.regfile_allocate),
     .res1_load(itf.res1_load),
     .res2_load(itf.res2_load),
     .res3_load(itf.res3_load),
@@ -169,7 +170,7 @@ regfile regfile (
     .clk (clk),
     .rst (rst),
     .load (itf.regfile_load),
-    .allocate (itf.rob_load), // rob_load from instruction queue, more appropiate to call it allocate
+    .allocate (itf.regfile_allocate), 
     .reg_allocate (itf.control_o.rd), // gets register to allocate from control word of instruction queue
     .in (regfile_in),
     // from iq - sources to read

@@ -11,7 +11,7 @@ import rv32i_types::*;
 // rv32i_word instr_mem_address;
 
 /* iq signals */
-logic res1_empty, res2_empty, res3_empty, res4_empty, res5_empty, rob_load, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;
+logic res1_empty, res2_empty, res3_empty, res4_empty, res5_empty, rob_load, regfile_allocate, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;
 tomasula_types::ctl_word control_o;
 
 /* res1 signals */

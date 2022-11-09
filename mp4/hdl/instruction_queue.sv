@@ -5,33 +5,26 @@ import rv32i_types::*;
 (
     input logic clk,
     input logic rst,
-    // input tomasula_types::ctl_word control_i,
+
     input logic res1_empty,
     input logic res2_empty,
     input logic res3_empty,
     input logic res4_empty,
     input logic resbr_empty,
     input logic rob_full,
-    // input logic enqueue,
 
-    // output logic [4:0] regfile_tag1, // register one index in regfile
-    // output logic [4:0] regfile_tag2, // register two index in regfile
     output logic rob_load,
+    output logic regfile_allocate,
     output logic res1_load,
     output logic res2_load,
     output logic res3_load,
     output logic res4_load,
     output logic resbr_load,
     output tomasula_types::ctl_word control_o,
-    // output logic issue_q_full_n,
-    // output logic ack_o,
 
     IQ_2_IR.IQ_SIG iq_ir_itf
 );
 
-/* NOTE:
-don't send rob_load/allocate to register file for a branch
-*/
 
 logic [3:0] res_snoop;
 logic control_o_valid, dequeue, enqueue;
@@ -95,6 +88,7 @@ always_comb begin : dequeue_logic
     res4_load = 1'b0;
     dequeue = 1'b0;
     resbr_load = 1'b0;
+    regfile_allocate = 1'b0;
 
     // if the fifo is holding a valid entry
     if (control_o_valid) begin 
@@ -110,6 +104,11 @@ always_comb begin : dequeue_logic
                 if (res1_empty | res2_empty | res3_empty | res4_empty) begin
                     // dequeue the instruction
                     dequeue = 1'b1;
+
+                    // allocate to register file
+                    if (control_o_buf.op != tomasula_types::ST) begin
+                        regfile_allocate = 1'b1;
+                    end
                
                     // send read signals to the regfile
                     // regfile_tag1 = control_o_buf.src1_reg;
