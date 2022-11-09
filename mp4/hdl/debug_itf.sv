@@ -13,7 +13,7 @@ logic [31:0] pc_calc;
 logic ir_ld_pc;
 
 /* iq signals */
-logic res1_empty, res2_empty, res3_empty, res4_empty, rob_load, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;
+logic res1_empty, res2_empty, res3_empty, res4_empty, res5_empty, rob_load, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;
 tomasula_types::ctl_word control_o;
 
 /* res1 signals */
@@ -26,7 +26,6 @@ logic res2_exec;
 tomasula_types::alu_word res2_alu_out;
 logic res2_jalr_executed;
 
-
 /* res3 signals */
 logic res3_exec;
 tomasula_types::alu_word res3_alu_out;
@@ -36,6 +35,15 @@ logic res3_jalr_executed;
 logic res4_exec;
 tomasula_types::alu_word res4_alu_out;
 logic res4_jalr_executed;
+
+
+/* resbr signals */
+logic resbr_exec;
+tomasula_types::alu_word resbr_alu_out;
+
+/* res5 signals */
+// logic res5_exec;
+// tomasula_types::alu_word res5_alu_out;
 
 /* regfile signals */
 logic [31:0] reg_src1_data, reg_src2_data;
@@ -61,6 +69,7 @@ tomasula_types::cdb_data alu1_calculation;
 tomasula_types::cdb_data alu2_calculation;
 tomasula_types::cdb_data alu3_calculation;
 tomasula_types::cdb_data alu4_calculation;
+// tomasula_types::cdb_data alu5_calculation;
 
 /* mux logic */
 logic [31:0] pc_in;
