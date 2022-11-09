@@ -14,6 +14,7 @@ logic ir_ld_pc;
 
 /* iq signals */
 logic res1_empty, res2_empty, res3_empty, res4_empty, rob_load, regfile_allocate, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;
+logic regfile_allocate;
 tomasula_types::ctl_word control_o;
 
 /* res1 signals */

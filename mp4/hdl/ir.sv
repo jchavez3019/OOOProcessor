@@ -70,7 +70,6 @@ begin : immediate_op_logic
     iq_ir_itf.control_word.src2_valid = 1'b0;
     iq_ir_itf.control_word.op = tomasula_types::ARITH;
     iq_ir_itf.control_word.src2_reg = rs2; // should be rs2 if no immediate is used, otherwise 0
-    iq_ir_itf.control_word.pc = pc + 4;
     iq_ir_itf.control_word.rd = rd;
     case (opcode)
         op_lui: begin
@@ -80,17 +79,19 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_reg = 5'b00000;
         end
         op_auipc: begin 
-            iq_ir_itf.control_word.src2_data = pc + u_imm;
+            iq_ir_itf.control_word.src2_data = ld_pc;
             iq_ir_itf.control_word.op = tomasula_types::AUIPC;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src1_reg = 5'b00000;
             iq_ir_itf.control_word.src2_reg = 5'b00000;
+            iq_ir_itf.control_word.pc = pc + u_imm;
         end
         op_jal: begin
             // iq_ir_itf.control_word.src2_data = j_imm;
             iq_ir_itf.control_word.src1_reg = 5'b00000;
             // iq_ir_itf.control_word.src1_valid = 1'b1; // possibly don't need this since src1_valid from RegFile for register 0 should always be 1'b1
-            iq_ir_itf.control_word.src2_data = pc + 4; // jal places pc + 4 into a register
+            //iq_ir_itf.control_word.src2_data = pc + 4; // jal places pc + 4 into a register
+            iq_ir_itf.control_word.src2_data = pc_calc; // jal places pc + 4 into a register
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             // ld_pc_calc = 1'b1;

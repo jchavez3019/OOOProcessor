@@ -3,7 +3,7 @@ ldst_mp2test.s:
 .section .text
 .globl _start
 
-    lb x1, cooleceb             # X1 <= 0x1111eceb
+    lw x1, cooleceb             # X1 <= 0x1111eceb
 
 done:
     lw x7, good
