@@ -4,10 +4,10 @@ module branch_alu
 import rv32i_types::*;
 (
     //compare
-    input branch_funct3_t op,
-    input rv32i_word first,
-    input rv32i_word second,
-    output logic answer,
+    input [2:0] op,
+    input [31:0] first,
+    input [31:0] second,
+    output logic answer
 
     // address calculation
     // input [31:0] a, b,
@@ -17,7 +17,7 @@ import rv32i_types::*;
 
 
 always_comb begin
-    unique case (op)
+    unique case (branch_funct3_t'(op))
         rv32i_types::bge: answer = ($signed(first) >= $signed(second));
         rv32i_types::bltu: answer = (first < second);
         rv32i_types::bgeu: answer = (first >= second);

@@ -24,6 +24,7 @@ import rv32i_types::*;
 
 logic [31:0] data; // holds current instruction from cache
 // logic [31:0] curr_pc; // holds current pc to add to control word
+logic ld_pc_calc;
 logic locked_instr_mem_resp; // since i-cache works on the falling edges for some reason
 
 logic [2:0] funct3;
@@ -188,7 +189,7 @@ begin : state_actions
                 
             // end 
             else begin
-                pc_calc = pc+4
+                pc_calc = pc+4;
                 ld_pc = 1'b1; 
             end
             ld_pc = 1'b1; 
@@ -213,7 +214,7 @@ begin : next_state_logic
         end
         CREATE: begin
             if(opcode == op_jalr) begin
-                next_state = STALL_JALR
+                next_state = STALL_JALR;
             end
             else if (iq_ir_itf.ack_o) 
                 next_state = FETCH;

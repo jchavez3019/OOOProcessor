@@ -110,7 +110,7 @@ always_ff @(posedge clk) begin
            end
            // branch - hold taken/not taken (initialized to not taken)
            else if (instr_type == tomasula_types::BRANCH) begin 
-               rd_arr[_curr_ptr] <= 3'b000;
+               rd_arr[_curr_ptr] <= 5'b00000;
            end
            // all other instructions
            else begin
@@ -147,37 +147,36 @@ always_ff @(posedge clk) begin
                 _head_ptr <= _head_ptr + 1'b1;
             end
         end
-    end
-end
 
-/* ----- BRANCH MISPREDICT ----- */  
-always_ff @(posedge clk) begin
-if (branch_mispredict) begin
-    flush_ip <= 1'b1;
-    _br_ptr <= _head_ptr;
-end 
-// FIXME: does this if get processed on the same cycle flush_ip is set?
-if (flush_ip) begin
-    if (instr_arr[_br_ptr] == tomasula_types::BRANCH) begin
-        // if we reached the branch, set the valid bit. 
-        // will be committed on the next cycle
-        // FIXME: im dont think the valid bit needs to be set here,
-        // since at this point there was a branch already calculated
-        // which has the valid bit set already
-        valid_arr[_br_ptr] = 1'b1;
-        // flush all instructions after the branch
-        for (int i = _br_ptr + 1; i <= (_head_ptr + 7) % 8; i++) begin
-            valid_arr[i] <= 1'b0;
+    /* ----- BRANCH MISPREDICT ----- */  
+        if (branch_mispredict) begin
+            flush_ip <= 1'b1;
+            _br_ptr <= _head_ptr;
+        end 
+        // FIXME: does this if get processed on the same cycle flush_ip is set?
+        if (flush_ip) begin
+            if (instr_arr[_br_ptr] == tomasula_types::BRANCH) begin
+                // if we reached the branch, set the valid bit. 
+                // will be committed on the next cycle
+                // FIXME: im dont think the valid bit needs to be set here,
+                // since at this point there was a branch already calculated
+                // which has the valid bit set already
+                valid_arr[_br_ptr] = 1'b1;
+                // flush all instructions after the branch
+                for (int i = _br_ptr + 1; i <= (_head_ptr + 7) % 8; i++) begin
+                    valid_arr[i] <= 1'b0;
+                end
+                // update current pointer
+                _curr_ptr = _br_ptr;
+                // flush now finished processing
+                flush_ip <= 1'b0;
+            end
+            // if we haven't reached the branch yet
+            else begin
+                // _rd_commit <= rd_arr[br_ptr];
+                _br_ptr <= _br_ptr + 1'b1;
+            end
         end
-        // update current pointer
-        _curr_ptr = _br_ptr;
-        // flush now finished processing
-        flush_ip <= 1'b0;
-    end
-    // if we haven't reached the branch yet
-    else begin
-        // _rd_commit <= rd_arr[br_ptr];
-        _br_ptr <= _br_ptr + 1'b1;
     end
 end
 
