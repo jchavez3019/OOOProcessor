@@ -7,7 +7,7 @@ import rv32i_types::*;
     input branch_funct3_t op,
     input rv32i_word first,
     input rv32i_word second,
-    output logic answer,
+    output logic answer
 
     // address calculation
     // input [31:0] a, b,

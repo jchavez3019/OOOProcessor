@@ -49,7 +49,6 @@ ir ir (
     .clk(clk),
     .rst(rst),
     .instr_mem_resp(instr_mem_resp),
-    // .in(itf.in),
     .in(instr_mem_rdata),
     .executed_jalr(itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed),
     .br_pr_take (1'b1),
@@ -62,26 +61,40 @@ ir ir (
 
 /* NOTE:  update rob logic for loading branches since it is necessary for branch mispredicts */
 always_comb begin : pc_mux        
-    if (itf.rob_ld_pc) 
-        itf.pc_in = itf.cdb_out[itf.head_ptr].data[31:0];
-    else 
-        itf.pc_in = itf.pc_calc;
+    if (itf.rob_ld_pc) // only happens for a branch mispredict
+        itf.pc_in[31:0] = itf.cdb_out[itf.br_ptr].data[31:0];
+    /* cases where jalr was calculated and we can finally unstall the pipeline */
+    else if (itf.res1_jalr_executed)
+        // itf.pc_in = itf.cdb_out[itf.res1_alu_out.pc].data[31:0];
+        itf.pc_in[31:0] = itf.alu1_calculation.data[31:0];
+    else if (itf.res2_jalr_executed)
+        // itf.pc_in = itf.cdb_out[itf.res2_alu_out.pc].data[31:0];
+        itf.pc_in[31:0] = itf.alu2_calculation.data[31:0];
+    else if (itf.res3_jalr_executed)
+        // itf.pc_in = itf.cdb_out[itf.res3_alu_out.pc].data[31:0];
+        itf.pc_in[31:0] = itf.alu3_calculation.data[31:0];
+    else if (itf.res4_jalr_executed)
+        // itf.pc_in = itf.cdb_out[itf.res4_alu_out.pc].data[31:0];
+        itf.pc_in[31:0] = itf.alu4_calculation.data[31:0];
+    /* default */
+    else
+        itf.pc_in[31:0] = itf.pc_calc[31:0];
 end
 
 pc_register PC (
         .clk (clk),
         .rst (rst),
-        .load(itf.ir_ld_pc | itf.rob_ld_pc),
+        .load(itf.ir_ld_pc | itf.rob_ld_pc | itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed),
         // .load(ld_pc),
         .in(itf.pc_in),
-        .in(itf.pc_calc),
+        // .in(itf.pc_calc),
         .out(pc)
     );
 
 iq iq (
     .*,
     .clk (clk),
-    .rst (rst),
+    .rst (rst | itf.flush_in_prog),
     // .control_i (itf.control_i),
     .res1_empty(itf.res1_empty),
     .res2_empty(itf.res2_empty),
@@ -127,13 +140,19 @@ rob rob (
      .instr_type (itf.control_o.op),
      .rd (itf.control_o.rd),
      .st_src (itf.control_o.src1_reg),
-     .branch_mispredict (1'b0),
+    //  .branch_mispredict (1'b0),
      .data_mem_resp (1'b0),
      .status_rob_valid (itf.status_rob_valid),
      .set_rob_valid (itf.set_rob_valid),
+     .allocated_rob_entries (itf.allocated_rob_entries),
+     .br_entry(itf.resbr_alu_out.tag),
+     .br_taken(itf.taken),
+     .update_br(itf.resbr_update_br),
      .curr_ptr (itf.curr_ptr), 
      .head_ptr (itf.head_ptr), 
      .br_ptr (itf.br_ptr), 
+     .br_flush_ptr(itf.br_flush_ptr),
+     .flush_in_prog(itf.flush_in_prog),
      .rd_commit (itf.rd_commit),
      .st_src_commit (itf.st_src_commit),
      .regfile_load (itf.regfile_load),
@@ -169,8 +188,8 @@ regfile regfile (
     .clk (clk),
     .rst (rst),
     .load (itf.regfile_load),
-    .allocate (itf.rob_load), // rob_load from instruction queue, more appropiate to call it allocate
-    .reg_allocate (itf.control_o.rd), // gets register to allocate from control word of instruction queue
+    .allocate (itf.flush_in_prog | itf.rob_load), // rob_load from instruction queue, more appropiate to call it allocate
+    .reg_allocate (itf.flush_in_prog ? itf.br_flush_ptr : itf.control_o.rd), // gets register to allocate from control word of instruction queue
     .in (regfile_in),
     // from iq - sources to read
     .src_a (itf.control_o.src1_reg),
@@ -191,7 +210,6 @@ tomasula_types::res_word res_word;
 logic [31:0] src2_data;
 logic src2_v;
 
-logic taken;
 assign src2_v = itf.src2_valid | itf.control_o.src2_valid;
 assign src2_data = itf.control_o.src2_valid ? itf.control_o.src2_data : itf.reg_src2_data;
 
@@ -215,9 +233,12 @@ reservation_station res1(
     .load_word(itf.res1_load),
     .cdb(itf.cdb_out),
     .robs_calculated(itf.status_rob_valid),
+    .allocated_rob_entries(itf.allocated_rob_entries),
     .alu_data(itf.res1_alu_out),
     .start_exe(itf.res1_exec),
     .jalr_executed(itf.res1_jalr_executed),
+    .ld_pc_to_cdb(itf.res1_pc_to_cdb),
+    .update_br(itf.res1_update_br),
     .res_empty(itf.res1_empty),
     .res_in(res_word)
 );
@@ -233,9 +254,12 @@ reservation_station res2(
     .load_word(itf.res2_load),
     .cdb(itf.cdb_out),
     .robs_calculated(itf.status_rob_valid),
+    .allocated_rob_entries(itf.allocated_rob_entries),
     .alu_data(itf.res2_alu_out),
     .start_exe(itf.res2_exec),
     .jalr_executed(itf.res2_jalr_executed),
+    .ld_pc_to_cdb(itf.res2_pc_to_cdb),
+    .update_br(itf.res2_update_br),
     .res_empty(itf.res2_empty),
     .res_in(res_word)
 );
@@ -251,9 +275,12 @@ reservation_station res3(
     .load_word(itf.res3_load),
     .cdb(itf.cdb_out),
     .robs_calculated(itf.status_rob_valid),
+    .allocated_rob_entries(itf.allocated_rob_entries),
     .alu_data(itf.res3_alu_out),
     .start_exe(itf.res3_exec),
     .jalr_executed(itf.res3_jalr_executed),
+    .ld_pc_to_cdb(itf.res3_pc_to_cdb),
+    .update_br(itf.res3_update_br),
     .res_empty(itf.res3_empty),
     .res_in(res_word)
 );
@@ -269,9 +296,12 @@ reservation_station res4(
     .load_word(itf.res4_load),
     .cdb(itf.cdb_out),
     .robs_calculated(itf.status_rob_valid),
+    .allocated_rob_entries(itf.allocated_rob_entries),
     .alu_data(itf.res4_alu_out),
     .start_exe(itf.res4_exec),
     .jalr_executed(itf.res4_jalr_executed),
+    .ld_pc_to_cdb(itf.res4_pc_to_cdb),
+    .update_br(itf.res4_update_br),
     .res_empty(itf.res4_empty),
     .res_in(res_word)
 );
@@ -281,23 +311,27 @@ alu alu4(
     .cdb_data(itf.alu4_calculation)
 );
 
-reservation_station res5(      // for branches
+reservation_station res_br(      // for branches
     .clk (clk),
     .rst(rst),
     .load_word(itf.resbr_load),
     .cdb(itf.cdb_out),
     .robs_calculated(itf.status_rob_valid),
+    .allocated_rob_entries(itf.allocated_rob_entries),
     .alu_data(itf.resbr_alu_out),
     .start_exe(itf.resbr_exec),
+    .jalr_executed(itf.resbr_jalr_executed),
+    .ld_pc_to_cdb(itf.resbr_pc_to_cdb),
+    .update_br(itf.resbr_update_br),
     .res_empty(itf.resbr_empty),
     .res_in(res_word)
 );
 
 branch_alu CMP(
-    .op(itf.resbr_alu_out.op),
+    .op(branch_funct3_t'(itf.resbr_alu_out.funct3)), // typecast func3 to rv32i type to suppress warning
     .first(itf.resbr_alu_out.src1_data),
     .second(itf.resbr_alu_out.src2_data),
-    .answer(taken)
+    .answer(itf.taken)
 );
 
 logic [7:0] cdb_enable;
@@ -306,15 +340,16 @@ always_comb begin : cdb_enable_logic
     for (int i = 0; i < 8; i++) begin
         itf.cdb_in[i].data[31:0] = 32'h00000000;
     end
-    itf.cdb_in[itf.res1_alu_out.tag].data[31:0] = itf.alu1_calculation.data[31:0];
-    itf.cdb_in[itf.res2_alu_out.tag].data[31:0] = itf.alu2_calculation.data[31:0];
-    itf.cdb_in[itf.res3_alu_out.tag].data[31:0] = itf.alu3_calculation.data[31:0];
-    itf.cdb_in[itf.res4_alu_out.tag].data[31:0] = itf.alu4_calculation.data[31:0];
+    /* load cdb with alu outputs or pc in jal/jalr special cases */
+    itf.cdb_in[itf.res1_alu_out.tag].data[31:0] = itf.res1_pc_to_cdb ? itf.res1_alu_out.pc : itf.alu1_calculation.data[31:0];
+    itf.cdb_in[itf.res2_alu_out.tag].data[31:0] = itf.res2_pc_to_cdb ? itf.res2_alu_out.pc : itf.alu2_calculation.data[31:0];
+    itf.cdb_in[itf.res3_alu_out.tag].data[31:0] = itf.res3_pc_to_cdb ? itf.res3_alu_out.pc : itf.alu3_calculation.data[31:0];
+    itf.cdb_in[itf.res4_alu_out.tag].data[31:0] = itf.res4_pc_to_cdb ? itf.res4_alu_out.pc : itf.alu4_calculation.data[31:0];
 
     // Data propogation for branch computation. All 1's if taken otherwise 0
-    itf.cdb_in[itf.res5_alu_out.tag].data[31:0] = {32{taken}};
+    itf.cdb_in[itf.resbr_alu_out.tag].data[31:0] = itf.resbr_update_br ? itf.resbr_alu_out.pc : 32'h00000000;
     
-    cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag) | (itf.res5_exec << itf.res5_alu_out.tag);
+    cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag) | (itf.resbr_exec << itf.resbr_alu_out.tag);
 end
 
 cdb cdb(

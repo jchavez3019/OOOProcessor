@@ -27,11 +27,13 @@ _start:
 
     # jal x7, jal_test_1
 
-    addi x1, x1, 60
-    jalr x7, x3, 20 # instruction 60 + 20
+    addi x1, x1, 96 # 96 = 0x60
+    jalr x7, x1, 24 # instruction 60 + 20
     addi x2, x2, 5
 
     addi x2, x2, 7 # this should be instruction 80
+
+    addi x2, x2, 9
 
     # and x6, x0, x6
     # and x7, x0, x7
