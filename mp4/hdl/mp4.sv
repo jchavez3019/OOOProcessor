@@ -344,13 +344,23 @@ always_comb begin : cdb_enable_logic
         itf.cdb_in[i].data[31:0] = 32'h00000000;
     end
     /* load cdb with alu outputs or pc in jal/jalr special cases */
-    itf.cdb_in[itf.res1_alu_out.tag].data[31:0] = itf.res1_pc_to_cdb ? itf.res1_alu_out.pc : itf.alu1_calculation.data[31:0];
-    itf.cdb_in[itf.res2_alu_out.tag].data[31:0] = itf.res2_pc_to_cdb ? itf.res2_alu_out.pc : itf.alu2_calculation.data[31:0];
-    itf.cdb_in[itf.res3_alu_out.tag].data[31:0] = itf.res3_pc_to_cdb ? itf.res3_alu_out.pc : itf.alu3_calculation.data[31:0];
-    itf.cdb_in[itf.res4_alu_out.tag].data[31:0] = itf.res4_pc_to_cdb ? itf.res4_alu_out.pc : itf.alu4_calculation.data[31:0];
+    if (itf.res1_exec) begin
+        itf.cdb_in[itf.res1_alu_out.tag].data[31:0] = itf.res1_pc_to_cdb ? itf.res1_alu_out.pc : itf.alu1_calculation.data[31:0];
+    end
+    if (itf.res2_exec) begin
+        itf.cdb_in[itf.res2_alu_out.tag].data[31:0] = itf.res2_pc_to_cdb ? itf.res2_alu_out.pc : itf.alu2_calculation.data[31:0];
+    end
+    if (itf.res3_exec) begin
+        itf.cdb_in[itf.res3_alu_out.tag].data[31:0] = itf.res3_pc_to_cdb ? itf.res3_alu_out.pc : itf.alu3_calculation.data[31:0];
+    end
+    if (itf.res4_exec) begin
+        itf.cdb_in[itf.res4_alu_out.tag].data[31:0] = itf.res4_pc_to_cdb ? itf.res4_alu_out.pc : itf.alu4_calculation.data[31:0];
+    end
 
     // Data propogation for branch computation. All 1's if taken otherwise 0
-    itf.cdb_in[itf.resbr_alu_out.tag].data[31:0] = itf.resbr_update_br ? itf.resbr_alu_out.pc : 32'h00000000;
+    if (itf.resbr_exec) begin
+        itf.cdb_in[itf.resbr_alu_out.tag].data[31:0] = itf.resbr_update_br ? itf.resbr_alu_out.pc : 32'h00000000;
+    end
     
     cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag) | (itf.resbr_exec << itf.resbr_alu_out.tag);
 end

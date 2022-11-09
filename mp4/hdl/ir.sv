@@ -80,7 +80,8 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_reg = 5'b00000;
         end
         op_auipc: begin 
-            iq_ir_itf.control_word.src2_data = u_imm;
+            iq_ir_itf.control_word.src1_reg = 5'b00000;
+            iq_ir_itf.control_word.src2_data = pc + u_imm;
             iq_ir_itf.control_word.op = tomasula_types::AUIPC;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_reg = 5'b00000;
@@ -89,7 +90,9 @@ begin : immediate_op_logic
             // iq_ir_itf.control_word.src2_data = j_imm;
             iq_ir_itf.control_word.src1_reg = 5'b00000;
             // iq_ir_itf.control_word.src1_valid = 1'b1; // possibly don't need this since src1_valid from RegFile for register 0 should always be 1'b1
-            iq_ir_itf.control_word.src2_data = pc_calc; // jal places pc + 4 into a register
+            // iq_ir_itf.control_word.src2_data = pc_calc; // jal places pc + 4 into a register
+            iq_ir_itf.control_word.src2_data = pc + 4; // data to be stored in register for jal
+            iq_ir_itf.control_word.pc = pc + 4;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             // ld_pc_calc = 1'b1;
@@ -129,6 +132,7 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_reg = 5'b00000;
         end
         op_load: begin
+            iq_ir_itf.control_word.src1_reg = 5'b00001;
             iq_ir_itf.control_word.src2_data = i_imm;
             iq_ir_itf.control_word.op = tomasula_types::LD;
             iq_ir_itf.control_word.src2_valid = 1'b1;
@@ -231,6 +235,8 @@ begin : next_state_logic
                 else
                     next_state = FETCH;
             end
+            else
+                next_state = STALL;
         end
         STALL: begin
             if (iq_ir_itf.ack_o) begin

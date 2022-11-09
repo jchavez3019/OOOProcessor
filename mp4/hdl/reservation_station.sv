@@ -29,7 +29,7 @@ always_comb
 begin : assign_alu_data
     alu_data.op = res_word.op;
     /* modify funct3 so that alu does an add operation */
-    if (res_word.op == tomasula_types::JALR | res_word.op == tomasula_types::JAL)
+    if (res_word.op == tomasula_types::JALR | res_word.op == tomasula_types::JAL | res_word.op == tomasula_types::LD)
         alu_data.funct3 = 3'b000;
     else
         alu_data.funct3 = res_word.funct3;
