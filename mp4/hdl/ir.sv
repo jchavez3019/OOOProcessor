@@ -79,11 +79,13 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_reg = 5'b00000;
         end
         op_auipc: begin 
-            iq_ir_itf.control_word.src2_data = ld_pc;
             iq_ir_itf.control_word.op = tomasula_types::AUIPC;
-            iq_ir_itf.control_word.src2_valid = 1'b1;
-            iq_ir_itf.control_word.src1_reg = 5'b00000;
+            //iq_ir_itf.control_word.src1_reg = 5'b00000;
+            //iq_ir_itf.control_word.src1_data = pc;
+            //iq_ir_itf.control_word.src1_valid = 1'b1;
             iq_ir_itf.control_word.src2_reg = 5'b00000;
+            iq_ir_itf.control_word.src2_data = pc + u_imm;
+            iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.pc = pc + u_imm;
         end
         op_jal: begin
