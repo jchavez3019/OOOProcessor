@@ -10,8 +10,8 @@ import rv32i_types::*;
     output logic answer,
 
     // address calculation
-    input [31:0] a, b,
-    output [31:0] address  
+    // input [31:0] a, b,
+    // output [31:0] address  
 );
 
 
@@ -27,7 +27,7 @@ always_comb begin
         default: `BAD_MUX_SEL;
     endcase
 
-    address = a + b;
+    // address = a + b;
 end
 
 endmodule

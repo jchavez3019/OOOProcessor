@@ -190,6 +190,8 @@ regfile regfile (
 tomasula_types::res_word res_word;
 logic [31:0] src2_data;
 logic src2_v;
+
+logic taken;
 assign src2_v = itf.src2_valid | itf.control_o.src2_valid;
 assign src2_data = itf.control_o.src2_valid ? itf.control_o.src2_data : itf.reg_src2_data;
 
@@ -275,6 +277,25 @@ alu alu4(
     .cdb_data(itf.alu4_calculation)
 );
 
+reservation_station res5(      // for branches
+    .clk (clk),
+    .rst(rst),
+    .load_word(itf.resbr_load),
+    .cdb(itf.cdb_out),
+    .robs_calculated(itf.status_rob_valid),
+    .alu_data(itf.resbr_alu_out),
+    .start_exe(itf.resbr_exec),
+    .res_empty(itf.resbr_empty),
+    .res_in(res_word)
+);
+
+branch_alu CMP(
+    .op(itf.resbr_alu_out.op),
+    .first(itf.resbr_alu_out.src1_data),
+    .second(itf.resbr_alu_out.src2_data),
+    .answer(taken)
+);
+
 logic [7:0] cdb_enable;
 always_comb begin : cdb_enable_logic
     // set default values to 0
@@ -285,8 +306,11 @@ always_comb begin : cdb_enable_logic
     itf.cdb_in[itf.res2_alu_out.tag].data[31:0] = itf.alu2_calculation.data[31:0];
     itf.cdb_in[itf.res3_alu_out.tag].data[31:0] = itf.alu3_calculation.data[31:0];
     itf.cdb_in[itf.res4_alu_out.tag].data[31:0] = itf.alu4_calculation.data[31:0];
+
+    // Data propogation for branch computation. All 1's if taken otherwise 0
+    itf.cdb_in[itf.res5_alu_out.tag].data[31:0] = {32{taken}};
     
-    cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag);
+    cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag) | (itf.res5_exec << itf.res5_alu_out.tag);
 end
 
 cdb cdb(
