@@ -153,11 +153,6 @@ always_ff @(posedge clk) begin
            else begin
                rd_arr[_curr_ptr] <= rd; 
            end
-           else if (instr_type == tomasula_types::BRANCH) begin
-            _br_ptr <= _curr_ptr;
-           end
-           // increment _curr_ptr
-           //TODO: beware! overflow may cause errors
            _curr_ptr <= _curr_ptr + 1'b1;
         end
 
@@ -240,8 +235,8 @@ always_ff @(posedge clk) begin
                 // _rd_commit <= rd_arr[br_flush_ptr];
                 _br_flush_ptr <= _br_flush_ptr + 1'b1;
             end
->>>>>>> 1d3bd5186d94e44513eeadf32bef5c97b445879c
         end
+        /*
         // update current pointer
         _curr_ptr = _br_ptr;
         // flush now finished processing
@@ -252,6 +247,8 @@ always_ff @(posedge clk) begin
         // _rd_commit <= rd_arr[br_ptr];
         _br_ptr <= _br_ptr + 1'b1;
     end
+    */
+   end
 end
 
 function void set_defaults();
