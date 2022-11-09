@@ -46,9 +46,30 @@ debug_itf itf();
 
 /***************************************** Modules ***************************************************/
 
+`define mbe_calc(RES_STATION) \
+    if (itf.res``RES_STATION_alu_out.op == tomasula_types::ST) begin \
+        if (itf.res``RES_STATION_alu_out.tag == itf.head_ptr) begin \
+            case(load_funct3_t'(itf.res``RES_STATION_alu_out.funct3)) \
+                lw: data_mbe = 4'b1111; \
+                lh, lhu : data_mbe =  4'b0011 << mem_addr_offset; \
+                lb, lbu : data_mbe =  4'b0001 << mem_addr_offset; \
+            endcase \
+        end \
+    end 
+
 // only request memory on a commit, where address is on cdb
 //
-assign data_mem_address = itf.cdb_out[itf.head_ptr].data[31:0];
+always_comb begin : data_mem_req
+    data_mem_address = {itf.cdb_out[itf.head_ptr].data[31:2], 2'b00};
+    memaddr_offset = itf.cdb_out[itf.head_ptr].data[1:0];
+    // default byte enable value
+    data_mbe = 4'b0000;
+    `mbe_calc(1);
+    `mbe_calc(2);
+    `mbe_calc(3);
+    `mbe_calc(4);
+end
+
 
 ir ir (
     .*,
