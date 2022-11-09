@@ -147,14 +147,12 @@ always_ff @(posedge clk) begin
            end
            // branch - hold taken/not taken (initialized to not taken)
            else if (instr_type == tomasula_types::BRANCH) begin 
-               rd_arr[_curr_ptr] <= 3'b000;
+               rd_arr[_curr_ptr] <= 5'b00000;
+               _br_ptr <= _curr_ptr;
            end
            // all other instructions
            else begin
                rd_arr[_curr_ptr] <= rd; 
-           end
-           else if (instr_type == tomasula_types::BRANCH) begin
-            _br_ptr <= _curr_ptr;
            end
            // increment _curr_ptr
            //TODO: beware! overflow may cause errors
@@ -240,17 +238,7 @@ always_ff @(posedge clk) begin
                 // _rd_commit <= rd_arr[br_flush_ptr];
                 _br_flush_ptr <= _br_flush_ptr + 1'b1;
             end
->>>>>>> 1d3bd5186d94e44513eeadf32bef5c97b445879c
         end
-        // update current pointer
-        _curr_ptr = _br_ptr;
-        // flush now finished processing
-        flush_ip <= 1'b0;
-    end
-    // if we haven't reached the branch yet
-    else begin
-        // _rd_commit <= rd_arr[br_ptr];
-        _br_ptr <= _br_ptr + 1'b1;
     end
 end
 
