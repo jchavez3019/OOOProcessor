@@ -45,6 +45,11 @@ logic [31:0] pc_calc; // this is the output of the ir register which does addres
 debug_itf itf();
 
 /***************************************** Modules ***************************************************/
+
+// only request memory on a commit, where address is on cdb
+//
+assign data_mem_address = itf.cdb_out[itf.head_ptr].data[31:0];
+
 ir ir (
     .*,
     .clk(clk),
@@ -76,7 +81,7 @@ pc_register PC (
         .load(ld_pc | itf.ld_br),
         .in(pc_in),
         .out(pc)
-    );
+);
 
 iq iq (
     .*,
@@ -155,11 +160,10 @@ rob rob (
  */
 
 
-logic [31:0] regfile_in, ld_data;
-assign ld_data = 32'h600d600d;
+logic [31:0] regfile_in, data_mem_rdata;
 always_comb begin 
     if (itf.ld_commit_sel) 
-        regfile_in = ld_data;
+        regfile_in = data_mem_rdata;
     else 
         regfile_in = itf.cdb_out[itf.head_ptr].data[31:0];
 end
