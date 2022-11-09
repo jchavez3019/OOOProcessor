@@ -6,10 +6,13 @@ import rv32i_types::*;
     input load_word,
     input tomasula_types::cdb_data cdb[8],
     input logic [7:0] robs_calculated,
+    input logic [7:0] allocated_rob_entries,
     output tomasula_types::alu_word alu_data,
     output logic start_exe,
     output logic res_empty,
     output logic jalr_executed, // only instruction that does a jump relative to a register instead of pc
+    output logic ld_pc_to_cdb, // used for jal and jalr instructions to load pc + 4 into cdb instead of alu output
+    output logic update_br, // used by branch instructions to update rd array in rob
     input tomasula_types::res_word res_in
 );
 
@@ -25,9 +28,14 @@ enum int unsigned {
 always_comb
 begin : assign_alu_data
     alu_data.op = res_word.op;
-    alu_data.funct3 = res_word.funct3;
+    /* modify funct3 so that alu does an add operation */
+    if (res_word.op == tomasula_types::JALR | res_word.op == tomasula_types::JAL)
+        alu_data.funct3 = 3'b000;
+    else
+        alu_data.funct3 = res_word.funct3;
     alu_data.funct7 = res_word.funct7;
     alu_data.tag = res_word.rd_tag;
+    alu_data.pc = res_word.pc;
 end
 
 
@@ -45,6 +53,7 @@ begin
         res_word.src2_data <= 32'h0000;
         res_word.src2_valid <= 1'b0;
         res_word.rd_tag <= 3'b000;
+        res_word.pc <= 32'h00000000;
 
         state <= EMPTY;
     end
@@ -100,6 +109,8 @@ function void set_defaults();
     res_empty = 1'b0;
     start_exe = 1'b0;
     jalr_executed = 1'b0;
+    ld_pc_to_cdb = 1'b0;
+    update_br = 1'b0;
     alu_data.src1_data = 32'h00000000;
     alu_data.src2_data = 32'h00000000;
 endfunction
@@ -119,9 +130,23 @@ begin : state_actions
             if (res_in.src1_valid & (res_word.src2_valid | res_in.src2_valid))
                 start_exe = 1'b1;
 
-            if (start_exe & res_word.op == tomasula_types::JALR)
+            /* deal with jalr special case to unstall pipeline */
+            if (start_exe & res_word.op == tomasula_types::JALR) begin
                 jalr_executed = 1'b1;
+                ld_pc_to_cdb = 1'b1;
+            end
 
+            /* reroute output for jal like above */
+            if (start_exe & res_word.op == tomasula_types::JAL) begin
+                ld_pc_to_cdb = 1'b1;
+            end
+
+            /* deal with branches */
+            if (start_exe & res_word.op == tomasula_types::BRANCH) begin
+                ld_pc_to_cdb = 1'b1;
+                update_br = 1'b1;
+            end
+            
             if (res_word.src1_valid)
                 alu_data.src1_data = res_word.src1_data;
             else
@@ -137,8 +162,22 @@ begin : state_actions
             if ((res_word.src1_valid | robs_calculated[res_word.src1_tag]) & (res_word.src2_valid | robs_calculated[res_word.src2_tag]))
                 start_exe = 1'b1;
 
-            if (start_exe & res_word.op == tomasula_types::JALR)
+            /* deal with jalr special case to unstall pipeline */
+            if (start_exe & res_word.op == tomasula_types::JALR) begin
                 jalr_executed = 1'b1;
+                ld_pc_to_cdb = 1'b1;
+            end
+
+            /* reroute output for jal like above */
+            if (start_exe & res_word.op == tomasula_types::JAL) begin
+                ld_pc_to_cdb = 1'b1;
+            end
+
+            /* deal with branches */
+            if (start_exe & res_word.op == tomasula_types::BRANCH) begin
+                ld_pc_to_cdb = 1'b1;
+                update_br = 1'b1;
+            end
 
             if (res_word.src1_valid)
                 alu_data.src1_data = res_word.src1_data;
@@ -166,12 +205,20 @@ begin : next_state_logic
                 next_state = EMPTY;
             else
                 next_state = PEEK_ONE;
+
+            /* in the case reservation station needs to get flushed */
+            if (~allocated_rob_entries[res_word.rd_tag])
+                next_state = EMPTY;
         end
         PEEK_ONE, PEEK_REST: begin
             if ((res_word.src1_valid | robs_calculated[res_word.src1_tag]) & (res_word.src2_valid | robs_calculated[res_word.src2_tag]))
                 next_state = EMPTY;
             else
                 next_state = PEEK_REST;
+
+            /* in the case reservation station needs to get flushed */
+            if (~allocated_rob_entries[res_word.rd_tag])
+                next_state = EMPTY;
         end
     endcase
 end

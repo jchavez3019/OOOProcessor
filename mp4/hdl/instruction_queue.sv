@@ -39,7 +39,7 @@ tomasula_types::ctl_word control_o_buf;
 assign res_snoop = {res4_empty, res3_empty, res2_empty, res1_empty};
 
 logic ready_o;
-assign ready_o = iq_ir_itf.issue_q_full_n;
+assign ready_o = iq_ir_itf.issue_q_full_n & ~rst; // if fifo is ready and instruction queue is not getting reset/flushed
 // assign control_o = control_o_buf;
 
 always_comb begin : control_o_logic
@@ -104,6 +104,7 @@ always_comb begin : dequeue_logic
             if (control_o_buf.op == tomasula_types::BRANCH) begin
                 if (resbr_empty) begin
                     dequeue = 1'b1;
+                    resbr_load = 1'b1;
                 end
             end
             else begin
