@@ -23,27 +23,37 @@ _start:
 
     and x1, x2, x0
     and x2, x3, x0
-    and x3, x4, x0
+    # and x3, x4, x0
+
+    # jal x7, jal_test_1
+
+    addi x1, x1, 60
+    jalr x7, x3, 20 # instruction 60 + 20
+    addi x2, x2, 5
+
+    addi x2, x2, 7 # this should be instruction 80
 
     # and x6, x0, x6
     # and x7, x0, x7
     # and x8, x0, x8
     # la x10, result
-# 
-    addi x1, x1, 11 # x1 = 11
-    addi x2, x2, 12
-    addi x3, x3, 13
 
-    add x4, x1, x2 # x4 = 23
-    add x5, x2, x3 # x5 = 25
+    # addi x1, x1, 11 # x1 = 11
+    # addi x2, x2, 12
+    # addi x3, x3, 13
 
-    and x1, x2, x0
-    and x2, x3, x0
-    and x3, x4, x0
+    # add x4, x1, x2 # x4 = 23
+    # add x5, x2, x3 # x5 = 25
 
-    addi x1, x1, -2
-    addi x2, x2, 5
-    sra x3, x1, x2
+# jal_test_1:
+
+    # and x1, x2, x0
+    # and x2, x3, x0
+    # and x3, x4, x0
+
+    # addi x1, x1, 2
+    # addi x2, x2, 5
+    # add x3, x1, x2
 # 
 # 
     # # /* x6 == 0000 001x xxxx; x7 == 1000 001x xxxx */

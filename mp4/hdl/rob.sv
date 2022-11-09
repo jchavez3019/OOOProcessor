@@ -9,9 +9,10 @@ import rv32i_types::*;
     input tomasula_types::op_t instr_type,
     input [4:0] rd,
     input [4:0] st_src,
+    input [31:0] instr_pc,
 
     // when high, need to flush rob
-    input branch_mispredict,
+    input branch_mispredict, // remove later, rob will look at cdb/rd for branch mispredict
 
     // from d-cache
     input data_mem_resp,
@@ -20,6 +21,9 @@ import rv32i_types::*;
     // from reservation station
     input logic set_rob_valid[8],
     output logic [7:0] status_rob_valid,
+    input logic [2:0] br_entry,
+    input logic br_taken,
+    input logic update_br,
 
     // to regfile
     output logic [2:0] curr_ptr,
@@ -34,7 +38,7 @@ import rv32i_types::*;
     output ld_commit_sel,
 
     // determined by branch output
-    output logic ld_br,
+    output logic ld_pc,
 
     // to d-cache
     output logic data_read,
@@ -44,11 +48,12 @@ import rv32i_types::*;
 tomasula_types::op_t instr_arr [8];
 logic [4:0] rd_arr [8];
 logic valid_arr [8];
+logic [31:0] pc_addresses [8];
 
 logic [4:0] _rd_commit, _st_src_commit;
 logic flush_ip;
 logic _ld_commit_sel;
-logic _ld_br;
+logic _ld_pc;
 logic _data_read, _data_write;
 logic _regfile_load;
 logic _rob_full;
@@ -59,7 +64,7 @@ logic [2:0] _curr_ptr, _head_ptr, br_ptr;
 assign rd_commit = rd_arr[_head_ptr];
 assign st_src_commit = _st_src_commit;
 assign ld_commit_sel = _ld_commit_sel;
-assign ld_br = _ld_br;
+assign ld_pc = _ld_pc;
 assign data_read = _data_read;
 assign data_write = _data_write;
 assign regfile_load = _regfile_load;
@@ -79,7 +84,7 @@ assign status_rob_valid[6] = valid_arr[6];
 assign status_rob_valid[7] = valid_arr[7];
 
 always_ff @(posedge clk) begin
-    // _ld_br <= 1'b0;
+    // _ld_pc <= 1'b0;
     // _ld_commit_sel <= 1'b0;
     // _regfile_load <= 1'b0;
 
@@ -101,6 +106,11 @@ always_ff @(posedge clk) begin
                 valid_arr[i] <= 1'b1;
             end
         end
+
+        /* when branch wants to update rd for a branch taken/not taken */
+        if (br_update)
+            rd[br_entry] <= rd[br_entry] | {4'b0000,br_taken};
+
         if (rob_load) begin
            // allocate ROB entry 
            instr_arr[_curr_ptr] <= instr_type; 
@@ -121,7 +131,7 @@ always_ff @(posedge clk) begin
         // if the head of the rob has been computed
         if (valid_arr[_head_ptr]) begin
             if(instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
-            //    _ld_br <= 1'b1; 
+            //    _ld_pc <= 1'b1; 
             end
             else if (instr_arr[_head_ptr] == tomasula_types::LD) begin
                 // _data_read <= 1'b1;
@@ -193,7 +203,7 @@ always_ff @(posedge clk) begin
 end
 
 function void set_defaults();
-    _ld_br = 1'b0;
+    _ld_pc = 1'b0;
     _data_read = 1'b0;
     _ld_commit_sel = 1'b0;
     _regfile_load = 1'b0;
@@ -205,7 +215,7 @@ always_comb begin
             set_defaults();
 
             if((instr_arr[_head_ptr] == tomasula_types::BRANCH) & (valid_arr[_head_ptr])) begin
-            _ld_br = 1'b1; 
+            _ld_pc = 1'b1; 
             end
             else if (instr_arr[_head_ptr] == tomasula_types::LD) begin
                 _data_read = 1'b1;

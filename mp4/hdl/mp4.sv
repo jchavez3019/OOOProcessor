@@ -37,9 +37,8 @@ import rv32i_types::*;
 IQ_2_IR iq_ir_itf();
 
 /* pc signals */
-logic ld_pc;
 logic [31:0] pc;
-logic [31:0] pc_calc; // this is the output of the ir register which does address calculation for branches
+// logic [31:0] pc_calc; // this is the output of the ir register which does address calculation for branches
 
 /* harness containing all module signals */
 debug_itf itf();
@@ -52,29 +51,30 @@ ir ir (
     .instr_mem_resp(instr_mem_resp),
     // .in(itf.in),
     .in(instr_mem_rdata),
+    .executed_jalr(itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed),
+    .br_pr_take (1'b1),
     .pc(pc),
     .instr_mem_address(instr_mem_address),
     .instr_read(instr_read),
-    .ld_pc(ld_pc),
-    .pc_calc(pc_calc)
+    .ld_pc(itf.ir_ld_pc),
+    .pc_calc(itf.pc_calc)
 );
 
-logic [31:0] pc_in;
-always_comb begin : pc_mux
-    if (ld_pc)
-        pc_in = pc_calc;
-    if (itf.ld_br)    // idk what this is but im not gonna touch it \
-        pc_in = itf.cdb_out[itf.head_ptr].data[31:0];
-    
-    // else 
-    //     pc_in = pc + 4;
+/* NOTE:  update rob logic for loading branches since it is necessary for branch mispredicts */
+always_comb begin : pc_mux        
+    if (itf.rob_ld_pc) 
+        itf.pc_in = itf.cdb_out[itf.head_ptr].data[31:0];
+    else 
+        itf.pc_in = itf.pc_calc;
 end
 
 pc_register PC (
         .clk (clk),
         .rst (rst),
-        .load(ld_pc | itf.ld_br),
-        .in(pc_in),
+        .load(itf.ir_ld_pc | itf.rob_ld_pc),
+        // .load(ld_pc),
+        .in(itf.pc_in),
+        .in(itf.pc_calc),
         .out(pc)
     );
 
@@ -139,7 +139,7 @@ rob rob (
      .regfile_load (itf.regfile_load),
      .rob_full (itf.rob_full),
      .ld_commit_sel (itf.ld_commit_sel),
-     .ld_br (itf.ld_br),
+     .ld_pc (itf.rob_ld_pc),
      .data_read (itf.data_read),
      .data_write (itf.data_write)
  );
@@ -215,6 +215,7 @@ reservation_station res1(
     .robs_calculated(itf.status_rob_valid),
     .alu_data(itf.res1_alu_out),
     .start_exe(itf.res1_exec),
+    .jalr_executed(itf.res1_jalr_executed),
     .res_empty(itf.res1_empty),
     .res_in(res_word)
 );
@@ -232,6 +233,7 @@ reservation_station res2(
     .robs_calculated(itf.status_rob_valid),
     .alu_data(itf.res2_alu_out),
     .start_exe(itf.res2_exec),
+    .jalr_executed(itf.res2_jalr_executed),
     .res_empty(itf.res2_empty),
     .res_in(res_word)
 );
@@ -249,6 +251,7 @@ reservation_station res3(
     .robs_calculated(itf.status_rob_valid),
     .alu_data(itf.res3_alu_out),
     .start_exe(itf.res3_exec),
+    .jalr_executed(itf.res3_jalr_executed),
     .res_empty(itf.res3_empty),
     .res_in(res_word)
 );
@@ -266,6 +269,7 @@ reservation_station res4(
     .robs_calculated(itf.status_rob_valid),
     .alu_data(itf.res4_alu_out),
     .start_exe(itf.res4_exec),
+    .jalr_executed(itf.res4_jalr_executed),
     .res_empty(itf.res4_empty),
     .res_in(res_word)
 );
