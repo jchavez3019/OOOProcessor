@@ -1,0 +1,67 @@
+Magic 271485
+Revision Verdi_R-2020.12-SP1-1
+
+; Window Layout <x> <y> <width> <height> <signalwidth> <valuewidth>
+viewPort 0 -1 1896 442 236 838
+
+; File list:
+; openDirFile [-d delimiter] [-s time_offset] [-rf auto_bus_rule_file] path_name file_name
+openDirFile -d / "" "/home/jiwonl4/ece411_mp4/mp4/mp4/sim/dump.fsdb"
+
+; file time scale:
+; fileTimeScale ### s|ms|us|ns|ps
+
+; signal spacing:
+signalSpacing 5
+
+; windowTimeUnit is used for zoom, cursor & marker
+; waveform viewport range
+zoom 0.000000 584271.102065
+cursor 295000.000000
+marker 0.000000
+
+; user define markers
+; userMarker time_pos marker_name color linestyle
+; visible top row signal index
+top 0
+; marker line index
+markerPos 1
+
+; event list
+; addEvent event_name event_expression
+; curEvent event_name
+
+
+
+COMPLEX_EVENT_BEGIN
+
+
+COMPLEX_EVENT_END
+
+
+
+; toolbar current search type
+; curSTATUS search_type
+curSTATUS ByChange
+
+
+addGroup "G3"
+activeDirFile "" "/home/jiwonl4/ece411_mp4/mp4/mp4/sim/dump.fsdb"
+addSignal -h 14 -UNSIGNED -HEX /mp4_tb/dut/regfile/data[0:31]
+addGroup "G1"
+addSignal -h 14 /mp4_tb/dut/data_mem_address[31:0]
+addSignal -h 14 -UNSIGNED -BIN -holdScope data_mbe[3:0]
+addSignal -h 14 -holdScope data_read
+addSignal -h 14 -holdScope data_write
+addSignal -h 14 -holdScope data_mem_rdata[31:0]
+addSignal -h 14 -holdScope data_mem_wdata[31:0]
+addSignal -h 14 -holdScope data_mem_resp
+addGroup "G2"
+addSignal -h 14 -UNSIGNED -HEX /mp4_tb/dut/pc[31:0]
+addSignal -h 14 -UNSIGNED /mp4_tb/dut/ir/opcode[6:0]
+addSignal -h 14 -holdScope funct3[2:0]
+addGroup "G4"
+
+; getSignalForm Scope Hierarchy Status
+; active file of getSignalForm
+
