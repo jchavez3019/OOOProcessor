@@ -71,7 +71,7 @@ logic branch_mispredict; // set high when branch is committing and there was a m
 assign flush_in_prog = flush_ip;
 
 assign rd_commit = rd_arr[_head_ptr];
-assign st_src_commit = _st_src_commit;
+assign st_src_commit = rd_arr[_head_ptr];
 assign ld_commit_sel = _ld_commit_sel;
 assign ld_pc = _ld_pc;
 assign data_read = _data_read;
@@ -186,7 +186,6 @@ always_ff @(posedge clk) begin
                 // _data_write <= 1'b1;
                 // for st address
                 // send regfile the register file to read from
-                _st_src_commit <= rd_arr[_head_ptr];
                 // once store has been processed
                 if (data_mem_resp) begin
                     valid_arr[_head_ptr] <= 1'b0;

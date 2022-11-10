@@ -3,7 +3,7 @@ ldst_mp2test.s:
 .section .text
 .globl _start
 
-    lh x8, eceb             # X8 <= 0x1111eceb
+    lh x8, eceb             # X8 <= 0xffffeceb
     la x10, result          # X10 <= result_addr
     sh x8, 0(x10)           # result_addr = xxxx_eceb
     sh x8, 2(x10)           # result_addr = eceb_eceb

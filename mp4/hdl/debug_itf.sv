@@ -57,7 +57,7 @@ logic resbr_update_br;
 logic taken;
 
 /* regfile signals */
-logic [31:0] reg_src1_data, reg_src2_data;
+logic [31:0] reg_src1_data, reg_src2_data, regfile_data_out;
 logic src1_valid, src2_valid;
 logic [2:0] tag_a, tag_b;
 // logic [31:0] reg_a, reg_b;

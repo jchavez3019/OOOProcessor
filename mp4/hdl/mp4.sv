@@ -269,8 +269,11 @@ regfile regfile (
     .tag_a (itf.tag_a),
     .tag_b (itf.tag_b),
     .src_c (itf.st_src_commit),
-    .data_out (data_mem_wdata)
+    .data_out (itf.regfile_data_out)
 );
+
+assign data_mem_wdata = itf.regfile_data_out << (memaddr_offset * 8);
+
 tomasula_types::res_word res_word;
 logic [31:0] src2_data;
 logic src2_v;
