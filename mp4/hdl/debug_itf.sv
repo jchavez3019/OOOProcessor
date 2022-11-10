@@ -69,6 +69,7 @@ logic [7:0] status_rob_valid, allocated_rob_entries;
 logic set_rob_valid[8];
 logic [2:0] curr_ptr, head_ptr, br_ptr, br_flush_ptr;
 logic [4:0] rd_commit, st_src_commit;
+logic rob_reallocate_reg_tags;
 
 /* cdb signals */
 tomasula_types::cdb_data cdb_in[8];

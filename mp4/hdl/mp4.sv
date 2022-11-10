@@ -156,7 +156,7 @@ rob rob (
      .br_ptr (itf.br_ptr), 
      .br_flush_ptr(itf.br_flush_ptr),
      .flush_in_prog(itf.flush_in_prog),
-     .rob_reallocate_reg_tags(itf.rob_reallocate_reg_tags),
+     .reallocate_reg_tag(itf.rob_reallocate_reg_tags),
      .rd_commit (itf.rd_commit),
      .st_src_commit (itf.st_src_commit),
      .regfile_load (itf.regfile_load),

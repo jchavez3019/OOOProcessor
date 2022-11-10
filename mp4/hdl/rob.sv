@@ -194,7 +194,12 @@ always_ff @(posedge clk) begin
             /* check if done flushing, else update current branch flush pointer */
             if (_br_flush_ptr == br_ptr) begin
                 flush_ip <= 1'b0;
-                _curr_ptr <= br_ptr;
+                if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
+                    _curr_ptr <= br_ptr + 1;
+                    _head_ptr <= _head_ptr + 1;
+                end
+                else
+                    _curr_ptr <= br_ptr;
             end
             else 
                 _br_flush_ptr <= _br_flush_ptr + 1'b1;
@@ -266,7 +271,7 @@ always_comb begin
             set_defaults();
 
             /* start flushing as soon as it's revealed to be a mispredict */
-            if((instr_arr[_br_ptr] == tomasula_types::BRANCH) & (valid_arr[_br_ptr]) & (rd_arr[_br_ptr][1] != rd_arr[_br_ptr][0]) & ~flush_ip) begin
+            if((instr_arr[_br_ptr] == tomasula_types::BRANCH) & _allocated_entries[_br_ptr] & (valid_arr[_br_ptr]) & (rd_arr[_br_ptr][1] != rd_arr[_br_ptr][0]) & ~flush_ip) begin
             _ld_pc = 1'b1; 
             branch_mispredict = 1'b1;
             end
@@ -277,7 +282,7 @@ always_comb begin
                     reallocate_reg_tag = 1'b1;
             end
 
-            /* check if rob entry at head pointer has been calculated */
+            /* check if rob entry at head pointer has been calculated and handle all instruction types */
             if (instr_arr[_head_ptr] == tomasula_types::LD & ~flush_in_prog) begin
                 _data_read = 1'b1;
                 // make sure instruction is not committed until data returned
