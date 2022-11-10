@@ -98,7 +98,7 @@ always_comb begin : dequeue_logic
 
     // if the fifo is holding a valid entry
     if (control_o_valid) begin 
-        // if the rob has space
+        // if the rob has space and instruction queue has is not empty
         if (~rob_full) begin
             // branch goes to branching unit
             if (control_o_buf.op == tomasula_types::BRANCH) begin

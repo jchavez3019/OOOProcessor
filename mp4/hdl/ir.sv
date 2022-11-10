@@ -10,6 +10,7 @@ import rv32i_types::*;
     input [31:0] pc,
     input br_pr_take,
     input executed_jalr,
+    input flush_ip,
 
     output rv32i_word instr_mem_address, // ir will have to communicate with pc to get this, or maybe pc just wires directly to icache
     output logic instr_read,
@@ -59,7 +60,8 @@ enum int unsigned {
     FETCH = 1,
     CREATE = 2,
     STALL = 3,
-    STALL_JALR = 4
+    STALL_JALR = 4,
+    STALL_FLUSH = 5
 } state, next_state;
 
 always_comb
@@ -209,11 +211,13 @@ begin : state_actions
             iq_ir_itf.ld_iq = 1'b1;
         end
         STALL: begin
-
             iq_ir_itf.ld_iq = 1'b1;
         end
         STALL_JALR: begin
-
+            // do nothing
+        end
+        STALL_FLUSH: begin
+            // do nothing
         end
     endcase
 end
@@ -229,7 +233,10 @@ begin : next_state_logic
                 next_state = CREATE;
         end
         CREATE: begin
-            if (iq_ir_itf.ack_o) begin
+            if (flush_ip) begin
+                next_state = STALL_FLUSH;
+            end
+            else if (iq_ir_itf.ack_o) begin
                 if(opcode == op_jalr) 
                     next_state = STALL_JALR;
                 else
@@ -240,7 +247,9 @@ begin : next_state_logic
         end
         STALL: begin
             if (iq_ir_itf.ack_o) begin
-                if(opcode == op_jalr) 
+                if (flush_ip)
+                    next_state = STALL_FLUSH;
+                else if(opcode == op_jalr) 
                     next_state = STALL_JALR;
                 else
                     next_state = FETCH;
@@ -250,6 +259,10 @@ begin : next_state_logic
             if(executed_jalr == 1) begin
                 next_state = FETCH;
             end
+        end
+        STALL_FLUSH: begin
+            if (~flush_ip)
+                next_state = FETCH;
         end
     endcase
 end

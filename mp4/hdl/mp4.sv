@@ -52,6 +52,7 @@ ir ir (
     .in(instr_mem_rdata),
     .executed_jalr(itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed),
     .br_pr_take (1'b1),
+    .flush_ip(itf.flush_in_prog),
     .pc(pc),
     .instr_mem_address(instr_mem_address),
     .instr_read(instr_read),
@@ -62,7 +63,7 @@ ir ir (
 /* NOTE:  update rob logic for loading branches since it is necessary for branch mispredicts */
 always_comb begin : pc_mux        
     if (itf.rob_ld_pc) // only happens for a branch mispredict
-        itf.pc_in[31:0] = itf.cdb_out[itf.br_ptr].data[31:0];
+        itf.pc_in[31:0] = itf.cdb_out[itf.br_ptr].data[31:0] - 4; // always works but fix later
     /* cases where jalr was calculated and we can finally unstall the pipeline */
     else if (itf.res1_jalr_executed)
         // itf.pc_in = itf.cdb_out[itf.res1_alu_out.pc].data[31:0];

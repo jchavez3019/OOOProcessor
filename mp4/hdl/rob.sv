@@ -182,6 +182,9 @@ always_ff @(posedge clk) begin
                 valid_arr[i] <= 1'b0;
             end
 
+            _allocated_entries[br_ptr] <= 1'b0;
+            valid_arr[br_ptr] <= 1'b0;
+
             /* correct tags in the register file */
             /* this should be done in combinational logic */
             // if (_br_flush_ptr != br_ptr) begin
