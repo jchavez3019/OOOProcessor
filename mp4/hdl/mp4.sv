@@ -156,6 +156,7 @@ rob rob (
      .br_ptr (itf.br_ptr), 
      .br_flush_ptr(itf.br_flush_ptr),
      .flush_in_prog(itf.flush_in_prog),
+     .rob_reallocate_reg_tags(itf.rob_reallocate_reg_tags),
      .rd_commit (itf.rd_commit),
      .st_src_commit (itf.st_src_commit),
      .regfile_load (itf.regfile_load),
@@ -191,8 +192,8 @@ regfile regfile (
     .clk (clk),
     .rst (rst),
     .load (itf.regfile_load),
-    .allocate (itf.flush_in_prog | itf.rob_load), // rob_load from instruction queue, more appropiate to call it allocate
-    .reg_allocate (itf.flush_in_prog ? itf.br_flush_ptr : itf.control_o.rd), // gets register to allocate from control word of instruction queue
+    .allocate (itf.rob_reallocate_reg_tags | itf.rob_load), // rob_load from instruction queue, more appropiate to call it allocate
+    .reg_allocate (itf.rob_reallocate_reg_tags ? itf.br_flush_ptr : itf.control_o.rd), // gets register to allocate from control word of instruction queue
     .in (regfile_in),
     // from iq - sources to read
     .src_a (itf.control_o.src1_reg),

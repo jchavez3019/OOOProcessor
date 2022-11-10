@@ -42,6 +42,7 @@ import rv32i_types::*;
     // determined by branch output
     output logic ld_pc,
     output logic flush_in_prog, // let other modules know that flush is in progress
+    output logic reallocate_reg_tag,
 
     // to d-cache
     output logic data_read,
@@ -140,7 +141,7 @@ always_ff @(posedge clk) begin
 
         /* 
         **because of rob_full logic, if branch_mispredict happend in the previous cycle, 
-        **rob_load can't be sent since res station should stall thus no new allocates should be happening
+        **rob_load can't be sent since instruction queue should stall thus no new allocates should be happening
         */
         if (rob_load) begin
            // stored to handle memory and branching
@@ -153,10 +154,6 @@ always_ff @(posedge clk) begin
            if (instr_type == tomasula_types::ST) begin 
                rd_arr[_curr_ptr] <= st_src;
            end
-           // branch - hold taken/not taken (initialized to not taken)
-           else if (instr_type == tomasula_types::BRANCH) begin 
-               rd_arr[_curr_ptr] <= 3'b000;
-           end
            /* keep track of where branch is, currently rob only supports one branch at a time */
            else if (instr_type == tomasula_types::BRANCH) begin
             _br_ptr <= _curr_ptr;
@@ -165,49 +162,43 @@ always_ff @(posedge clk) begin
         end
 
 
-        // branch mispredict handling
+        /* indicates that branch mispredict was calculated in the previous cycle and use this cycle to prepare for flushes
+        ** in the next cycle
+        */
         if (branch_mispredict) begin
             flush_ip <= 1'b1;
-            _br_flush_ptr <= (valid_arr[_head_ptr] & (instr_arr[_br_flush_ptr] != tomasula_types::BRANCH)) ? _head_ptr + 1'b1 : _head_ptr; // flush ptr should start at updated head pointer 
+            // _br_flush_ptr <= (valid_arr[_head_ptr] & (instr_arr[_br_flush_ptr] != tomasula_types::BRANCH)) ? _head_ptr + 1'b1 : _head_ptr; // flush ptr should start at updated head pointer 
+            _br_flush_ptr <= _head_ptr; // since _head_ptr can't get updated in this state or the flush_ip state, can safely set _br_flush_ptr to head pointer
         end 
-        // this doesn't start until the cycle after a branch mispredict has been found
+        // this doesn't start until two cycles after branch mispredict was found since previous cycle prepares for this logic
         else if (flush_ip) begin
 
-            /* sacrifice a few cycles to delay head pointer from moving past branch */
+            /* redundant but highlighting the fact that _head_ptr will not get updated */
             _head_ptr <= _head_ptr;
 
-            for (int i = (_br_ptr) % 8; i != (_head_ptr - 1) % 8; i = (i + 1) % 8) begin
-                valid_arr[i] <= 1'b0;
+            /* invalidate entries starting from branch pointer to entry right before head pointer */
+            for (int i = br_ptr; i != _head_ptr; i = (i + 1) % 8) begin
                 _allocated_entries[i] <= 1'b0;
+                valid_arr[i] <= 1'b0;
             end
 
-            if (instr_arr[_br_flush_ptr] == tomasula_types::BRANCH) begin
-                // if we reached the branch, set the valid bit. 
-                // will be committed on the next cycle
-                // FIXME: im dont think the valid bit needs to be set here,
-                // since at this point there was a branch already calculated
-                // which has the valid bit set already
-                // valid_arr[br_flush_ptr] = 1'b1; // should be valid and set to 0 once branch commits (no actions when branch gets commited)
-                // flush all instructions after the branch
-                /* start at entry after branch and exit once i equals head pointer */
-                // for (int i = (_br_flush_ptr + 1) % 8; i != _head_ptr; i = (i + 1) % 8) begin
-                //     valid_arr[i] <= 1'b0;
-                //     _allocated_entries[i] <= 1'b0;
-                // end
-                // update current pointer
-                _curr_ptr = _br_flush_ptr;
-                // flush now finished processing
+            /* correct tags in the register file */
+            /* this should be done in combinational logic */
+            // if (_br_flush_ptr != br_ptr) begin
+            //     if (instr_arr[_br_flush_ptr] != tomasula_types::ST | instr_arr[_br_flush_ptr] != tomasula_types::BRANCH) begin
+            //         reallocate_reg_tag = 1'b1;
+            //     end
+
+            // end
+
+            /* check if done flushing, else update current branch flush pointer */
+            if (_br_flush_ptr == br_ptr) begin
                 flush_ip <= 1'b0;
-
-                if (_br_ptr == _head_ptr)
-                    _head_ptr <= (_head_ptr + 1) % 8;
-
+                _curr_ptr <= br_ptr;
             end
-            // if we haven't reached the branch yet
-            else begin
-                // _rd_commit <= rd_arr[br_flush_ptr];
+            else 
                 _br_flush_ptr <= _br_flush_ptr + 1'b1;
-            end
+
         end
         /* if not dealing with flushes, go back to committing instructions */
         else begin
@@ -232,7 +223,7 @@ always_ff @(posedge clk) begin
                         _head_ptr <= _head_ptr + 1'b1;
                     end
                 end
-                else if (instr_arr[_head_ptr] == tomasula_types::ST & ~flush_in_prog & ~branch_mispredict) begin
+                else if (instr_arr[_head_ptr] == tomasula_types::ST) begin
                     // _data_write <= 1'b1;
                     // for st address
                     // send regfile the register file to read from
@@ -246,7 +237,7 @@ always_ff @(posedge clk) begin
                     end
                 end
                 // for all other instructions
-                else if (~flush_in_prog & ~branch_mispredict) begin
+                else begin
                     // _regfile_load <= 1'b1;
                     valid_arr[_head_ptr] <= 1'b0;
                     _allocated_entries[_head_ptr] <= 1'b0;
@@ -267,6 +258,7 @@ function void set_defaults();
     _regfile_load = 1'b0;
     _data_write = 1'b0;
     branch_mispredict = 1'b0;
+    reallocate_reg_tag = 1'b0;
 endfunction
 
 always_comb begin
@@ -278,9 +270,13 @@ always_comb begin
             _ld_pc = 1'b1; 
             branch_mispredict = 1'b1;
             end
-            // if (flush_ip) begin
 
-            // end
+            /* if flush is in progress, reallocate tags in register file */
+            if ((_br_flush_ptr != br_ptr) & flush_ip) begin
+                if (instr_arr[_br_flush_ptr] != tomasula_types::ST | instr_arr[_br_flush_ptr] != tomasula_types::BRANCH)
+                    reallocate_reg_tag = 1'b1;
+            end
+
             /* check if rob entry at head pointer has been calculated */
             if (instr_arr[_head_ptr] == tomasula_types::LD & ~flush_in_prog) begin
                 _data_read = 1'b1;
