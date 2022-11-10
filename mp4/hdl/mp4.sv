@@ -189,17 +189,17 @@ rob rob (
      .head_ptr (itf.head_ptr), 
      .br_ptr (itf.br_ptr), 
      .br_flush_ptr(itf.br_flush_ptr),
-     .flush_in_prog(itf.flush_in_prog),
-     .reallocate_reg_tag(itf.rob_reallocate_reg_tags),
      .rd_commit (itf.rd_commit),
      .st_src_commit (itf.st_src_commit),
      .regfile_load (itf.regfile_load),
      .rob_full (itf.rob_full),
      .ld_commit_sel (itf.ld_commit_sel),
-     .ld_pc (itf.rob_ld_pc),
      .data_read (data_read),
      .data_write (data_write),
-     .wmask (data_mbe)
+     .wmask (data_mbe),
+     .ld_pc (itf.rob_ld_pc),
+     .flush_in_prog(itf.flush_in_prog),
+     .reallocate_reg_tag(itf.rob_reallocate_reg_tags)
  );
 
  /*rob
