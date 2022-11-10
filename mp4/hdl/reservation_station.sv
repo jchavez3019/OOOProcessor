@@ -29,7 +29,7 @@ always_comb
 begin : assign_alu_data
     alu_data.op = res_word.op;
     /* modify funct3 so that alu does an add operation */
-    if (res_word.op == tomasula_types::JALR | res_word.op == tomasula_types::JAL | res_word.op == tomasula_types::LD)
+    if (res_word.op == tomasula_types::JALR | res_word.op == tomasula_types::JAL)
         alu_data.funct3 = 3'b000;
     else
         alu_data.funct3 = res_word.funct3;
@@ -146,6 +146,9 @@ begin : state_actions
                 ld_pc_to_cdb = 1'b1;
                 update_br = 1'b1;
             end
+            if (start_exe & res_word.op == tomasula_types::AUIPC) begin
+                ld_pc_to_cdb = 1'b1;
+            end
             
             if (res_word.src1_valid)
                 alu_data.src1_data = res_word.src1_data;
@@ -172,6 +175,11 @@ begin : state_actions
             if (start_exe & res_word.op == tomasula_types::JAL) begin
                 ld_pc_to_cdb = 1'b1;
             end
+
+            if (start_exe & res_word.op == tomasula_types::AUIPC) begin
+                ld_pc_to_cdb = 1'b1;
+            end
+
 
             /* deal with branches */
             if (start_exe & res_word.op == tomasula_types::BRANCH) begin

@@ -14,6 +14,7 @@ logic ir_ld_pc;
 
 /* iq signals */
 logic res1_empty, res2_empty, res3_empty, res4_empty, rob_load, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;
+logic regfile_allocate;
 tomasula_types::ctl_word control_o;
 
 /* res1 signals */
@@ -56,7 +57,7 @@ logic resbr_update_br;
 logic taken;
 
 /* regfile signals */
-logic [31:0] reg_src1_data, reg_src2_data;
+logic [31:0] reg_src1_data, reg_src2_data, regfile_data_out;
 logic src1_valid, src2_valid;
 logic [2:0] tag_a, tag_b;
 // logic [31:0] reg_a, reg_b;

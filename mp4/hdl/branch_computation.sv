@@ -17,7 +17,7 @@ import rv32i_types::*;
 
 
 always_comb begin
-    unique case (op)
+    unique case (branch_funct3_t'(op))
         rv32i_types::bge: answer = ($signed(first) >= $signed(second));
         rv32i_types::bltu: answer = (first < second);
         rv32i_types::bgeu: answer = (first >= second);

@@ -20,16 +20,16 @@ import rv32i_types::*;
 
 	
 	// For CP2
-	/* 
+    /*
     input pmem_resp,
     input [63:0] pmem_rdata,
 
-	To physical memory
+	//To physical memory
     output logic pmem_read,
     output logic pmem_write,
     output rv32i_word pmem_address,
     output [63:0] pmem_wdata
-	*/
+    */
 );
 
 /***************************************** Listing all signals *****************************************/
@@ -44,6 +44,66 @@ logic [31:0] pc;
 debug_itf itf();
 
 /***************************************** Modules ***************************************************/
+
+logic [31:0] regfile_mem_in;
+/*
+    case(store_funct3_t'(``RES_STATION.funct3)) \
+        sw: data_mbe = 4'b1111; \
+        sh: data_mbe =  4'b0011 << ``OFFSET; \
+        sb: data_mbe =  4'b0001 << ``OFFSET; \
+    endcase \
+*/
+
+`define mbe_calc(RES_STATION, OFFSET, DATA) \
+    if (``RES_STATION.op == tomasula_types::LD) begin \
+        if (``RES_STATION.tag == itf.head_ptr) begin \
+            case(load_funct3_t'(``RES_STATION.funct3)) \
+                lw: regfile_mem_in = ``DATA; \
+                lh: regfile_mem_in = {{16{``DATA[16 * ((``OFFSET/2)+1) - 1]}}, ``DATA[8 * ``OFFSET+:16]}; \
+                lhu: regfile_mem_in = {{16{1'b0}}, ``DATA[8 * ``OFFSET+:16]}; \
+                lb: regfile_mem_in = {{24{``DATA[(8 * (``OFFSET+1)) - 1]}}, ``DATA[8 * ``OFFSET+:8]}; \
+                lbu: regfile_mem_in = {{24{1'b0}}, ``DATA[8 * ``OFFSET+:8]}; \
+                default: regfile_mem_in = ``DATA; \
+            endcase \
+        end \
+    end
+
+`define write_to_cdb(RES_STATION_EXEC, ALU_OUT, DATA_SEL, ALU_DATA) \
+    if (``RES_STATION_EXEC) begin \
+            itf.cdb_in[``ALU_OUT.tag].data[31:0] = ``DATA_SEL? ``ALU_OUT.pc : ``ALU_DATA; \
+        end
+
+// only request memory on a commit, where address is on cdb
+//
+logic [1:0] memaddr_offset; 
+
+always_comb begin : data_mem_req
+    data_mem_address = {itf.cdb_out[itf.head_ptr].data[31:2], 2'b00};
+    memaddr_offset = itf.cdb_out[itf.head_ptr].data[1:0];
+    
+    // default byte enable value
+    //wmask = 4'b0000;
+    `mbe_calc(itf.res1_alu_out, memaddr_offset, data_mem_rdata);
+    `mbe_calc(itf.res2_alu_out, memaddr_offset, data_mem_rdata);
+    `mbe_calc(itf.res3_alu_out, memaddr_offset, data_mem_rdata);
+    `mbe_calc(itf.res4_alu_out, memaddr_offset, data_mem_rdata);
+
+end
+
+/*
+always_ff @(posedge clk) begin
+    if (rst) begin 
+        _data_mbe <= 4'b0000;
+    end
+    else begin
+        if (regfile_allocate) begin
+        end
+        else begin
+        end
+    end
+end
+*/
+
 ir ir (
     .*,
     .clk(clk),
@@ -105,6 +165,7 @@ iq iq (
     .resbr_empty(itf.resbr_empty),
     .resbr_load(itf.resbr_load),
     .rob_load(itf.rob_load),
+    .regfile_allocate(itf.regfile_allocate),
     .res1_load(itf.res1_load),
     .res2_load(itf.res2_load),
     .res3_load(itf.res3_load),
@@ -143,9 +204,10 @@ rob rob (
      .rob_load (itf.rob_load),
      .instr_type (itf.control_o.op),
      .rd (itf.control_o.rd),
-     .st_src (itf.control_o.src1_reg),
+     .st_src (itf.control_o.src2_reg),
     //  .branch_mispredict (1'b0),
-     .data_mem_resp (1'b0),
+     .data_mem_resp (data_mem_resp),
+     .memaddr_offset (memaddr_offset),
      .status_rob_valid (itf.status_rob_valid),
      .set_rob_valid (itf.set_rob_valid),
      .allocated_rob_entries (itf.allocated_rob_entries),
@@ -164,8 +226,9 @@ rob rob (
      .rob_full (itf.rob_full),
      .ld_commit_sel (itf.ld_commit_sel),
      .ld_pc (itf.rob_ld_pc),
-     .data_read (itf.data_read),
-     .data_write (itf.data_write)
+     .data_read (data_read),
+     .data_write (data_write),
+     .wmask (data_mbe)
  );
 
  /*rob
@@ -182,18 +245,17 @@ logic [31:0] regfile_in, ld_data;
 assign ld_data = 32'h600d600d;
 always_comb begin 
     if (itf.ld_commit_sel) 
-        regfile_in = ld_data;
+        regfile_in = regfile_mem_in;
     else 
         regfile_in = itf.cdb_out[itf.head_ptr].data[31:0];
 end
 
-logic [31:0] data_mem_wdata;
 regfile regfile (
     .*,
     .clk (clk),
     .rst (rst),
     .load (itf.regfile_load),
-    .allocate (itf.rob_reallocate_reg_tags | itf.rob_load), // rob_load from instruction queue, more appropiate to call it allocate
+    .allocate (itf.rob_reallocate_reg_tags | itf.regfile_allocate), // rob_load from instruction queue, more appropiate to call it allocate
     .reg_allocate (itf.rob_reallocate_reg_tags ? itf.br_flush_ptr : itf.control_o.rd), // gets register to allocate from control word of instruction queue
     .in (regfile_in),
     // from iq - sources to read
@@ -209,8 +271,11 @@ regfile regfile (
     .tag_a (itf.tag_a),
     .tag_b (itf.tag_b),
     .src_c (itf.st_src_commit),
-    .data_out (data_mem_wdata)
+    .data_out (itf.regfile_data_out)
 );
+
+assign data_mem_wdata = itf.regfile_data_out << (memaddr_offset * 8);
+
 tomasula_types::res_word res_word;
 logic [31:0] src2_data;
 logic src2_v;
@@ -346,23 +411,13 @@ always_comb begin : cdb_enable_logic
         itf.cdb_in[i].data[31:0] = 32'h00000000;
     end
     /* load cdb with alu outputs or pc in jal/jalr special cases */
-    if (itf.res1_exec) begin
-        itf.cdb_in[itf.res1_alu_out.tag].data[31:0] = itf.res1_pc_to_cdb ? itf.res1_alu_out.pc : itf.alu1_calculation.data[31:0];
-    end
-    if (itf.res2_exec) begin
-        itf.cdb_in[itf.res2_alu_out.tag].data[31:0] = itf.res2_pc_to_cdb ? itf.res2_alu_out.pc : itf.alu2_calculation.data[31:0];
-    end
-    if (itf.res3_exec) begin
-        itf.cdb_in[itf.res3_alu_out.tag].data[31:0] = itf.res3_pc_to_cdb ? itf.res3_alu_out.pc : itf.alu3_calculation.data[31:0];
-    end
-    if (itf.res4_exec) begin
-        itf.cdb_in[itf.res4_alu_out.tag].data[31:0] = itf.res4_pc_to_cdb ? itf.res4_alu_out.pc : itf.alu4_calculation.data[31:0];
-    end
+    `write_to_cdb(itf.res1_exec, itf.res1_alu_out, itf.res1_pc_to_cdb, itf.alu1_calculation.data[31:0]);
+    `write_to_cdb(itf.res2_exec, itf.res2_alu_out, itf.res2_pc_to_cdb, itf.alu2_calculation.data[31:0]);
+    `write_to_cdb(itf.res3_exec, itf.res3_alu_out, itf.res3_pc_to_cdb, itf.alu3_calculation.data[31:0]);
+    `write_to_cdb(itf.res4_exec, itf.res4_alu_out, itf.res4_pc_to_cdb, itf.alu4_calculation.data[31:0]);
 
     // Data propogation for branch computation. All 1's if taken otherwise 0
-    if (itf.resbr_exec) begin
-        itf.cdb_in[itf.resbr_alu_out.tag].data[31:0] = itf.resbr_update_br ? itf.resbr_alu_out.pc : 32'h00000000;
-    end
+    `write_to_cdb(itf.resbr_exec, itf.resbr_alu_out, itf.resbr_update_br, 32'h00000000);
     
     cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag) | (itf.resbr_exec << itf.resbr_alu_out.tag);
 end
