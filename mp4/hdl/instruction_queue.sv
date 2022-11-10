@@ -33,7 +33,6 @@ assign res_snoop = {res4_empty, res3_empty, res2_empty, res1_empty};
 
 logic ready_o;
 assign ready_o = iq_ir_itf.issue_q_full_n & ~rst; // if fifo is ready and instruction queue is not getting reset/flushed
-// assign control_o = control_o_buf;
 
 always_comb begin : control_o_logic
     if (control_o_valid)
@@ -111,13 +110,6 @@ always_comb begin : dequeue_logic
                         regfile_allocate = 1'b1;
                     end
                
-                    // send read signals to the regfile
-                    // regfile_tag1 = control_o_buf.src1_reg;
-                    // regfile_tag2 = control_o_buf.src2_reg;
-
-                    // assign the output to the output of the queue
-                    // control_o = control_o_buf;
-
                     // find out which reservation station to route to
                     if (res_snoop[0])
                         res1_load = 1'b1;

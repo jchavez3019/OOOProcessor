@@ -1,17 +1,7 @@
 module alu
 import rv32i_types::*;
 (
-    // input tomasula_types::op_t op,
-    // input tomasula_types::alu_word::src1_data src1_data,
-    // input tomasula_types::alu_word::src2_data src2_data,
-    // input tomasula_types::alu_word::funct3 funct3,
-    // input tomasula_types::alu_word::funct7 funct7,
-    // input tomasula_types::alu_word::load load,
-    // input tomasula_types::alu_word::tag tag,
     input tomasula_types::alu_word alu_word,
-//    output tomasula_types::cdb_data::data data,
-//    output tomasula_types::cdb_data::tag tag_out,
-//    output tomasula_types::cdb_data::request req
     output tomasula_types::cdb_data cdb_data
 );
 

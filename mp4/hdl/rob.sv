@@ -106,9 +106,6 @@ assign allocated_rob_entries[7] = _allocated_entries[7];
 
 
 always_ff @(posedge clk) begin
-    // _ld_pc <= 1'b0;
-    // _ld_commit_sel <= 1'b0;
-    // _regfile_load <= 1'b0;
 
     if (rst) begin
         for (int i=0; i<8; i++) begin
@@ -131,7 +128,6 @@ always_ff @(posedge clk) begin
                 valid_arr[i] <= 1'b1;
         end
 
-        /* ----- ALLOCATE -----*/
         /* when branch wants to update rd for a branch taken/not taken */
         if (update_br)
             rd_arr[br_entry] <= rd_arr[br_entry] | {4'b0000,br_taken};
@@ -140,6 +136,8 @@ always_ff @(posedge clk) begin
         ** because of rob_full logic, if branch_mispredict happend in the previous cycle, 
         ** rob_load can't be sent since instruction queue should stall thus no new allocates should be happening
         */
+
+        /* ----- ALLOCATE -----*/
         if (rob_load) begin
            // stored to handle memory and branching
            instr_arr[_curr_ptr] <= instr_type; 
@@ -148,7 +146,6 @@ always_ff @(posedge clk) begin
            rd_arr[_curr_ptr] <= rd; 
            _allocated_entries[_curr_ptr] <= 1'b1; // indicate an entry has been issued for the curr ptr
            // do not allocate regfile entry for st
-           
            if (instr_type[3]) begin 
                rd_arr[_curr_ptr] <= st_src;
            end
@@ -157,6 +154,32 @@ always_ff @(posedge clk) begin
                _br_ptr <= _curr_ptr;
            end
            _curr_ptr <= _curr_ptr + 1'b1;
+        end
+
+        /* ----- COMMIT ----- */
+        /* if not dealing with flushes, go back to committing instructions */
+        // if the head of the rob has been computed
+        if (valid_arr[_head_ptr] && !flush_in_prog && !branch_mispredict) begin
+            if (instr_arr[_head_ptr] == tomasula_types::LD) begin
+                if (data_mem_resp) begin
+                    valid_arr[_head_ptr] <= 1'b0;
+                    _allocated_entries[_head_ptr] <= 1'b0;
+                    _head_ptr <= _head_ptr + 1'b1;
+                end
+            end
+            else if (instr_arr[_head_ptr][3]) begin
+                if (data_mem_resp) begin
+                    valid_arr[_head_ptr] <= 1'b0;
+                    _allocated_entries[_head_ptr] <= 1'b0;
+                    _head_ptr <= _head_ptr + 1'b1;
+                end
+            end
+            // for all other instructions
+            else begin
+                valid_arr[_head_ptr] <= 1'b0;
+                _allocated_entries[_head_ptr] <= 1'b0;
+                _head_ptr <= _head_ptr + 1'b1;
+            end
         end
 
 
@@ -196,32 +219,6 @@ always_ff @(posedge clk) begin
                 _br_flush_ptr <= _br_flush_ptr + 1'b1;
 
         end
-        /* if not dealing with flushes, go back to committing instructions */
-        else begin
-            // if the head of the rob has been computed
-            if (valid_arr[_head_ptr] && !flush_in_prog && !branch_mispredict) begin
-                if (instr_arr[_head_ptr] == tomasula_types::LD) begin
-                    if (data_mem_resp) begin
-                        valid_arr[_head_ptr] <= 1'b0;
-                        _allocated_entries[_head_ptr] <= 1'b0;
-                        _head_ptr <= _head_ptr + 1'b1;
-                    end
-                end
-                else if (instr_arr[_head_ptr][3]) begin
-                    if (data_mem_resp) begin
-                        valid_arr[_head_ptr] <= 1'b0;
-                        _allocated_entries[_head_ptr] <= 1'b0;
-                        _head_ptr <= _head_ptr + 1'b1;
-                    end
-                end
-                // for all other instructions
-                else begin
-                    valid_arr[_head_ptr] <= 1'b0;
-                    _allocated_entries[_head_ptr] <= 1'b0;
-                    _head_ptr <= _head_ptr + 1'b1;
-                end
-            end
-        end
     end
 end
 
@@ -242,6 +239,7 @@ always_comb begin
         tomasula_types::SB: wmask = 4'b0001 << memaddr_offset;
     endcase
 end
+
 always_comb begin
 
     set_defaults();

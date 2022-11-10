@@ -38,7 +38,6 @@ IQ_2_IR iq_ir_itf();
 
 /* pc signals */
 logic [31:0] pc;
-// logic [31:0] pc_calc; // this is the output of the ir register which does address calculation for branches
 
 /* harness containing all module signals */
 debug_itf itf();
@@ -46,13 +45,7 @@ debug_itf itf();
 /***************************************** Modules ***************************************************/
 
 logic [31:0] regfile_mem_in;
-/*
-    case(store_funct3_t'(``RES_STATION.funct3)) \
-        sw: data_mbe = 4'b1111; \
-        sh: data_mbe =  4'b0011 << ``OFFSET; \
-        sb: data_mbe =  4'b0001 << ``OFFSET; \
-    endcase \
-*/
+logic [1:0] memaddr_offset; 
 
 `define mbe_calc(RES_STATION, OFFSET, DATA) \
     if (``RES_STATION.op == tomasula_types::LD) begin \
@@ -75,7 +68,6 @@ logic [31:0] regfile_mem_in;
 
 // only request memory on a commit, where address is on cdb
 //
-logic [1:0] memaddr_offset; 
 
 always_comb begin : data_mem_req
     data_mem_address = {itf.cdb_out[itf.head_ptr].data[31:2], 2'b00};
@@ -89,20 +81,6 @@ always_comb begin : data_mem_req
     `mbe_calc(itf.res4_alu_out, memaddr_offset, data_mem_rdata);
 
 end
-
-/*
-always_ff @(posedge clk) begin
-    if (rst) begin 
-        _data_mbe <= 4'b0000;
-    end
-    else begin
-        if (regfile_allocate) begin
-        end
-        else begin
-        end
-    end
-end
-*/
 
 ir ir (
     .*,
@@ -146,9 +124,7 @@ pc_register PC (
         .clk (clk),
         .rst (rst),
         .load(itf.ir_ld_pc | itf.rob_ld_pc | itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed),
-        // .load(ld_pc),
         .in(itf.pc_in),
-        // .in(itf.pc_calc),
         .out(pc)
     );
 
@@ -156,7 +132,6 @@ iq iq (
     .*,
     .clk (clk),
     .rst (rst | itf.flush_in_prog),
-    // .control_i (itf.control_i),
     .res1_empty(itf.res1_empty),
     .res2_empty(itf.res2_empty),
     .res3_empty(itf.res3_empty),
@@ -171,9 +146,6 @@ iq iq (
     .res3_load(itf.res3_load),
     .res4_load(itf.res4_load),
     .control_o(itf.control_o)
-    // ,.iq_ir_itf(iq_ir_itf.IR_SIG)
-    // .issue_q_full_n(itf.issue_q_full_n),
-    // .ack_o(itf.ack_o)
 );
 
 always_comb begin : set_rob_valids
@@ -205,7 +177,6 @@ rob rob (
      .instr_type (itf.control_o.op),
      .rd (itf.control_o.rd),
      .st_src (itf.control_o.src2_reg),
-    //  .branch_mispredict (1'b0),
      .data_mem_resp (data_mem_resp),
      .memaddr_offset (memaddr_offset),
      .status_rob_valid (itf.status_rob_valid),
