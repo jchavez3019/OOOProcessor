@@ -128,7 +128,13 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.pc = pc + 4; 
         end
         op_load: begin
-            iq_ir_itf.control_word.op = tomasula_types::LD;
+            case (funct3) 
+                lw: iq_ir_itf.control_word.op = tomasula_types::LW;
+                lh: iq_ir_itf.control_word.op = tomasula_types::LH;
+                lhu: iq_ir_itf.control_word.op = tomasula_types::LHU;
+                lb: iq_ir_itf.control_word.op = tomasula_types::LB;
+                lbu: iq_ir_itf.control_word.op = tomasula_types::LBU;
+            endcase
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_data = i_imm;

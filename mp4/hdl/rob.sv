@@ -48,7 +48,8 @@ import rv32i_types::*;
     // to d-cache
     output logic data_read,
     output logic data_write,
-    output logic [3:0] wmask
+    output logic [3:0] wmask,
+    output tomasula_types::op_t commit_type
 );
 
 tomasula_types::op_t instr_arr [8];
@@ -73,6 +74,7 @@ assign flush_in_prog = flush_ip;
 
 assign rd_commit = rd_arr[_head_ptr];
 assign st_src_commit = rd_arr[_head_ptr];
+assign commit_type = instr_arr[_head_ptr];
 assign ld_commit_sel = _ld_commit_sel;
 assign ld_pc = _ld_pc;
 assign data_read = _data_read;
@@ -153,7 +155,7 @@ always_ff @(posedge clk) begin
            rd_arr[_curr_ptr] <= rd; 
            _allocated_entries[_curr_ptr] <= 1'b1; // indicate an entry has been issued for the curr ptr
            // do not allocate regfile entry for st
-           if (instr_type[3]) begin 
+           if (instr_type > 7 && instr_type < 11) begin 
                rd_arr[_curr_ptr] <= st_src;
            end
            // branch - hold taken/not taken (initialized to not taken)
@@ -219,7 +221,7 @@ always_ff @(posedge clk) begin
                 // if(instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
                 // //    _ld_pc <= 1'b1; 
                 // end
-                if (instr_arr[_head_ptr] == tomasula_types::LD) begin
+                if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
                     // _data_read <= 1'b1;
                     // make sure instruction is not committed until data returned
                     // from d-cache...
@@ -235,7 +237,7 @@ always_ff @(posedge clk) begin
                         _head_ptr <= _head_ptr + 1'b1;
                     end
                 end
-                else if (instr_arr[_head_ptr][3]& ~flush_in_prog & ~branch_mispredict) begin
+                else if (instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11) begin
                     // _data_write <= 1'b1;
                     // for st address
                     // send regfile the register file to read from
@@ -290,46 +292,49 @@ always_comb begin
 
             /* if flush is in progress, reallocate tags in register file */
             if ((_br_flush_ptr != br_ptr) & flush_ip) begin
-                if (!instr_arr[_br_flush_ptr][3] | instr_arr[_br_flush_ptr] != tomasula_types::BRANCH)
+                if (instr_arr[_br_ptr] > 7 && instr_arr[_br_ptr] < 11| instr_arr[_br_flush_ptr] != tomasula_types::BRANCH)
                     reallocate_reg_tag = 1'b1;
             end
 
             /* check if rob entry at head pointer has been calculated and handle all instruction types */
-            if (instr_arr[_head_ptr] == tomasula_types::LD & ~flush_in_prog) begin
-                _data_read = 1'b1;
-                // make sure instruction is not committed until data returned
-                // from d-cache...
-                if (data_mem_resp) begin
-                    _data_read = 1'b0;
-                    // valid_arr[_head_ptr] <= 1'b0;
-                    // use d-cache data
-                    _ld_commit_sel = 1'b1;
-                    _regfile_load = 1'b1;
-                    // _rd_commit <= rd_arr[_head_ptr];
-                    // update head
-                    // _head_ptr <= _head_ptr + 1'b1;
-                end
-            end
-            else if ((instr_arr[_head_ptr][3]) & (valid_arr[_head_ptr]) & ~flush_in_prog) begin
-                _data_write = 1'b1;
-                // for st address
-                // send regfile the register file to read from
-                // _st_src_commit <= rd_arr[_head_ptr];
-                // once store has been processed
-                if (data_mem_resp) begin
-                    _data_write = 1'b0;
-                    // valid_arr[_head_ptr] <= 1'b0;
-                    // _head_ptr <= _head_ptr + 1'b1;
-                end
-            end
-            // for all other instructions except branch since branch doesn't load regfile
-            else if (valid_arr[_head_ptr] & (instr_arr[_head_ptr] != tomasula_types::BRANCH) & ~flush_in_prog) begin
-                _regfile_load = 1'b1;
-                // valid_arr[_head_ptr] <= 1'b0;
 
-                // increment _head_ptr
-                // _rd_commit <= rd_arr[_head_ptr];
-                // _head_ptr <= _head_ptr + 1'b1;
+            if (valid_arr[_head_ptr] & ~flush_in_prog & ~branch_mispredict) begin
+                if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
+                    _data_read = 1'b1;
+                    // make sure instruction is not committed until data returned
+                    // from d-cache...
+                    if (data_mem_resp) begin
+                        _data_read = 1'b0;
+                        // valid_arr[_head_ptr] <= 1'b0;
+                        // use d-cache data
+                        _ld_commit_sel = 1'b1;
+                        _regfile_load = 1'b1;
+                        // _rd_commit <= rd_arr[_head_ptr];
+                        // update head
+                        // _head_ptr <= _head_ptr + 1'b1;
+                    end
+                end
+                else if ((instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11)) begin
+                    _data_write = 1'b1;
+                    // for st address
+                    // send regfile the register file to read from
+                    // _st_src_commit <= rd_arr[_head_ptr];
+                    // once store has been processed
+                    if (data_mem_resp) begin
+                        _data_write = 1'b0;
+                        // valid_arr[_head_ptr] <= 1'b0;
+                        // _head_ptr <= _head_ptr + 1'b1;
+                    end
+                end
+                // for all other instructions except branch since branch doesn't load regfile
+                else if (instr_arr[_head_ptr] != tomasula_types::BRANCH) begin
+                    _regfile_load = 1'b1;
+                    // valid_arr[_head_ptr] <= 1'b0;
+
+                    // increment _head_ptr
+                    // _rd_commit <= rd_arr[_head_ptr];
+                    // _head_ptr <= _head_ptr + 1'b1;
+                end
             end
 
 end

@@ -9,10 +9,17 @@ typedef enum bit[3:0] {
     LD = 4'b0101,
     CSR = 4'b0110, 
     LUI = 4'b0111,
-    /* stores and only stores can have the MSB set. */
-    SB = 4'b1001,
-    SH = 4'b1011,
-    SW = 4'b1111
+    // 8 to 10 is ST
+    SB = 4'b1000,
+    SH = 4'b1001,
+    SW = 4'b1010,
+
+    // 11 to 15 is LD
+    LB = 4'b1011,
+    LBU = 4'b1100,
+    LH = 4'b1101,
+    LHU = 4'b1110,
+    LW = 4'b1111
 } op_t;
 
 /* remember to take out rob id's later since they are unnecessary */

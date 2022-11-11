@@ -54,19 +54,15 @@ logic [31:0] regfile_mem_in;
     endcase \
 */
 
-`define mbe_calc(RES_STATION, OFFSET, DATA) \
-    if (``RES_STATION.op == tomasula_types::LD) begin \
-        if (``RES_STATION.tag == itf.head_ptr) begin \
-            case(load_funct3_t'(``RES_STATION.funct3)) \
-                lw: regfile_mem_in = ``DATA; \
-                lh: regfile_mem_in = {{16{``DATA[16 * ((``OFFSET/2)+1) - 1]}}, ``DATA[8 * ``OFFSET+:16]}; \
-                lhu: regfile_mem_in = {{16{1'b0}}, ``DATA[8 * ``OFFSET+:16]}; \
-                lb: regfile_mem_in = {{24{``DATA[(8 * (``OFFSET+1)) - 1]}}, ``DATA[8 * ``OFFSET+:8]}; \
-                lbu: regfile_mem_in = {{24{1'b0}}, ``DATA[8 * ``OFFSET+:8]}; \
-                default: regfile_mem_in = ``DATA; \
-            endcase \
-        end \
-    end
+`define mbe_calc(TYPE, OFFSET, DATA) \
+        case(tomasula_types::op_t'(TYPE)) \
+            tomasula_types::LW: regfile_mem_in = ``DATA; \
+            tomasula_types::LH: regfile_mem_in = {{16{``DATA[16 * ((``OFFSET/2)+1) - 1]}}, ``DATA[8 * ``OFFSET+:16]}; \
+            tomasula_types::LHU: regfile_mem_in = {{16{1'b0}}, ``DATA[8 * ``OFFSET+:16]}; \
+            tomasula_types::LB: regfile_mem_in = {{24{``DATA[(8 * (``OFFSET+1)) - 1]}}, ``DATA[8 * ``OFFSET+:8]}; \
+            tomasula_types::LBU: regfile_mem_in = {{24{1'b0}}, ``DATA[8 * ``OFFSET+:8]}; \
+            default: regfile_mem_in = ``DATA; \
+        endcase 
 
 `define write_to_cdb(RES_STATION_EXEC, ALU_OUT, DATA_SEL, ALU_DATA) \
     if (``RES_STATION_EXEC) begin \
@@ -83,10 +79,22 @@ always_comb begin : data_mem_req
     
     // default byte enable value
     //wmask = 4'b0000;
-    `mbe_calc(itf.res1_alu_out, memaddr_offset, data_mem_rdata);
+    //`mbe_calc(itf.commit_type, memaddr_offset, data_mem_rdata);
+    case(itf.commit_type) 
+        tomasula_types::LW: regfile_mem_in = data_mem_rdata; 
+        tomasula_types::LH: regfile_mem_in = {{16{data_mem_rdata[16 * ((memaddr_offset/2)+1) - 1]}}, data_mem_rdata[8 * memaddr_offset+:16]};
+        tomasula_types::LHU: regfile_mem_in = {{16{1'b0}}, data_mem_rdata[8 * memaddr_offset+:16]}; 
+        tomasula_types::LB: regfile_mem_in = {{24{data_mem_rdata[(8 * (memaddr_offset+1)) - 1]}}, data_mem_rdata[8 * memaddr_offset+:8]}; 
+        tomasula_types::LBU: regfile_mem_in = {{24{1'b0}}, data_mem_rdata[8 * memaddr_offset+:8]}; 
+        default: regfile_mem_in = data_mem_rdata; 
+    endcase 
+
+
+    /*
     `mbe_calc(itf.res2_alu_out, memaddr_offset, data_mem_rdata);
     `mbe_calc(itf.res3_alu_out, memaddr_offset, data_mem_rdata);
     `mbe_calc(itf.res4_alu_out, memaddr_offset, data_mem_rdata);
+    */
 
 end
 
@@ -228,7 +236,8 @@ rob rob (
      .ld_pc (itf.rob_ld_pc),
      .data_read (data_read),
      .data_write (data_write),
-     .wmask (data_mbe)
+     .wmask (data_mbe),
+     .commit_type (itf.commit_type)
  );
 
  /*rob

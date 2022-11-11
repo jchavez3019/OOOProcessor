@@ -146,10 +146,16 @@ begin : state_actions
                 ld_pc_to_cdb = 1'b1;
                 update_br = 1'b1;
             end
+
             if (start_exe & res_word.op == tomasula_types::AUIPC) begin
                 ld_pc_to_cdb = 1'b1;
             end
+
+            if (start_exe & res_word.op == tomasula_types::LUI) begin
+                ld_pc_to_cdb = 1'b1;
+            end
             
+
             if (res_word.src1_valid)
                 alu_data.src1_data = res_word.src1_data;
             else
@@ -177,6 +183,10 @@ begin : state_actions
             end
 
             if (start_exe & res_word.op == tomasula_types::AUIPC) begin
+                ld_pc_to_cdb = 1'b1;
+            end
+
+            if (start_exe & res_word.op == tomasula_types::LUI) begin
                 ld_pc_to_cdb = 1'b1;
             end
 
