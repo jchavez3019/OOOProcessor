@@ -11,7 +11,7 @@ ldst_mp2test.s:
     lw x11, ecebeceb
     bne x11, x9, deadend     
 
-    bne x11, x9, deadend     
+    beq  x11, x9, deadend     
 
     beq x10, x9, deadend     
 
