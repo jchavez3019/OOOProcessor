@@ -1,0 +1,161 @@
+m255
+K4
+z2
+!s11f vlog 2020.1 2020.02, Feb 28 2020
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 d/home/jiwonl4/School/FA2022/ECE411/fa22_ece411_jiwonl4/mp3/hdl/cache
+varray
+Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
+!s110 1667182596
+!i10b 1
+!s100 6D[fXXeLZMSgWoQd2<oMV0
+Z2 !s11b Dg1SIo80bB@j0V0VzS_@n1
+IT6DXe0m7BYi3B3I?kBI4S1
+Z3 VDg1SIo80bB@j0V0VzS_@n1
+S1
+R0
+w1667182596
+8/tmp/vzktwz2/2/array.sv
+F/tmp/vzktwz2/2/array.sv
+!i122 134
+L0 4 46
+Z4 OV;L;2020.1;71
+r1
+!s85 0
+31
+!s108 1667182596.000000
+!s107 /tmp/vzktwz2/2/array.sv|
+!s90 -quiet|-lint|/tmp/vzktwz2/2/array.sv|
+!i113 1
+Z5 o-quiet -lint
+Z6 tCvgOpt 0
+vbus_adapter
+R1
+!s110 1664459416
+!i10b 1
+!s100 ]Xh8BlEoCiHY8I]zGBK@U1
+R2
+IESCmEJ5U^0M<B6eHNIXz]0
+R3
+S1
+R0
+w1664459416
+8/tmp/v4f9c2i/6/bus_adapter.sv
+F/tmp/v4f9c2i/6/bus_adapter.sv
+!i122 131
+L0 6 16
+R4
+r1
+!s85 0
+31
+!s108 1664459416.000000
+!s107 /tmp/v4f9c2i/6/bus_adapter.sv|
+!s90 -quiet|-lint|/tmp/v4f9c2i/6/bus_adapter.sv|
+!i113 1
+R5
+R6
+vcache
+R1
+!s110 1664423963
+!i10b 1
+!s100 g3]e05bIl@315VNliHikM2
+R2
+I6IWz^U23:zm@WR7AkIjDi1
+R3
+S1
+R0
+w1664423963
+8/tmp/v11ImeP/89/cache.sv
+F/tmp/v11ImeP/89/cache.sv
+!i122 130
+L0 4 75
+R4
+r1
+!s85 0
+31
+!s108 1664423963.000000
+!s107 /tmp/v11ImeP/89/cache.sv|
+!s90 -quiet|-lint|/tmp/v11ImeP/89/cache.sv|
+!i113 1
+R5
+R6
+vcache_control
+R1
+!s110 1664375449
+!i10b 1
+!s100 z=dU?CT6IIBjEg0Gn12O]0
+R2
+IT?Q;;BmMNO;Dg[21cV7bM1
+R3
+S1
+R0
+w1664375449
+8/tmp/vc5FO6O/42/cache_control.sv
+F/tmp/vc5FO6O/42/cache_control.sv
+!i122 70
+L0 4 25
+R4
+r1
+!s85 0
+31
+!s108 1664375449.000000
+!s107 /tmp/vc5FO6O/42/cache_control.sv|
+!s90 -quiet|-lint|/tmp/vc5FO6O/42/cache_control.sv|
+!i113 1
+R5
+R6
+vcache_datapath
+R1
+!s110 1664398876
+!i10b 1
+!s100 OKeDlEATWCE<deZFeSDa12
+R2
+I?PJQf;1TTaTWUL?8P0`B:1
+R3
+S1
+R0
+w1664398876
+8/tmp/vHDVBK7/126/cache_datapath.sv
+F/tmp/vHDVBK7/126/cache_datapath.sv
+!i122 102
+L0 5 44
+R4
+r1
+!s85 0
+31
+!s108 1664398876.000000
+!s107 /tmp/vHDVBK7/126/cache_datapath.sv|
+!s90 -quiet|-lint|/tmp/vHDVBK7/126/cache_datapath.sv|
+!i113 1
+R5
+R6
+vdata_array
+R1
+!s110 1667181860
+!i10b 1
+!s100 XQ5emFA]0Ol<IT0HSFnAZ2
+R2
+IhEIElTb]i0N;JK0l4bTz23
+R3
+S1
+R0
+w1667181860
+8/tmp/v31M2Xf/2/data_array.sv
+F/tmp/v31M2Xf/2/data_array.sv
+!i122 133
+L0 6 45
+R4
+r1
+!s85 0
+31
+!s108 1667181860.000000
+!s107 /tmp/v31M2Xf/2/data_array.sv|
+!s90 -quiet|-lint|/tmp/v31M2Xf/2/data_array.sv|
+!i113 1
+R5
+R6
