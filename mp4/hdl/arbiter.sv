@@ -31,9 +31,9 @@ import adaptor_types::*;
 );
 
 /**************************** DECLARATIONS ***********************************/
-logic line_t cache_to_pmem;
-logic line_t instr_pmem_to_cache, data_pmem_to_cache;
-logic addr_t cache_address;
+line_t cache_to_pmem;
+line_t instr_pmem_to_cache, data_pmem_to_cache;
+addr_t cache_address;
 logic cache_read, cache_write;
 logic instr_cache_resp, data_cache_resp;
 
@@ -41,7 +41,7 @@ enum logic [1:0] {
     NONE,
     INSTR,
     DATA,
-    BOTH,
+    BOTH
 } state, next_state;
 
 /*****************************************************************************/
@@ -127,7 +127,7 @@ end
 
 
 /************************* Non-Blocking Assignments **************************/
-always_ff &(posedge clk) begin
+always_ff @(posedge clk) begin
     if (rst) begin
         state <= NONE;
     end
