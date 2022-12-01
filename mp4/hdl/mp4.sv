@@ -1,5 +1,6 @@
 module mp4
 import rv32i_types::*;
+import adaptor_types::*;
 (
     input clk,
     input rst,
@@ -30,11 +31,22 @@ import rv32i_types::*;
     output rv32i_word pmem_address,
     output [63:0] pmem_wdata
 );
+
 logic instr_mem_resp, data_mem_resp;
 logic instr_read, instr_write, data_read, data_write; 
 rv32i_word instr_mem_rdata, data_mem_rdata, data_mem_wdata;
 rv32i_word instr_mem_address, data_mem_address;
+rv32i_word instr_cache_address, data_cache_address;
 logic [3:0] data_mbe;
+
+line_t instr_pmem_to_cache, instr_cache_to_pmem, data_pmem_to_cache, data_cache_to_pmem;
+logic instr_cache_read, instr_cache_write, data_cache_read, data_cache_write;
+logic instr_cache_resp, data_cache_resp;
+
+line_t pmem_to_cache, cache_to_pmem;
+rv32i_word cache_address;
+logic cache_read, cache_write;
+logic cache_resp;
 
 ooo ooo(.*);
 
@@ -43,8 +55,8 @@ cache i_cache(
     .rst(rst),
     .mem_address(instr_mem_address),
     .mem_rdata(instr_mem_rdata),
-    .mem_wdata(mem_wdata),
-    .mem_read(instr_mem_read),
+    .mem_wdata(),
+    .mem_read(instr_read),
     .mem_write(),
     .mem_byte_enable(),
     .mem_resp(instr_mem_resp),
@@ -63,8 +75,8 @@ cache d_cache(
     .mem_address(data_mem_address),
     .mem_rdata(data_mem_rdata),
     .mem_wdata(data_mem_wdata),
-    .mem_read(data_mem_read),
-    .mem_write(data_mem_write),
+    .mem_read(data_read),
+    .mem_write(data_write),
     .mem_byte_enable(data_mbe),
     .mem_resp(data_mem_resp),
 
