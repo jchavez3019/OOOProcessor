@@ -90,6 +90,7 @@ end
 
 /*************************** NEXT STATE LOGIC ********************************/
 always_comb begin
+    next_state = state;
     case (state)
     NONE: begin
         if (instr_cache_read || instr_cache_write) begin

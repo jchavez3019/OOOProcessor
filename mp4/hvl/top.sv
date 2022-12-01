@@ -101,6 +101,15 @@ assign itf.registers = '{default: '0};
 
 /*********************** Instantiate your design here ************************/
 /*
+assign itf.mem_read = dut.pmem_read;
+assign itf.mem_write = dut.pmem_write;
+assign itf.mem_wdata = dut.pmem_wdata;
+assign itf.mem_rdata = dut.pmem_rdata;
+assign itf.mem_addr = dut.pmem_address;
+assign itf.mem_resp = dut.pmem_resp;
+*/
+
+/*
 The following signals need to be connected to your top level for CP2:
 Burst Memory Ports:
     itf.mem_read
