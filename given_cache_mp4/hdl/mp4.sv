@@ -109,12 +109,12 @@ arbiter arbiter (
     .data_cache_write(data_cache_write),
     .data_cache_resp(data_cache_resp),
 
-    .pmem_to_cache(pmem_to_cache),
-    .cache_to_pmem(cache_to_pmem),
-    .cache_address(cache_address),
-    .cache_read(cache_read),
-    .cache_write(cache_write),
-    .cache_resp(cache_resp)
+    .pmem_to_cache(pmem_rdata),
+    .cache_to_pmem(pmem_wdata),
+    .cache_address(pmem_address),
+    .cache_read(pmem_read),
+    .cache_write(pmem_write),
+    .cache_resp(pmem_resp)
 );
 
 cacheline_adaptor cacheline_adaptor 
