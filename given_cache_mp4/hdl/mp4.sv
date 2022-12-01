@@ -52,40 +52,42 @@ ooo ooo(.*);
 
 cache i_cache(
     .clk(clk),
-    .rst(rst),
-    .mem_address(instr_mem_address),
-    .mem_rdata(instr_mem_rdata),
-    .mem_wdata(),
-    .mem_read(instr_read),
-    .mem_write(),
-    .mem_byte_enable(),
-    .mem_resp(instr_mem_resp),
 
-    .pmem_address(instr_cache_address),
+    .pmem_resp(instr_cache_resp)
     .pmem_rdata(instr_pmem_to_cache),
+    .pmem_address(instr_cache_address),
     .pmem_wdata(instr_cache_to_pmem),
     .pmem_read(instr_cache_read),
     .pmem_write(instr_cache_write),
-    .pmem_resp(instr_cache_resp)
+
+    .mem_read(instr_read),
+    .mem_write(),
+    .mem_byte_enable_cpu(),
+    .mem_address(instr_mem_address),
+    .mem_wdata_cpu(),
+    .mem_resp(instr_mem_resp),
+    .mem_rdata_cpu(instr_mem_rdata),
+
 );
 
 cache d_cache(
     .clk(clk),
-    .rst(rst),
-    .mem_address(data_mem_address),
-    .mem_rdata(data_mem_rdata),
-    .mem_wdata(data_mem_wdata),
-    .mem_read(data_read),
-    .mem_write(data_write),
-    .mem_byte_enable(data_mbe),
-    .mem_resp(data_mem_resp),
 
-    .pmem_address(data_cache_address),
+    .pmem_resp(data_cache_resp)
     .pmem_rdata(data_pmem_to_cache),
+    .pmem_address(data_cache_address),
     .pmem_wdata(data_cache_to_pmem),
     .pmem_read(data_cache_read),
     .pmem_write(data_cache_write),
-    .pmem_resp(data_cache_resp)
+
+    .mem_read(data_read),
+    .mem_write(data_write),
+    .mem_byte_enable_cpu(data_mbe),
+    .mem_address(data_mem_address),
+    .mem_wdata_cpu(data_mem_wdata),
+    .mem_resp(data_mem_resp),
+    .mem_rdata_cpu(data_mem_rdata),
+
 );
 
 

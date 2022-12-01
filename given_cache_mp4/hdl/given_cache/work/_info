@@ -1,0 +1,36 @@
+m255
+K4
+z2
+!s11f vlog 2020.1 2020.02, Feb 28 2020
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 d/home/jiwonl4/School/FA2022/ECE411/mp4/given_cache_mp4/hdl/given_cache
+vcache
+DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
+!s110 1669935791
+!i10b 1
+!s100 g]fXfcfO7mkgANbP^Wk=31
+!s11b Dg1SIo80bB@j0V0VzS_@n1
+Iecii`hAP4UMV`N010m3b01
+VDg1SIo80bB@j0V0VzS_@n1
+S1
+R0
+w1669935791
+8/tmp/v8HIgM5/2/cache.sv
+F/tmp/v8HIgM5/2/cache.sv
+!i122 0
+L0 1 48
+OV;L;2020.1;71
+r1
+!s85 0
+31
+!s108 1669935791.000000
+!s107 /tmp/v8HIgM5/2/cache.sv|
+!s90 -quiet|-lint|/tmp/v8HIgM5/2/cache.sv|
+!i113 1
+o-quiet -lint
+tCvgOpt 0
