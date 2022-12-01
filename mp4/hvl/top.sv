@@ -15,6 +15,29 @@ source_tb tb(
     .rvfi(rvfi)
 );
 
+// assign rvfi.halt = (rvfi.pc_wdata == rvfi.pc_rdata) && rvfi.commit; 
+// assign rvfi.commit = // get this from the ROB likely
+
+assign rvfi.load_regfile = dut.rob.regfile_load;
+
+// assign rvfi.order = 
+// assign rvfi.inst = 
+// assign rvfi.trap = 1'b0;
+// assign rvfi.rs1_addr = 
+// assign rvfi.rs2_addr = 
+// assign rvfi.rs1_rdata =  
+// assign rvfi.rs2_rdata =  
+// assign rvfi.rd_addr =  
+// assign rvfi.rd_wdata =  
+// assign rvfi.pc_rdata = 
+// assign rvfi.pc_wdata = 
+// assign rvfi.mem_addr = 
+// assign rvfi.mem_rmask = 
+// assign rvfi.mem_wmask = 
+// assign rvfi.mem_rdata = 
+// assign rvfi.mem_wdata = 
+// assign rvfi.errcode = 
+
 // Dump signals
 initial begin
     $fsdbDumpfile("dump.fsdb");
