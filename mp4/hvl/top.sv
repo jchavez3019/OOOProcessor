@@ -13,30 +13,7 @@ source_tb tb(
     .sm_itf(itf),
     .tb_itf(itf),
     .rvfi(rvfi)
-);
-
-// assign rvfi.halt = (rvfi.pc_wdata == rvfi.pc_rdata) && rvfi.commit; 
-// assign rvfi.commit = // get this from the ROB likely
-
-assign rvfi.load_regfile = dut.rob.regfile_load;
-
-// assign rvfi.order = 
-// assign rvfi.inst = 
-// assign rvfi.trap = 1'b0;
-// assign rvfi.rs1_addr = 
-// assign rvfi.rs2_addr = 
-// assign rvfi.rs1_rdata =  
-// assign rvfi.rs2_rdata =  
-// assign rvfi.rd_addr =  
-// assign rvfi.rd_wdata =  
-// assign rvfi.pc_rdata = 
-// assign rvfi.pc_wdata = 
-// assign rvfi.mem_addr = 
-// assign rvfi.mem_rmask = 
-// assign rvfi.mem_wmask = 
-// assign rvfi.mem_rdata = 
-// assign rvfi.mem_wdata = 
-// assign rvfi.errcode = 
+); 
 
 // Dump signals
 initial begin
@@ -49,11 +26,34 @@ end
 /************************ Signals necessary for monitor **********************/
 // This section not required until CP2
 
-assign rvfi.commit = 0; // Set high when a valid instruction is modifying regfile or PC
-assign rvfi.halt = 0; // Set high when target PC == Current PC for a branch
+assign rvfi.commit = dut.rob.regfile_load; // Set high when a valid instruction is modifying regfile or PC
+assign rvfi.halt = 0; //   
 initial rvfi.order = 0;
 always @(posedge itf.clk iff rvfi.commit) rvfi.order <= rvfi.order + 1; // Modify for OoO
 
+
+assign rvfi.load_regfile = dut.rob.regfile_load;
+
+//Instruction and trap:
+assign rvfi.inst = dut.ir.data;
+assign rvfi.trap = 1'b0;
+
+// registers and pc for architectural state tracking
+assign rvfi.rs1_addr =  dut.regfile.src_a;
+assign rvfi.rs2_addr =  dut.regfile.src_b;
+assign rvfi.rs1_rdata = dut.regfile.reg_a;
+assign rvfi.rs2_rdata = dut.regfile.reg_b;
+assign rvfi.rd_addr =   dut.regfile.dest;
+assign rvfi.rd_wdata =  dut.regfile.in;
+assign rvfi.pc_rdata =  dut.PC.out;
+assign rvfi.pc_wdata =  dut.PC.out + 4;
+
+// memory
+// assign rvfi.mem_addr = 
+// assign rvfi.mem_rmask = 
+// assign rvfi.mem_wmask = 
+// assign rvfi.mem_rdata = 
+// assign rvfi.mem_wdata = 
 /*
 Instruction and trap:
     rvfi.inst
