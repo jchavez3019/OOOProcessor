@@ -63,7 +63,17 @@ Please refer to rvfi_itf.sv for more information.
 
 /********************* Assign Shadow Memory Signals Here *********************/
 // This section not required until CP2
-
+assign itf.inst_read    =  dut.i_cache.mem_read;
+assign itf.inst_addr    =  dut.i_cache.mem_address;
+assign itf.inst_resp    =  dut.i_cache.mem_resp;
+assign itf.inst_rdata   =  dut.i_cache.mem_rdata;
+assign itf.data_read    =  dut.d_cache.mem_read;
+assign itf.data_write   =  dut.d_cache.mem_write;
+assign itf.data_mbe     =  dut.d_cache.mem_byte_enable;
+assign itf.data_addr    =  dut.d_cache.mem_address;
+assign itf.data_wdata   =  dut.d_cache.mem_wdata;
+assign itf.data_resp    =  dut.d_cache.mem_resp;
+assign itf.data_rdata   =  dut.d_cache.mem_rdata;
 /*
 The following signals need to be set:
 icache signals:
