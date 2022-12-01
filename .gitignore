@@ -1,3 +1,4 @@
 # don't save simulation files
 sim/
 verdi/
+bin/
