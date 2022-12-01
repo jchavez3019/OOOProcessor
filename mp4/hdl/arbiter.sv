@@ -31,11 +31,13 @@ import adaptor_types::*;
 );
 
 /**************************** DECLARATIONS ***********************************/
+/*
 line_t cache_to_pmem;
 line_t instr_pmem_to_cache, data_pmem_to_cache;
 addr_t cache_address;
 logic cache_read, cache_write;
 logic instr_cache_resp, data_cache_resp;
+*/
 
 enum logic [1:0] {
     NONE,
@@ -63,7 +65,7 @@ endfunction
     //transitioning states
 always_comb begin
     set_defaults();
-    unique case (state)
+    case (state)
     NONE: begin
     end
     INSTR, BOTH: begin
@@ -88,7 +90,7 @@ end
 
 /*************************** NEXT STATE LOGIC ********************************/
 always_comb begin
-    unique case (state)
+    case (state)
     NONE: begin
         if (instr_cache_read || instr_cache_write) begin
             if (data_cache_read || data_cache_read) begin

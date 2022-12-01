@@ -32,8 +32,8 @@ import rv32i_types::*;
 );
 logic instr_mem_resp, data_mem_resp;
 logic instr_read, instr_write, data_read, data_write; 
-logic rv32i_word instr_mem_rdata, data_mem_rdata, data_mem_wdata;
-logic rv32i_word instr_mem_address, data_mem_address;
+rv32i_word instr_mem_rdata, data_mem_rdata, data_mem_wdata;
+rv32i_word instr_mem_address, data_mem_address;
 logic [3:0] data_mbe;
 
 ooo ooo(.*);

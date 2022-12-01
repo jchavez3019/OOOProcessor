@@ -63,6 +63,7 @@ Please refer to rvfi_itf.sv for more information.
 
 /********************* Assign Shadow Memory Signals Here *********************/
 // This section not required until CP2
+
 /*
 The following signals need to be set:
 icache signals:
@@ -81,8 +82,8 @@ dcache signals:
     itf.data_rdata
 
 Please refer to tb_itf.sv for more information.
-*/
 
+*/
 /*********************** End Shadow Memory Assignments ***********************/
 
 // Set this to the proper value
@@ -107,6 +108,7 @@ mp4 dut(
     .rst(itf.rst),
     
      // Remove after CP1
+     /*
     .instr_mem_resp(itf.inst_resp),
     .instr_mem_rdata(itf.inst_rdata),
 	.data_mem_resp(itf.data_resp),
@@ -118,16 +120,16 @@ mp4 dut(
     .data_mbe(itf.data_mbe),
     .data_mem_address(itf.data_addr),
     .data_mem_wdata(itf.data_wdata)
+    */
 
 
-    /* Use for CP2 onwards
+    // Use for CP2 onwards
     .pmem_read(itf.mem_read),
     .pmem_write(itf.mem_write),
     .pmem_wdata(itf.mem_wdata),
     .pmem_rdata(itf.mem_rdata),
     .pmem_address(itf.mem_addr),
     .pmem_resp(itf.mem_resp)
-    */
 );
 /***************************** End Instantiation *****************************/
 
