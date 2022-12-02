@@ -94,6 +94,9 @@ tomasula_types::cdb_data alu4_calculation;
 /* mux logic */
 logic [31:0] pc_in;
 
+/* rvfi signals */
+rv32i_types::rvfi_word rvfi_word;
+
 endinterface : debug_itf
 
 `endif

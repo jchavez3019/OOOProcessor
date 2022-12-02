@@ -141,6 +141,7 @@ ir ir (
     .iq_ack(itf.iq_ir_ack),
     .curr_instr(itf.ir_instr)
 
+
 );
 
 /* NOTE:  update rob logic for loading branches since it is necessary for branch mispredicts */
@@ -197,7 +198,8 @@ iq iq (
     .ack_o(itf.iq_ir_ack),
     .original_instr(itf.original_instr),
     .instr_pc(itf.original_instr_pc),
-    .instr_next_pc(itf.original_instr_next_pc)
+    .instr_next_pc(itf.original_instr_next_pc),
+    .rvfi_word(itf.rvfi_word)
 );
 
 always_comb begin : set_rob_valids
@@ -256,17 +258,9 @@ rob rob (
      .commit_type (itf.commit_type),
      .new_instr(itf.original_instr),
      .new_pc(itf.original_instr_pc),
-     .new_next_pc(itf.original_instr_next_pc)
+     .new_next_pc(itf.original_instr_next_pc),
+     .rvfi_word(itf.rvfi_word)
  );
-
- /*rob
-    //////////////////////////////////////////////////////
-    // rob_tag | instr_type | rob_valid | rd | valid    //                                    //
-    //                                                  //
-    //                                                  //
-    //                                                  //
-    //////////////////////////////////////////////////////
- */
 
 
 logic [31:0] regfile_in, ld_data;

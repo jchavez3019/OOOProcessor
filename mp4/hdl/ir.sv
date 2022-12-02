@@ -46,6 +46,20 @@ assign rs2 = data[24:20];
 assign rd = data[11:7];
 assign instr_mem_address = pc;
 
+/* this is an rvfi word that will get passed so that the rvfi can properly debug */
+rv32i_types::rvfi_word rvfi;
+
+always_comb
+begin : generate_rvfi_word
+    iq_ir_itf.rvfi = rvfi;
+    rvfi.inst = data;
+    rvfi.rs1_addr = rs1;
+    rvfi.rs2_addr = rs2;
+    rvfi.rd_addr = rd;
+    rvfi.pc_rdata = pc;
+    rvfi.pc_wdata = iq_ir_itf.control_word.pc;
+end
+
 enum int unsigned {
     RESET = 0,
     FETCH = 1,

@@ -23,6 +23,7 @@ import rv32i_types::*;
     input logic [31:0] new_instr,
     input logic [31:0] new_pc,
     input logic [31:0] new_next_pc,
+    input rv32i_types::rvfi_word rvfi_word,
     // determines if rob entry has been computed
     // from reservation station
     input logic set_rob_valid[8],
@@ -69,6 +70,8 @@ logic [31:0] instr_next_pc [8];
 logic [31:0] curr_original_instr;
 logic [31:0] curr_instr_pc;
 logic [31:0] curr_instr_next_pc;
+rv32i_types::rvfi_word rvfi_word_arr [8];
+rv32i_types::rvfi_word curr_rvfi_word;
 // logic [31:0] pc_addresses [8];
 
 logic [4:0] _rd_commit, _st_src_commit;
@@ -84,6 +87,17 @@ logic [2:0] _curr_ptr, _head_ptr, _br_flush_ptr, _br_ptr;
 assign curr_original_instr = original_instr[_head_ptr];
 assign curr_instr_pc = instr_pc[_head_ptr];
 assign curr_instr_next_pc = instr_next_pc[_head_ptr];
+assign curr_rvfi_word = rvfi_word_arr[_head_ptr];
+
+// always_comb
+// begin : set_curr_rvfi_word
+//     curr_rvfi_word.inst = rvfi_word_arr[_head_ptr].inst;
+//     curr_rvfi_word.rs1_addr = rvfi_word_arr[_head_ptr].rs1_addr;
+//     curr_rvfi_word.rs2_addr = rvfi_word_arr[_head_ptr].rs2_addr;
+//     curr_rvfi_word.rd_addr = rvfi_word_arr[_head_ptr].rd_addr;
+//     curr_rvfi_word.pc_rdata = rvfi_word_arr[_head_ptr].pc_rdata;
+//     curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
+// end
 
 logic branch_mispredict; // set high when branch is committing and there was a mispredict
 
@@ -175,6 +189,7 @@ always_ff @(posedge clk) begin
            original_instr[_curr_ptr] <= new_instr;
            instr_pc[_curr_ptr] <= new_pc;
            instr_next_pc[_curr_ptr] <= new_next_pc;
+           rvfi_word_arr[_curr_ptr] <= rvfi_word;
            // do not allocate regfile entry for st
            if (instr_type > 7 && instr_type < 11) begin 
                rd_arr[_curr_ptr] <= st_src;

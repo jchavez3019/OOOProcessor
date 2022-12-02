@@ -37,23 +37,52 @@ assign rvfi.load_regfile = dut.rob.regfile_load;
 //Instruction and trap:
 // assign rvfi.inst = dut.ir.data;
 // assign rvfi.inst = dut.rvfi_instr_queue.data_o;
-assign rvfi.inst = dut.rob.curr_original_instr;
+// assign rvfi.inst = dut.rob.curr_original_instr;
+assign rvfi.inst = dut.rob.curr_rvfi_word.inst;
 assign rvfi.trap = 1'b0;
 
 
 
 
 // registers and pc for architectural state tracking
-assign rvfi.rs1_addr =  dut.regfile.src_a;
-assign rvfi.rs2_addr =  dut.regfile.src_b;
-assign rvfi.rs1_rdata = dut.regfile.reg_a;
-assign rvfi.rs2_rdata = dut.regfile.reg_b;
-assign rvfi.rd_addr =   dut.regfile.dest;
+// assign rvfi.rs1_addr =  dut.regfile.src_a;
+// assign rvfi.rs2_addr =  dut.regfile.src_b;
+// assign rvfi.rs1_rdata = dut.regfile.reg_a;
+// assign rvfi.rs2_rdata = dut.regfile.reg_b;
+// assign rvfi.rd_addr =   dut.regfile.dest;
 assign rvfi.rd_wdata =  dut.regfile.in;
-// assign rvfi.pc_rdata =  dut.PC.out;
-// assign rvfi.pc_wdata =  dut.PC.in;
+// assign rvfi.pc_rdata = dut.rob.curr_instr_pc;
+// assign rvfi.pc_wdata = dut.rob.curr_instr_next_pc;
+
+assign rvfi.rs1_addr =  dut.rob.curr_rvfi_word.rs1_addr;
+assign rvfi.rs2_addr =  dut.rob.curr_rvfi_word.rs2_addr;
+assign rvfi.rs1_rdata = 32'h00000000;
+assign rvfi.rs2_rdata = 32'h00000000;
+assign rvfi.rd_addr =   dut.rob.curr_rvfi_word.rd_addr;
 assign rvfi.pc_rdata = dut.rob.curr_instr_pc;
-assign rvfi.pc_wdata = dut.rob.curr_instr_next_pc;
+// assign rvfi.pc_wdata = dut.rob.curr_instr_next_pc;
+
+always_comb
+begin : pc_next
+    if (dut.itf.rob_ld_pc) // only happens for a branch mispredict
+        rvfi.pc_wdata = dut.itf.cdb_out[dut.itf.br_ptr].data[31:0] - 4; // always works but fix later
+    /* cases where jalr was calculated and we can finally unstall the pipeline */
+    else if (dut.itf.res1_jalr_executed)
+        // itf.pc_in = itf.cdb_out[itf.res1_alu_out.pc].data[31:0];
+        rvfi.pc_wdata = dut.itf.alu1_calculation.data[31:0];
+    else if (dut.itf.res2_jalr_executed)
+        // itf.pc_in = itf.cdb_out[itf.res2_alu_out.pc].data[31:0];
+        rvfi.pc_wdata = dut.itf.alu2_calculation.data[31:0];
+    else if (dut.itf.res3_jalr_executed)
+        // itf.pc_in = itf.cdb_out[itf.res3_alu_out.pc].data[31:0];
+        rvfi.pc_wdata = dut.itf.alu3_calculation.data[31:0];
+    else if (dut.itf.res4_jalr_executed)
+        // itf.pc_in = itf.cdb_out[itf.res4_alu_out.pc].data[31:0];
+        rvfi.pc_wdata = dut.itf.alu4_calculation.data[31:0];
+    else
+        rvfi.pc_wdata = dut.rob.curr_instr_next_pc;
+
+end
 
 
 /*
