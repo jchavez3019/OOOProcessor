@@ -21,6 +21,8 @@ _start:
 
     /* personal test code for checkpoint 2 */
 
+	addi x10, x10, 3
+
     and x1, x2, x0
     and x2, x3, x0
     and x3, x4, x0

@@ -24,7 +24,7 @@ import rv32i_types::*;
     output logic resbr_load,
     output tomasula_types::ctl_word control_o,
     // output logic issue_q_full_n,
-    // output logic ack_o,
+    output logic ack_o,
 
     IQ_2_IR.IQ_SIG iq_ir_itf
 );
@@ -75,13 +75,13 @@ fifo_synch_1r1w #(.DTYPE(tomasula_types::ctl_word)) instruction_queue
 
 always_comb begin : enqueue_logic 
 
-    iq_ir_itf.ack_o = 1'b0; // by default
+    ack_o = 1'b0; // by default
     enqueue = 1'b0;
 
     if (iq_ir_itf.ld_iq) begin
         if (ready_o) begin
             enqueue = 1'b1;
-            iq_ir_itf.ack_o = 1'b1;
+            ack_o = 1'b1;
         end
     end
 

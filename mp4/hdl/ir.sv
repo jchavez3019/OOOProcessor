@@ -9,10 +9,15 @@ import rv32i_types::*;
     input [31:0] in,
     input [31:0] pc,
 
+    input iq_ack,
+
     output rv32i_word instr_mem_address, // ir will have to communicate with pc to get this, or maybe pc just wires directly to icache
     output logic instr_read,
     // output tomasula_types::ctl_word control_word,
     output logic ld_pc,
+
+    output logic [31:0] curr_instr,
+
     // output logic ld_iq, 
 
     IQ_2_IR.IR_SIG iq_ir_itf
@@ -27,6 +32,8 @@ logic [6:0] funct7;
 logic [31:0] i_imm, s_imm, b_imm, j_imm, u_imm;
 logic [4:0] rs1, rs2, rd;
 rv32i_opcode opcode;
+
+assign curr_instr = data;
 
 assign funct3 = data[14:12];
 assign funct7 = data[31:25];
@@ -189,13 +196,13 @@ begin : next_state_logic
                 next_state = CREATE;
         end
         CREATE: begin
-            if (iq_ir_itf.ack_o)
+            if (iq_ack)
                 next_state = FETCH;
             else
                 next_state = STALL;
         end
         STALL: begin
-            if (iq_ir_itf.ack_o)
+            if (iq_ack)
                 next_state = FETCH;
         end
     endcase

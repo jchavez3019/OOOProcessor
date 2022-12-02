@@ -35,8 +35,11 @@ always @(posedge itf.clk iff rvfi.commit) rvfi.order <= rvfi.order + 1; // Modif
 assign rvfi.load_regfile = dut.rob.regfile_load;
 
 //Instruction and trap:
-assign rvfi.inst = dut.ir.data;
+// assign rvfi.inst = dut.ir.data;
+assign rvfi.inst = dut.rvfi_instr_queue.data_o;
 assign rvfi.trap = 1'b0;
+
+
 
 // registers and pc for architectural state tracking
 assign rvfi.rs1_addr =  dut.regfile.src_a;
@@ -46,7 +49,7 @@ assign rvfi.rs2_rdata = dut.regfile.reg_b;
 assign rvfi.rd_addr =   dut.regfile.dest;
 assign rvfi.rd_wdata =  dut.regfile.in;
 assign rvfi.pc_rdata =  dut.PC.out;
-assign rvfi.pc_wdata =  dut.PC.out + 4;
+assign rvfi.pc_wdata =  dut.PC.in;
 
 // memory
 // assign rvfi.mem_addr = 

@@ -44,6 +44,18 @@ logic [31:0] pc;
 debug_itf itf();
 
 /***************************************** Modules ***************************************************/
+
+fifo_synch_1r1w #(logic[31:0]) rvfi_instr_queue (
+    .clk_i(clk),
+    .reset_n_i(~rst),
+    .data_i(itf.ir_instr),
+    .valid_i(itf.iq_ir_ack),
+    .ready_o(),
+    .valid_o(),
+    .data_o(),
+    .yumi_i(itf.regfile_load)
+);
+
 ir ir (
     .*,
     .clk(clk),
@@ -54,7 +66,9 @@ ir ir (
     .pc(pc),
     .instr_mem_address(instr_mem_address),
     .instr_read(instr_read),
-    .ld_pc(ld_pc)
+    .ld_pc(ld_pc),
+    .iq_ack(itf.iq_ir_ack),
+    .curr_instr(itf.ir_instr)
 );
 
 logic [31:0] pc_in;
@@ -90,10 +104,10 @@ iq iq (
     .res2_load(itf.res2_load),
     .res3_load(itf.res3_load),
     .res4_load(itf.res4_load),
-    .control_o(itf.control_o)
+    .control_o(itf.control_o),
     // ,.iq_ir_itf(iq_ir_itf.IR_SIG)
     // .issue_q_full_n(itf.issue_q_full_n),
-    // .ack_o(itf.ack_o)
+    .ack_o(itf.iq_ir_ack)
 );
 
 always_comb begin : set_rob_valids

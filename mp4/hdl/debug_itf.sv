@@ -9,10 +9,12 @@ import rv32i_types::*;
 // logic instr_mem_resp, instr_read;
 // logic [31:0] in;
 // rv32i_word instr_mem_address;
+logic [31:0] ir_instr;
 
 /* iq signals */
 logic res1_empty, res2_empty, res3_empty, res4_empty, rob_load, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;
 tomasula_types::ctl_word control_o;
+logic iq_ir_ack;
 
 /* res1 signals */
 logic res1_exec;
