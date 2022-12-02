@@ -35,7 +35,10 @@ typedef struct {
     logic [2:0] funct3; 
     logic funct7;
     logic [4:0] rd;
+
     logic [31:0] pc;
+    logic [31:0] og_pc;
+    logic [31:0] og_instr;
 } ctl_word; // totals 199 bits
 
 

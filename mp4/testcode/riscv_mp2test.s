@@ -10,9 +10,11 @@ _start:
     # in an effort to help you understand the assembly style.
 
     # Note that one/two/eight are data labels
-    lw  x1, threshold # X1 <- 0x80
-    lui  x2, 2       # X2 <= 2
-    lui  x3, 8     # X3 <= 8
+    # lw  x1, threshold # X1 <- 0x80
+    # lui  x2, 2       # X2 <= 2
+    # lui  x3, 8     # X3 <= 8
+    
+
     srli x2, x2, 12
     srli x3, x3, 12
 

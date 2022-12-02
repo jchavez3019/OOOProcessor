@@ -18,6 +18,11 @@ import rv32i_types::*;
     input data_mem_resp,
 
     input [1:0] memaddr_offset,
+
+    /* from instruction queue for rvfi monitor */
+    input logic [31:0] new_instr,
+    input logic [31:0] new_pc,
+    input logic [31:0] new_next_pc,
     // determines if rob entry has been computed
     // from reservation station
     input logic set_rob_valid[8],
@@ -56,6 +61,14 @@ tomasula_types::op_t instr_arr [8];
 logic [4:0] rd_arr [8];
 logic valid_arr [8]; // indicates if an rob entry has its output calculated
 logic _allocated_entries [8]; // indicates if an rob entry has been allocated or not
+
+/* data arrays and wires necessary for rvfi monitor */
+logic [31:0] original_instr [8];
+logic [31:0] instr_pc [8];
+logic [31:0] instr_next_pc [8];
+logic [31:0] curr_original_instr;
+logic [31:0] curr_instr_pc;
+logic [31:0] curr_instr_next_pc;
 // logic [31:0] pc_addresses [8];
 
 logic [4:0] _rd_commit, _st_src_commit;
@@ -67,6 +80,10 @@ logic _regfile_load;
 logic _rob_full;
 
 logic [2:0] _curr_ptr, _head_ptr, _br_flush_ptr, _br_ptr;
+
+assign curr_original_instr = original_instr[_head_ptr];
+assign curr_instr_pc = instr_pc[_head_ptr];
+assign curr_instr_next_pc = instr_next_pc[_head_ptr];
 
 logic branch_mispredict; // set high when branch is committing and there was a mispredict
 
@@ -154,6 +171,10 @@ always_ff @(posedge clk) begin
            // store - need to save register that holds data
            rd_arr[_curr_ptr] <= rd; 
            _allocated_entries[_curr_ptr] <= 1'b1; // indicate an entry has been issued for the curr ptr
+           /* load necessary data for rvfi monitor */
+           original_instr[_curr_ptr] <= new_instr;
+           instr_pc[_curr_ptr] <= new_pc;
+           instr_next_pc[_curr_ptr] <= new_next_pc;
            // do not allocate regfile entry for st
            if (instr_type > 7 && instr_type < 11) begin 
                rd_arr[_curr_ptr] <= st_src;

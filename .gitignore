@@ -1,4 +1,4 @@
 # don't save simulation files
 sim/
 verdi/
-bin/
+mp4/bin/rv_load_memory.sh

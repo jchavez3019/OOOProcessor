@@ -112,6 +112,18 @@ always_ff @(posedge clk) begin
 end
 */
 
+fifo_synch_1r1w #(logic[31:0]) rvfi_instr_queue (
+    .clk_i(clk),
+    .reset_n_i(~rst),
+    .data_i(itf.ir_instr),
+    .valid_i(itf.iq_ir_ack),
+    .ready_o(),
+    .valid_o(),
+    .data_o(),
+    .yumi_i(itf.regfile_load)
+);
+
+
 ir ir (
     .*,
     .clk(clk),
@@ -125,7 +137,10 @@ ir ir (
     .instr_mem_address(instr_mem_address),
     .instr_read(instr_read),
     .ld_pc(itf.ir_ld_pc),
-    .pc_calc(itf.pc_calc)
+    .pc_calc(itf.pc_calc),
+    .iq_ack(itf.iq_ir_ack),
+    .curr_instr(itf.ir_instr)
+
 );
 
 /* NOTE:  update rob logic for loading branches since it is necessary for branch mispredicts */
@@ -178,10 +193,11 @@ iq iq (
     .res2_load(itf.res2_load),
     .res3_load(itf.res3_load),
     .res4_load(itf.res4_load),
-    .control_o(itf.control_o)
-    // ,.iq_ir_itf(iq_ir_itf.IR_SIG)
-    // .issue_q_full_n(itf.issue_q_full_n),
-    // .ack_o(itf.ack_o)
+    .control_o(itf.control_o),
+    .ack_o(itf.iq_ir_ack),
+    .original_instr(itf.original_instr),
+    .instr_pc(itf.original_instr_pc),
+    .instr_next_pc(itf.original_instr_next_pc)
 );
 
 always_comb begin : set_rob_valids
@@ -237,7 +253,10 @@ rob rob (
      .data_read (data_read),
      .data_write (data_write),
      .wmask (data_mbe),
-     .commit_type (itf.commit_type)
+     .commit_type (itf.commit_type),
+     .new_instr(itf.original_instr),
+     .new_pc(itf.original_instr_pc),
+     .new_next_pc(itf.original_instr_next_pc)
  );
 
  /*rob

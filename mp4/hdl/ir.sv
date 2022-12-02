@@ -12,10 +12,13 @@ import rv32i_types::*;
     input executed_jalr,
     input flush_ip,
 
+    input iq_ack,
+
     output rv32i_word instr_mem_address, // ir will have to communicate with pc to get this, or maybe pc just wires directly to icache
     output logic instr_read,
     output logic ld_pc,
     output logic [31:0] pc_calc,
+    output logic [31:0] curr_instr,
 
     IQ_2_IR.IR_SIG iq_ir_itf
 );
@@ -27,6 +30,8 @@ logic [6:0] funct7;
 logic [31:0] i_imm, s_imm, b_imm, j_imm, u_imm;
 logic [4:0] rs1, rs2, rd;
 rv32i_opcode opcode;
+
+assign curr_instr = data;
 
 assign funct3 = data[14:12];
 assign funct7 = data[31:25];
@@ -57,11 +62,13 @@ begin : immediate_op_logic
     iq_ir_itf.control_word.src1_valid = 1'b0;
     iq_ir_itf.control_word.src2_reg = rs2; // should be rs2 if no immediate is used, otherwise 0
     iq_ir_itf.control_word.pc = pc + 4;
+    iq_ir_itf.control_word.og_pc = pc;
     iq_ir_itf.control_word.src2_valid = 1'b0;
     iq_ir_itf.control_word.src2_data = 32'h0000;
     iq_ir_itf.control_word.funct3 = funct3;
     iq_ir_itf.control_word.funct7 = data[30];
     iq_ir_itf.control_word.rd = rd;
+    iq_ir_itf.control_word.og_instr = data;
     case (opcode)
         op_lui: begin
             iq_ir_itf.control_word.op = tomasula_types::LUI;
@@ -220,7 +227,7 @@ begin : next_state_logic
             if (flush_ip) begin
                 next_state = STALL_FLUSH;
             end
-            else if (iq_ir_itf.ack_o) begin
+            else if (iq_ack) begin
                 if(opcode == op_jalr) 
                     next_state = STALL_JALR;
                 else
@@ -230,7 +237,7 @@ begin : next_state_logic
                 next_state = STALL;
         end
         STALL: begin
-            if (iq_ir_itf.ack_o) begin
+            if (iq_ack) begin
                 if (flush_ip)
                     next_state = STALL_FLUSH;
                 else if(opcode == op_jalr) 
