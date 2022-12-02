@@ -53,41 +53,39 @@ ooo ooo(.*);
 cache i_cache(
     .clk(clk),
 
-    .pmem_resp(instr_cache_resp)
-    .pmem_rdata(instr_pmem_to_cache),
-    .pmem_address(instr_cache_address),
-    .pmem_wdata(instr_cache_to_pmem),
-    .pmem_read(instr_cache_read),
-    .pmem_write(instr_cache_write),
-
+    .mem_address(instr_mem_address),
+    .mem_rdata_cpu(instr_mem_rdata),
+    .mem_wdata_cpu(),
     .mem_read(instr_read),
     .mem_write(),
     .mem_byte_enable_cpu(),
-    .mem_address(instr_mem_address),
-    .mem_wdata_cpu(),
     .mem_resp(instr_mem_resp),
-    .mem_rdata_cpu(instr_mem_rdata),
 
+    .pmem_address(instr_cache_address),
+    .pmem_rdata(instr_pmem_to_cache),
+    .pmem_wdata(instr_cache_to_pmem),
+    .pmem_read(instr_cache_read),
+    .pmem_write(instr_cache_write),
+    .pmem_resp(instr_cache_resp)
 );
 
 cache d_cache(
     .clk(clk),
 
-    .pmem_resp(data_cache_resp)
-    .pmem_rdata(data_pmem_to_cache),
-    .pmem_address(data_cache_address),
-    .pmem_wdata(data_cache_to_pmem),
-    .pmem_read(data_cache_read),
-    .pmem_write(data_cache_write),
-
+    .mem_address(data_mem_address),
+    .mem_rdata_cpu(data_mem_rdata),
+    .mem_wdata_cpu(data_mem_wdata),
     .mem_read(data_read),
     .mem_write(data_write),
     .mem_byte_enable_cpu(data_mbe),
-    .mem_address(data_mem_address),
-    .mem_wdata_cpu(data_mem_wdata),
     .mem_resp(data_mem_resp),
-    .mem_rdata_cpu(data_mem_rdata),
 
+    .pmem_address(data_cache_address),
+    .pmem_rdata(data_pmem_to_cache),
+    .pmem_wdata(data_cache_to_pmem),
+    .pmem_read(data_cache_read),
+    .pmem_write(data_cache_write),
+    .pmem_resp(data_cache_resp)
 );
 
 
@@ -115,26 +113,6 @@ arbiter arbiter (
     .cache_read(pmem_read),
     .cache_write(pmem_write),
     .cache_resp(pmem_resp)
-);
-
-cacheline_adaptor cacheline_adaptor 
-(
-    .clk(clk),
-    .reset_n(~rst),
-
-    .line_i(cache_to_pmem),
-    .line_o(pmem_to_cache),
-    .address_i(cache_address),
-    .read_i(cache_read),
-    .write_i(cache_write),
-    .resp_o(cache_resp),
-
-    .burst_i(pmem_rdata),
-    .burst_o(pmem_wdata),
-    .address_o(pmem_address),
-    .read_o(pmem_read),
-    .write_o(pmem_write),
-    .resp_i(pmem_resp)
 );
 
 

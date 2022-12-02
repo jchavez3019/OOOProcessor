@@ -1,4 +1,4 @@
-module arbiter
+module og_arbiter
 import rv32i_types::*;
 import adaptor_types::*;
 (
@@ -42,7 +42,8 @@ logic instr_cache_resp, data_cache_resp;
 enum logic [1:0] {
     NONE,
     INSTR,
-    DATA
+    DATA,
+    BOTH
 } state, next_state;
 
 /*****************************************************************************/
@@ -50,7 +51,6 @@ enum logic [1:0] {
 function void set_defaults();
     cache_to_pmem = '0;
     instr_pmem_to_cache = '0;
-    data_pmem_to_cache = '0;
     data_pmem_to_cache = '0;
     cache_address = 32'h00000000;
     cache_read = 1'b0;
@@ -70,7 +70,7 @@ always_comb begin
     case (state)
     NONE: begin
     end
-    INSTR: begin
+    INSTR, BOTH: begin
         cache_to_pmem = instr_cache_to_pmem;
         cache_address = instr_cache_address;
         cache_read = instr_cache_read;
@@ -96,10 +96,17 @@ always_comb begin
     case (state)
     NONE: begin
         if (instr_cache_read || instr_cache_write) begin
-            next_state = INSTR;
+            if (data_cache_read || data_cache_read) begin
+                next_state = BOTH;
+            end
+            else begin
+                next_state = INSTR;
+            end
         end
-        else if (data_cache_read || data_cache_read) begin
-            next_state = DATA;
+        else begin
+            if (data_cache_read || data_cache_read) begin
+                next_state = DATA;
+            end
         end
     end
     INSTR: begin
@@ -112,6 +119,12 @@ always_comb begin
             next_state = NONE;
         end
 
+    end
+    BOTH: begin
+        // process INSTR first when both request
+        if (cache_resp) begin
+            next_state = DATA;
+        end
     end
     endcase
 end
@@ -128,4 +141,4 @@ always_ff @(posedge clk) begin
     end
 end
 
-endmodule : arbiter
+endmodule : og_arbiter

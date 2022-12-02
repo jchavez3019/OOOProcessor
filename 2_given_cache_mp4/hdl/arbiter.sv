@@ -55,6 +55,8 @@ function void set_defaults();
     cache_address = 32'h00000000;
     cache_read = 1'b0;
     cache_write = 1'b0;
+    instr_cache_resp = 1'b0;
+    data_cache_resp = 1'b0;
 endfunction
 
  
