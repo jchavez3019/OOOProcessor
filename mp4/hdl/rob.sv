@@ -72,8 +72,7 @@ logic [31:0] curr_instr_pc;
 logic [31:0] curr_instr_next_pc;
 rv32i_types::rvfi_word rvfi_word_arr [8];
 rv32i_types::rvfi_word curr_rvfi_word;
-// logic [31:0] pc_addresses [8];
-
+logic rvfi_commit;
 logic [4:0] _rd_commit, _st_src_commit;
 logic flush_ip;
 logic _ld_commit_sel;
@@ -307,6 +306,7 @@ function void set_defaults();
     _data_write = 1'b0;
     branch_mispredict = 1'b0;
     reallocate_reg_tag = 1'b0;
+    rvfi_commit = 1'b0;
 endfunction
 
 always_comb begin 
@@ -371,6 +371,7 @@ always_comb begin
                     // _rd_commit <= rd_arr[_head_ptr];
                     // _head_ptr <= _head_ptr + 1'b1;
                 end
+                rvfi_commit = 1'b1; // ROB has committed an instruction
             end
 
 end

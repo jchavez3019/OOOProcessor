@@ -25,9 +25,9 @@ _start:
 
     jal x1, halt # 8c
 
-branch_label: # 90
+branch_label:
+    addi x3, x3, 7 # 90
     addi x3, x3, 7 # 94
-    addi x3, x3, 7 # 98
 
 halt:                 # Infinite loop to keep the processor
     beq x0, x0, halt  # from trying to execute the data below.

@@ -57,7 +57,7 @@ begin : generate_rvfi_word
     rvfi.rs2_addr = rs2;
     rvfi.rd_addr = rd;
     rvfi.pc_rdata = pc;
-    rvfi.pc_wdata = iq_ir_itf.control_word.pc;
+    // rvfi.pc_wdata = iq_ir_itf.control_word.pc;
 end
 
 enum int unsigned {
@@ -83,6 +83,9 @@ begin : immediate_op_logic
     iq_ir_itf.control_word.funct7 = data[30];
     iq_ir_itf.control_word.rd = rd;
     iq_ir_itf.control_word.og_instr = data;
+
+    /* rvfi signals to be set */
+    rvfi.pc_wdata = iq_ir_itf.control_word.pc;
     case (opcode)
         op_lui: begin
             iq_ir_itf.control_word.op = tomasula_types::LUI;
@@ -113,9 +116,11 @@ begin : immediate_op_logic
                 iq_ir_itf.control_word.pc = pc_calc;
                 // 0 0 0 PREDICTION 0
                 iq_ir_itf.control_word.rd = 5'b00000; 
+                rvfi.pc_wdata = pc + 4;
             end begin
                 iq_ir_itf.control_word.pc = pc + 4;
                 iq_ir_itf.control_word.rd = 5'b00010;
+                rvfi.pc_wdata = pc_calc;
             end
         end
         op_store: begin
