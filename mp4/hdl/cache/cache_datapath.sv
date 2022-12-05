@@ -223,7 +223,7 @@ always_comb begin : WAY_SELECT
         end
     endcase
     case(pmem_addr_sel) 
-        1'b0: pmem_address = {{mem_address[31:5]}, 5'b00000};
+        1'b0: pmem_address = mem_address;
         1'b1: pmem_address = {pmem_tag, index, 5'b00000};
     endcase
 end

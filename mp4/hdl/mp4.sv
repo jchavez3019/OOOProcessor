@@ -37,8 +37,8 @@ logic instr_read, instr_write, data_read, data_write;
 rv32i_word instr_mem_rdata, data_mem_rdata, data_mem_wdata;
 logic [3:0] data_mbe;
 
-rv32i_word instr_mem_address, data_mem_address;
-rv32i_word instr_cache_address, data_cache_address;
+addr_t instr_mem_address, data_mem_address;
+addr_t instr_cache_address, data_cache_address;
 line_t instr_pmem_to_cache, instr_cache_to_pmem, data_pmem_to_cache, data_cache_to_pmem;
 logic instr_cache_read, instr_cache_write, data_cache_read, data_cache_write;
 logic instr_cache_resp, data_cache_resp;
