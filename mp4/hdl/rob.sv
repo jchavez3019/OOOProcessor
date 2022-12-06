@@ -81,13 +81,31 @@ logic _data_read, _data_write;
 logic _regfile_load;
 logic _rob_full;
 
-logic [2:0] _curr_ptr, _head_ptr, _br_flush_ptr, _br_ptr, _new_br, _fifo_br;
-logic _br_enqueue, _br_dequeue;
+logic [2:0] _curr_ptr, _head_ptr, _br_flush_ptr, _br_ptr;
 
 assign curr_original_instr = original_instr[_head_ptr];
 assign curr_instr_pc = instr_pc[_head_ptr];
 assign curr_instr_next_pc = instr_next_pc[_head_ptr];
 assign curr_rvfi_word = rvfi_word_arr[_head_ptr];
+
+// always_comb
+// begin : set_curr_rvfi_word
+//     if (rob_load) begin
+//         curr_rvfi_word.inst = rvfi_word.inst;
+//         curr_rvfi_word.rs1_addr = rvfi_word.rs1_addr;
+//         curr_rvfi_word.rs2_addr = rvfi_word.rs2_addr;
+//         curr_rvfi_word.rd_addr[4:0] = rvfi_word.rd_addr[4:0];
+//         curr_rvfi_word.pc_rdata = rvfi_word.pc_rdata;
+//     end
+//     else begin
+//     curr_rvfi_word.inst = rvfi_word_arr[_head_ptr].inst;
+//     curr_rvfi_word.rs1_addr = rvfi_word_arr[_head_ptr].rs1_addr;
+//     curr_rvfi_word.rs2_addr = rvfi_word_arr[_head_ptr].rs2_addr;
+//     curr_rvfi_word.rd_addr[4:0] = rvfi_word_arr[_head_ptr].rd_addr[4:0];
+//     curr_rvfi_word.pc_rdata = rvfi_word_arr[_head_ptr].pc_rdata;
+//     // curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
+//     end
+// end
 
 logic branch_mispredict; // set high when branch is committing and there was a mispredict
 
@@ -105,22 +123,23 @@ assign rob_full = _rob_full;
 assign curr_ptr = _curr_ptr;
 assign head_ptr = _head_ptr;
 assign br_flush_ptr = _br_flush_ptr;
-// assign br_ptr = _br_ptr;
 
+logic [2:0] fifo_br;
+logic br_enqueue, br_dequeue;
 
-
-/* fifo to preserve order of branches */
-fifo_synch_1r1w #(.DTYPE(logic [2:0])) branch_queue (
+fifo_synch_1r1w #(.DTYPE(logic[2:0])) branch_queue
+(
     .clk_i(clk),
     .reset_n_i(~rst),
-    .data_i(_curr_ptr), // enqueue data
-    .valid_i(_br_enqueue), // enqueue
+    .data_i(curr_ptr),
+    .valid_i(br_enqueue),
     .ready_o(),
     .valid_o(),
-    .data_o(_fifo_br), // data out
-    .yumi_i(_br_dequeue) // dequeue
+    .data_o(fifo_br),
+    .yumi_i(br_dequeue)
 );
-assign br_ptr = _fifo_br;
+// assign br_ptr = _br_ptr;
+assign br_ptr = fifo_br;
 
 /* 
 ** rob also considered full during branch mispredict and flushing process so 
@@ -185,10 +204,7 @@ always_ff @(posedge clk) begin
                 valid_arr[i] <= 1'b1;
         end
 
-
-        /* deal with branch fifo logic */
-        // _br_enqueue <= 1'b0;
-        _br_dequeue <= 1'b0;
+        br_dequeue <= 1'b0;
 
         /* ----- ALLOCATE -----*/
         /* when branch wants to update rd for a branch taken/not taken */
@@ -218,8 +234,6 @@ always_ff @(posedge clk) begin
            // branch - hold taken/not taken (initialized to not taken)
            else if (instr_type == tomasula_types::BRANCH) begin 
             //    _br_ptr <= _curr_ptr;
-            // _new_br <= _curr_ptr;
-            // _br_enqueue <= 1'b1;
            end
            // increment _curr_ptr
            //TODO: beware! overflow may cause errors
@@ -234,7 +248,7 @@ always_ff @(posedge clk) begin
             flush_ip <= 1'b1;
             // _br_flush_ptr <= (valid_arr[_head_ptr] & (instr_arr[_br_flush_ptr] != tomasula_types::BRANCH)) ? _head_ptr + 1'b1 : _head_ptr; // flush ptr should start at updated head pointer 
             _br_flush_ptr <= _head_ptr; // since _head_ptr can't get updated in this state or the flush_ip state, can safely set _br_flush_ptr to head pointer
-            _br_ptr <= _fifo_br;
+            // _br_ptr <= fifo_br;
         end 
         // this doesn't start until two cycles after branch mispredict was found since previous cycle prepares for this logic
         else if (flush_ip) begin
@@ -263,13 +277,13 @@ always_ff @(posedge clk) begin
             /* check if done flushing, else update current branch flush pointer */
             if (_br_flush_ptr == br_ptr) begin
                 flush_ip <= 1'b0;
+                br_dequeue <= 1'b1;
                 if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
                     _curr_ptr <= br_ptr + 1;
                     _head_ptr <= _head_ptr + 1;
                 end
                 else
                     _curr_ptr <= br_ptr;
-                    _br_dequeue <= 1'b1;
             end
             else 
                 _br_flush_ptr <= _br_flush_ptr + 1'b1;
@@ -311,6 +325,12 @@ always_ff @(posedge clk) begin
                         _head_ptr <= _head_ptr + 1'b1;
                     end
                 end
+                else if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
+                    valid_arr[_head_ptr] <= 1'b0;
+                    _allocated_entries[_head_ptr] <= 1'b0;
+                    _head_ptr <= _head_ptr + 1'b1;
+                    br_dequeue <= 1'b1;
+                end
                 // for all other instructions
                 else begin
                     // _regfile_load <= 1'b1;
@@ -336,7 +356,8 @@ function void set_defaults();
     reallocate_reg_tag = 1'b0;
     rvfi_commit = 1'b0;
 
-    _br_enqueue = 1'b0;
+    br_enqueue = 1'b0;
+    // br_dequeue = 1'b0;
 
     // curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
 endfunction
@@ -352,26 +373,22 @@ always_comb begin
 
             set_defaults();
 
-            if(instr_type == tomasula_types::BRANCH & rob_load) begin
-                _br_enqueue = 1'b1;
-                _new_br = _curr_ptr;
+            if (instr_type == tomasula_types::BRANCH & rob_load) begin
+                br_enqueue = 1'b1;
             end
+
+            // if((instr_arr[fifo_br] == tomasula_types::BRANCH) & _allocated_entries[fifo_br] & (valid_arr[fifo_br]) & ~flush_ip) begin
+            //     br_dequeue = 1'b1;
+            // end
 
             /* start flushing as soon as it's revealed to be a mispredict */
             // if((instr_arr[_br_ptr] == tomasula_types::BRANCH) & _allocated_entries[_br_ptr] & (valid_arr[_br_ptr]) & (rd_arr[_br_ptr][1] != rd_arr[_br_ptr][0]) & ~flush_ip) begin
-            if((instr_arr[_fifo_br] == tomasula_types::BRANCH) & _allocated_entries[_fifo_br] & (valid_arr[_fifo_br]) & (rd_arr[_fifo_br][1] != rd_arr[_fifo_br][0]) & ~flush_ip) begin
+            if((instr_arr[fifo_br] == tomasula_types::BRANCH) & _allocated_entries[fifo_br] & (valid_arr[fifo_br]) & (rd_arr[fifo_br][1] != rd_arr[fifo_br][0]) & ~flush_ip) begin
             _ld_pc = 1'b1; 
             branch_mispredict = 1'b1;
-            
             // rvfi_commit = 1'b1; // ROB has committed an instruction
             // curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
             end
-
-            // /* enqueue pointer into fifo */
-            // if (branch_mispredict) begin
-            //     _br_enqueue = 1'b1;
-            //     _new_br = _curr_ptr;
-            // end
 
             /* if flush is in progress, reallocate tags in register file */
             if ((_br_flush_ptr != br_ptr) & flush_ip) begin

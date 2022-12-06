@@ -11,6 +11,7 @@ import rv32i_types::*;
 // rv32i_word instr_mem_address;
 logic [31:0] pc_calc;
 logic ir_ld_pc;
+logic [31:0] ir_instr;
 
 /* iq signals */
 logic res1_empty, res2_empty, res3_empty, res4_empty, rob_load, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;

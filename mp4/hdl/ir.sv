@@ -18,6 +18,7 @@ import rv32i_types::*;
     output logic instr_read,
     output logic ld_pc,
     output logic [31:0] pc_calc,
+    output logic [31:0] curr_instr,
 
     IQ_2_IR.IR_SIG iq_ir_itf
 );
@@ -29,6 +30,8 @@ logic [6:0] funct7;
 logic [31:0] i_imm, s_imm, b_imm, j_imm, u_imm;
 logic [4:0] rs1, rs2, rd;
 rv32i_opcode opcode;
+
+assign curr_instr = data;
 
 assign funct3 = data[14:12];
 assign funct7 = data[31:25];
@@ -149,7 +152,10 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.op = tomasula_types::ARITH;
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
-            iq_ir_itf.control_word.src2_data = i_imm;
+            if (funct3 == 3'b000 & i_imm[31])
+                iq_ir_itf.control_word.src2_data = ~i_imm + 1;
+            else
+                iq_ir_itf.control_word.src2_data = i_imm;
 
             rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end 
