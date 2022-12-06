@@ -1,4 +1,4 @@
-module arbiter
+module arbiter_temp
 import rv32i_types::*;
 import adaptor_types::*;
 (
@@ -43,14 +43,15 @@ enum logic [1:0] {
     NONE,
     INSTR,
     DATA,
-    DONE
+    BOTH
 } state, next_state;
 
-logic curr_req, random_sel;
 /*****************************************************************************/
 
 function void set_defaults();
     cache_to_pmem = '0;
+    instr_pmem_to_cache = '0;
+    data_pmem_to_cache = '0;
     cache_address = 32'h00000000;
     cache_read = 1'b0;
     cache_write = 1'b0;
@@ -69,39 +70,21 @@ always_comb begin
     case (state)
     NONE: begin
     end
-    INSTR: begin
+    INSTR, BOTH: begin
         cache_to_pmem = instr_cache_to_pmem;
         cache_address = instr_cache_address;
         cache_read = instr_cache_read;
         cache_write = instr_cache_write;
-        /*
-        if (cache_resp) begin
-            instr_pmem_to_cache = pmem_to_cache;
-            instr_cache_resp = 1'b1;
-        end
-        */
+        instr_pmem_to_cache = pmem_to_cache;
+        instr_cache_resp = cache_resp;
     end
     DATA: begin
         cache_to_pmem = data_cache_to_pmem;
         cache_address = data_cache_address;
         cache_read = data_cache_read;
         cache_write = data_cache_write;
-        /*
-        if (cache_resp) begin
-            data_pmem_to_cache = pmem_to_cache;
-            data_cache_resp = 1'b1;
-        end
-        */
-    end
-    DONE: begin
-        if (curr_req) begin
-            instr_pmem_to_cache = pmem_to_cache;
-            instr_cache_resp = 1'b1;
-        end
-        else begin
-            data_pmem_to_cache = pmem_to_cache;
-            data_cache_resp = 1'b1;
-        end
+        data_pmem_to_cache = pmem_to_cache;
+        data_cache_resp = cache_resp;
     end
     endcase
 end
@@ -112,44 +95,36 @@ always_comb begin
     next_state = state;
     case (state)
     NONE: begin
-        if (random_sel) begin
-            if (instr_cache_read) begin
-                next_state = INSTR;
-                random_sel = 1'b0;
-                curr_req = 1'b1;
+        if (instr_cache_read || instr_cache_write) begin
+            if (data_cache_read || data_cache_read) begin
+                next_state = BOTH;
             end
-            if (data_cache_read || data_cache_write) begin
-                    next_state = DATA;
-                    random_sel = 1'b1;
-                    curr_req = 1'b0;
+            else begin
+                next_state = INSTR;
             end
         end
         else begin
-            if (data_cache_read || data_cache_write) begin
+            if (data_cache_read || data_cache_read) begin
                 next_state = DATA;
-                random_sel = 1'b1;
-                curr_req = 1'b0;
-            end
-            if (instr_cache_read) begin
-                next_state = INSTR;
-                random_sel = 1'b0;
-                curr_req = 1'b1;
             end
         end
     end
     INSTR: begin
         if (cache_resp) begin
-            next_state = DONE;
+            next_state = NONE;
         end
     end
     DATA: begin
         if (cache_resp) begin
-            next_state = DONE;
+            next_state = NONE;
         end
 
     end
-    DONE: begin
-        next_state = NONE;
+    BOTH: begin
+        // process INSTR first when both request
+        if (cache_resp) begin
+            next_state = DATA;
+        end
     end
     endcase
 end
@@ -166,4 +141,4 @@ always_ff @(posedge clk) begin
     end
 end
 
-endmodule : arbiter
+endmodule : arbiter_temp

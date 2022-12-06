@@ -107,13 +107,31 @@ arbiter arbiter (
     .data_cache_write(data_cache_write),
     .data_cache_resp(data_cache_resp),
 
-    .pmem_to_cache(pmem_rdata),
-    .cache_to_pmem(pmem_wdata),
-    .cache_address(pmem_address),
-    .cache_read(pmem_read),
-    .cache_write(pmem_write),
-    .cache_resp(pmem_resp)
+    .pmem_to_cache(pmem_to_cache),
+    .cache_to_pmem(cache_to_pmem),
+    .cache_address(cache_address),
+    .cache_read(cache_read),
+    .cache_write(cache_write),
+    .cache_resp(cache_resp)
 );
 
-
+cacheline_adaptor cacheline_adaptor
+(
+    .clk(clk),
+    .reset_n(~rst),
+    
+    .line_i(cache_to_pmem),
+    .line_o(pmem_to_cache),
+    .address_i(cache_address),
+    .read_i(cache_read),
+    .write_i(cache_write),
+    .resp_o(cache_resp),
+ 
+    .burst_i(pmem_rdata),
+    .burst_o(pmem_wdata),
+    .address_o(pmem_address),
+    .read_o(pmem_read),
+    .write_o(pmem_write),
+    .resp_i(pmem_resp)
+);
 endmodule : mp4
