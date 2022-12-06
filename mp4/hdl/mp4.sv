@@ -114,18 +114,6 @@ always_ff @(posedge clk) begin
 end
 */
 
-fifo_synch_1r1w #(logic[31:0]) rvfi_instr_queue (
-    .clk_i(clk),
-    .reset_n_i(~rst),
-    .data_i(itf.ir_instr),
-    .valid_i(itf.iq_ir_ack),
-    .ready_o(),
-    .valid_o(),
-    .data_o(),
-    .yumi_i(itf.regfile_load)
-);
-
-
 ir ir (
     .*,
     .clk(clk),
@@ -140,9 +128,7 @@ ir ir (
     .instr_read(instr_read),
     .ld_pc(itf.ir_ld_pc),
     .pc_calc(itf.pc_calc),
-    .iq_ack(itf.iq_ir_ack),
-    .curr_instr(itf.ir_instr)
-
+    .iq_ack(itf.iq_ir_ack)
 
 );
 
