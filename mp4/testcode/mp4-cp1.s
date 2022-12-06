@@ -3,34 +3,34 @@
 .section .text
 .globl _start
 _start:
-pcrel_NEGTWO: auipc x10, %pcrel_hi(NEGTWO)
-pcrel_TWO: auipc x11, %pcrel_hi(TWO)
-pcrel_ONE: auipc x12, %pcrel_hi(ONE)
+pcrel_NEGTWO: auipc x10, %pcrel_hi(NEGTWO) # 60
+pcrel_TWO: auipc x11, %pcrel_hi(TWO) # 64
+pcrel_ONE: auipc x12, %pcrel_hi(ONE) # 68
+    nop # 6c
+    nop # 74 
+    nop # 78
+    nop # 7c
+    nop # 80
+    nop # 84
+    nop # 88
+    lw x1, %pcrel_lo(pcrel_NEGTWO)(x10) # 8c
+    lw x2, %pcrel_lo(pcrel_TWO)(x11) # 90
+    lw x4, %pcrel_lo(pcrel_ONE)(x12) # 94
+    nop # 98
+    nop # 9c
+    nop # 9c
+    nop # a0
+    nop # a4
+    nop # a8
+    nop # ac
+    beq x0, x0, LD_ST_TEST # b0
     nop
     nop
     nop
     nop
     nop
     nop
-    nop
-    lw x1, %pcrel_lo(pcrel_NEGTWO)(x10)
-    lw x2, %pcrel_lo(pcrel_TWO)(x11)
-    lw x4, %pcrel_lo(pcrel_ONE)(x12)
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    beq x0, x0, LD_ST_TEST
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
+    nop # 28th
 
 .section .rodata
 .balign 256
@@ -62,7 +62,7 @@ pcrel_HALF: auipc x2, %pcrel_hi(HALF)
     nop
     nop
     nop
-    lb x3, 0(x1)
+    lb x3, 0(x1) # 45th
     lb x4, 2(x1)
     lb x5, 3(x1)
     lh x6, 0(x2)
@@ -86,7 +86,7 @@ pcrel_HALF: auipc x2, %pcrel_hi(HALF)
     nop
     nop
     nop
-    nop
+    nop # 69th
 
 
 LOOP:
@@ -95,10 +95,10 @@ pcrel_TEMP1_2: auipc x14, %pcrel_hi(TEMP1)
     add x3, x1, x2 # X3 <= X1 + X2
     and x5, x1, x4 # X5 <= X1 & X4
     not x6, x1     # X6 <= ~X1
+    nop # 75
     nop
     nop
-    nop
-    addi x9, x13, %pcrel_lo(pcrel_TEMP1_1) # X9 <= address of TEMP1
+    addi x9, x13, %pcrel_lo(pcrel_TEMP1_1) # X9 <= address of TEMP1 # 78th
     nop
     nop
     nop

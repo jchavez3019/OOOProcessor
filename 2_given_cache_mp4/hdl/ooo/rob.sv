@@ -18,6 +18,12 @@ import rv32i_types::*;
     input data_mem_resp,
 
     input [1:0] memaddr_offset,
+
+    /* from instruction queue for rvfi monitor */
+    input logic [31:0] new_instr,
+    input logic [31:0] new_pc,
+    input logic [31:0] new_next_pc,
+    input rv32i_types::rvfi_word rvfi_word,
     // determines if rob entry has been computed
     // from reservation station
     input logic set_rob_valid[8],
@@ -56,8 +62,17 @@ tomasula_types::op_t instr_arr [8];
 logic [4:0] rd_arr [8];
 logic valid_arr [8]; // indicates if an rob entry has its output calculated
 logic _allocated_entries [8]; // indicates if an rob entry has been allocated or not
-// logic [31:0] pc_addresses [8];
 
+/* data arrays and wires necessary for rvfi monitor */
+logic [31:0] original_instr [8];
+logic [31:0] instr_pc [8];
+logic [31:0] instr_next_pc [8];
+logic [31:0] curr_original_instr;
+logic [31:0] curr_instr_pc;
+logic [31:0] curr_instr_next_pc;
+rv32i_types::rvfi_word rvfi_word_arr [8];
+rv32i_types::rvfi_word curr_rvfi_word;
+logic rvfi_commit;
 logic [4:0] _rd_commit, _st_src_commit;
 logic flush_ip;
 logic _ld_commit_sel;
@@ -67,6 +82,30 @@ logic _regfile_load;
 logic _rob_full;
 
 logic [2:0] _curr_ptr, _head_ptr, _br_flush_ptr, _br_ptr;
+
+assign curr_original_instr = original_instr[_head_ptr];
+assign curr_instr_pc = instr_pc[_head_ptr];
+assign curr_instr_next_pc = instr_next_pc[_head_ptr];
+assign curr_rvfi_word = rvfi_word_arr[_head_ptr];
+
+// always_comb
+// begin : set_curr_rvfi_word
+//     if (rob_load) begin
+//         curr_rvfi_word.inst = rvfi_word.inst;
+//         curr_rvfi_word.rs1_addr = rvfi_word.rs1_addr;
+//         curr_rvfi_word.rs2_addr = rvfi_word.rs2_addr;
+//         curr_rvfi_word.rd_addr[4:0] = rvfi_word.rd_addr[4:0];
+//         curr_rvfi_word.pc_rdata = rvfi_word.pc_rdata;
+//     end
+//     else begin
+//     curr_rvfi_word.inst = rvfi_word_arr[_head_ptr].inst;
+//     curr_rvfi_word.rs1_addr = rvfi_word_arr[_head_ptr].rs1_addr;
+//     curr_rvfi_word.rs2_addr = rvfi_word_arr[_head_ptr].rs2_addr;
+//     curr_rvfi_word.rd_addr[4:0] = rvfi_word_arr[_head_ptr].rd_addr[4:0];
+//     curr_rvfi_word.pc_rdata = rvfi_word_arr[_head_ptr].pc_rdata;
+//     // curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
+//     end
+// end
 
 logic branch_mispredict; // set high when branch is committing and there was a mispredict
 
@@ -123,6 +162,17 @@ always_ff @(posedge clk) begin
             rd_arr[i] <= '0;
             valid_arr[i] <= '0;
             _allocated_entries[i] = 1'b0;
+
+            /* reset rvfi arrays */
+            original_instr[i] <= 32'h00000000;
+            instr_pc[i] <= 32'h00000000;
+            instr_next_pc[i] <= 32'h00000000;
+            rvfi_word_arr[i].inst <= 32'h00000000;
+            rvfi_word_arr[i].rs1_addr <= 5'b00000;
+            rvfi_word_arr[i].rs2_addr <= 5'b00000;
+            rvfi_word_arr[i].rd_addr <= 5'b00000;
+            rvfi_word_arr[i].pc_rdata <= 32'h00000000;
+            rvfi_word_arr[i].pc_wdata <= 32'h00000000;
         end
         _curr_ptr <= 3'b000;
         _head_ptr <= 3'b000;
@@ -154,6 +204,11 @@ always_ff @(posedge clk) begin
            // store - need to save register that holds data
            rd_arr[_curr_ptr] <= rd; 
            _allocated_entries[_curr_ptr] <= 1'b1; // indicate an entry has been issued for the curr ptr
+           /* load necessary data for rvfi monitor */
+           original_instr[_curr_ptr] <= new_instr;
+           instr_pc[_curr_ptr] <= new_pc;
+           instr_next_pc[_curr_ptr] <= new_next_pc;
+           rvfi_word_arr[_curr_ptr] <= rvfi_word;
            // do not allocate regfile entry for st
            if (instr_type > 7 && instr_type < 11) begin 
                rd_arr[_curr_ptr] <= st_src;
@@ -221,6 +276,7 @@ always_ff @(posedge clk) begin
                 // if(instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
                 // //    _ld_pc <= 1'b1; 
                 // end
+                /* check if it is a load and take appropiate action */
                 if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
                     // _data_read <= 1'b1;
                     // make sure instruction is not committed until data returned
@@ -237,6 +293,7 @@ always_ff @(posedge clk) begin
                         _head_ptr <= _head_ptr + 1'b1;
                     end
                 end
+                /* check if it is a store and take appropiate action */
                 else if (instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11) begin
                     // _data_write <= 1'b1;
                     // for st address
@@ -271,6 +328,9 @@ function void set_defaults();
     _data_write = 1'b0;
     branch_mispredict = 1'b0;
     reallocate_reg_tag = 1'b0;
+    rvfi_commit = 1'b0;
+
+    // curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
 endfunction
 
 always_comb begin 
@@ -288,6 +348,8 @@ always_comb begin
             if((instr_arr[_br_ptr] == tomasula_types::BRANCH) & _allocated_entries[_br_ptr] & (valid_arr[_br_ptr]) & (rd_arr[_br_ptr][1] != rd_arr[_br_ptr][0]) & ~flush_ip) begin
             _ld_pc = 1'b1; 
             branch_mispredict = 1'b1;
+            // rvfi_commit = 1'b1; // ROB has committed an instruction
+            // curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
             end
 
             /* if flush is in progress, reallocate tags in register file */
@@ -335,6 +397,7 @@ always_comb begin
                     // _rd_commit <= rd_arr[_head_ptr];
                     // _head_ptr <= _head_ptr + 1'b1;
                 end
+                rvfi_commit = 1'b1; // ROB has committed an instruction
             end
 
 end

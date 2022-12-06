@@ -26,7 +26,7 @@ loop1:
     addi x5, x5, 1    # X5 <= X5 + 1
     addi x4, x4, 4    # X4 <= X4 + 8
 
-    bge x4, x1, loop1   # Branch if last result was zero or positive.
+    bleu x4, x1, loop1   # Branch if last result was zero or positive.
 
     andi x6, x3, 64   # X6 <= X3 + 64
 

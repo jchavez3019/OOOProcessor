@@ -11,11 +11,18 @@ import rv32i_types::*;
 // rv32i_word instr_mem_address;
 logic [31:0] pc_calc;
 logic ir_ld_pc;
+logic [31:0] ir_instr;
 
 /* iq signals */
 logic res1_empty, res2_empty, res3_empty, res4_empty, rob_load, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;
 logic regfile_allocate;
 tomasula_types::ctl_word control_o;
+logic iq_ir_ack;
+logic [31:0] original_instr;
+logic [31:0] original_instr_pc;
+logic [31:0] original_instr_next_pc;
+
+
 
 /* res1 signals */
 logic res1_exec;
@@ -86,6 +93,9 @@ tomasula_types::cdb_data alu4_calculation;
 
 /* mux logic */
 logic [31:0] pc_in;
+
+/* rvfi signals */
+rv32i_types::rvfi_word rvfi_word;
 
 endinterface : debug_itf
 
