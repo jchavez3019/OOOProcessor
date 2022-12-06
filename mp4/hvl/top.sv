@@ -25,6 +25,24 @@ end
 
 /************************ Signals necessary for monitor **********************/
 // This section not required until CP2
+logic rvfi_commit_buff;
+logic [4:0] rvfi_rdaddr_buff;
+
+always_ff @(posedge itf.clk) begin
+    if (dut.rob.rvfi_commit | dut.itf.rob_ld_pc)
+        rvfi_commit_buff <= 1'b1;
+    else
+        rvfi_commit_buff <= 1'b0;
+
+    if (dut.rob.regfile_load)
+        // rvfi_rdaddr_buff[4:0] <= dut.rob.curr_rvfi_word.rd_addr[4:0];
+        rvfi_rdaddr_buff[4:0] <= dut.regfile.dest[4:0];
+    else
+        rvfi_rdaddr_buff[4:0] <= rvfi_rdaddr_buff[4:0];
+
+end
+
+assign rvfi.commit = dut.rob.regfile_load | dut.itf.rob_ld_pc | dut.rob.rvfi_commit;
 assign rvfi.halt = 0; //   
 initial rvfi.order = 0;
 always @(posedge itf.clk iff rvfi.commit) rvfi.order <= rvfi.order + 1; // Modify for OoO

@@ -7,11 +7,7 @@
 //`define MEMORY `MAGIC_MEM
 
 // Set these to 1 to enable the feature for CP2
-<<<<<<< HEAD
 `define USE_SHADOW_MEMORY 1
-`define USE_RVFI_MONITOR 0
-=======
-`define USE_SHADOW_MEMORY 0
 `define USE_RVFI_MONITOR 1
 >>>>>>> rvfi_setup
 
