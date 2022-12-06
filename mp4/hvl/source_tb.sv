@@ -7,8 +7,13 @@
 //`define MEMORY `MAGIC_MEM
 
 // Set these to 1 to enable the feature for CP2
+<<<<<<< HEAD
 `define USE_SHADOW_MEMORY 1
 `define USE_RVFI_MONITOR 0
+=======
+`define USE_SHADOW_MEMORY 0
+`define USE_RVFI_MONITOR 1
+>>>>>>> rvfi_setup
 
 `include "tb_itf.sv"
 
@@ -84,6 +89,7 @@ generate
             .rvfi_rs2_rdata(rvfi.rs2_addr ? rvfi.rs2_rdata : 0),
             .rvfi_rd_addr(rvfi.load_regfile ? rvfi.rd_addr : 0),
             .rvfi_rd_wdata(rvfi.load_regfile ? rvfi.rd_wdata : 0),
+            // .rvfi_rd_addr(rvfi.rd_addr),
             .rvfi_pc_rdata(rvfi.pc_rdata),
             .rvfi_pc_wdata(rvfi.pc_wdata),
             .rvfi_mem_addr({rvfi.mem_addr[31:2], 2'b0}),
