@@ -4,26 +4,40 @@ riscv_mp2test.s:
 .globl _start
     # Refer to the RISC-V ISA Spec for the functionality of
     # the instructions in this test program.
+
+    
+TEMP1:  .word 0x00000001
+
 _start:
     # Note that the comments in this file should not be taken as
     # an example of good commenting style!!  They are merely provided
     # in an effort to help you understand the assembly style
 
-     and x1, x2, x0 # 60
-     and x2, x3, x0 # 64
-     and x3, x4, x0 # 68
-     addi x2, x2, 1 # 6c
+    and x1, x2, x0 # 60
+    and x2, x3, x0 # 64
+    and x3, x4, x0 # 68
+    addi x2, x2, 1 # 6c
+    not x2, x2      # 70
+    addi x3, x3, 1 # 74
 
-    beq x1, x2, branch_label # 70
+    
+    pcrel_TEMP1_1: auipc x13, %pcrel_hi(TEMP1)
+    pcrel_TEMP1_2: auipc x14, %pcrel_hi(TEMP1)
+    ; and x9, x9, x0
+    addi x9, x13, %pcrel_lo(pcrel_TEMP1_1) # X9 <= address of TEMP1
+    sw x3, 0(x9)   # TEMP1 <= x6
 
-    addi x3, x3, 5 # 74
-    addi x3, x3, 5 # 78
-    addi x3, x3, 5 # 7c
-    addi x3, x3, 5 # 80
-    addi x3, x3, 5 # 84
-    addi x3, x3, 5 # 88
+    # sw x6, 0(x2)   # TEMP1 <= x6 78
 
-    jal x1, halt # 8c
+    # beq x1, x2, branch_label # 70
+
+    # jal x1, halt # 8c
+
+    
+    and x1, x2, x0 # 60
+    and x2, x3, x0 # 64
+    and x3, x4, x0 # 68
+
 
 branch_label:
     addi x3, x3, 7 # 90

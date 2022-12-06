@@ -28,7 +28,7 @@ initial begin
 end
 
 /**************************** Halting Conditions *****************************/
-int timeout = 10000; // 100000000; // old time out
+int timeout = 100000000; // old time out10000
 
 always @(posedge tb_itf.clk) begin
     if (rvfi.halt)
@@ -83,6 +83,7 @@ generate
             .rvfi_rs2_rdata(rvfi.rs2_addr ? rvfi.rs2_rdata : 0),
             .rvfi_rd_addr(rvfi.load_regfile ? rvfi.rd_addr : 0),
             .rvfi_rd_wdata(rvfi.load_regfile ? rvfi.rd_wdata : 0),
+            // .rvfi_rd_addr(rvfi.rd_addr),
             .rvfi_pc_rdata(rvfi.pc_rdata),
             .rvfi_pc_wdata(rvfi.pc_wdata),
             .rvfi_mem_addr({rvfi.mem_addr[31:2], 2'b0}),

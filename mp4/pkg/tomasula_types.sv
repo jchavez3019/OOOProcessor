@@ -61,6 +61,8 @@ typedef struct {
 typedef struct packed {
     // logic [2:0] tag;
     logic [31:0] data;
+    logic [31:0] rs1_data;
+    logic [31:0] rs2_data;
     // logic request;
 } cdb_data; // totals 35 bits
 

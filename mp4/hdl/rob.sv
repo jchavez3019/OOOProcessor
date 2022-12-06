@@ -90,12 +90,21 @@ assign curr_rvfi_word = rvfi_word_arr[_head_ptr];
 
 // always_comb
 // begin : set_curr_rvfi_word
+//     if (rob_load) begin
+//         curr_rvfi_word.inst = rvfi_word.inst;
+//         curr_rvfi_word.rs1_addr = rvfi_word.rs1_addr;
+//         curr_rvfi_word.rs2_addr = rvfi_word.rs2_addr;
+//         curr_rvfi_word.rd_addr[4:0] = rvfi_word.rd_addr[4:0];
+//         curr_rvfi_word.pc_rdata = rvfi_word.pc_rdata;
+//     end
+//     else begin
 //     curr_rvfi_word.inst = rvfi_word_arr[_head_ptr].inst;
 //     curr_rvfi_word.rs1_addr = rvfi_word_arr[_head_ptr].rs1_addr;
 //     curr_rvfi_word.rs2_addr = rvfi_word_arr[_head_ptr].rs2_addr;
-//     curr_rvfi_word.rd_addr = rvfi_word_arr[_head_ptr].rd_addr;
+//     curr_rvfi_word.rd_addr[4:0] = rvfi_word_arr[_head_ptr].rd_addr[4:0];
 //     curr_rvfi_word.pc_rdata = rvfi_word_arr[_head_ptr].pc_rdata;
-//     curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
+//     // curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
+//     end
 // end
 
 logic branch_mispredict; // set high when branch is committing and there was a mispredict
@@ -153,6 +162,17 @@ always_ff @(posedge clk) begin
             rd_arr[i] <= '0;
             valid_arr[i] <= '0;
             _allocated_entries[i] = 1'b0;
+
+            /* reset rvfi arrays */
+            original_instr[i] <= 32'h00000000;
+            instr_pc[i] <= 32'h00000000;
+            instr_next_pc[i] <= 32'h00000000;
+            rvfi_word_arr[i].inst <= 32'h00000000;
+            rvfi_word_arr[i].rs1_addr <= 5'b00000;
+            rvfi_word_arr[i].rs2_addr <= 5'b00000;
+            rvfi_word_arr[i].rd_addr <= 5'b00000;
+            rvfi_word_arr[i].pc_rdata <= 32'h00000000;
+            rvfi_word_arr[i].pc_wdata <= 32'h00000000;
         end
         _curr_ptr <= 3'b000;
         _head_ptr <= 3'b000;
@@ -256,6 +276,7 @@ always_ff @(posedge clk) begin
                 // if(instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
                 // //    _ld_pc <= 1'b1; 
                 // end
+                /* check if it is a load and take appropiate action */
                 if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
                     // _data_read <= 1'b1;
                     // make sure instruction is not committed until data returned
@@ -272,6 +293,7 @@ always_ff @(posedge clk) begin
                         _head_ptr <= _head_ptr + 1'b1;
                     end
                 end
+                /* check if it is a store and take appropiate action */
                 else if (instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11) begin
                     // _data_write <= 1'b1;
                     // for st address
@@ -307,6 +329,8 @@ function void set_defaults();
     branch_mispredict = 1'b0;
     reallocate_reg_tag = 1'b0;
     rvfi_commit = 1'b0;
+
+    // curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
 endfunction
 
 always_comb begin 
@@ -324,6 +348,8 @@ always_comb begin
             if((instr_arr[_br_ptr] == tomasula_types::BRANCH) & _allocated_entries[_br_ptr] & (valid_arr[_br_ptr]) & (rd_arr[_br_ptr][1] != rd_arr[_br_ptr][0]) & ~flush_ip) begin
             _ld_pc = 1'b1; 
             branch_mispredict = 1'b1;
+            // rvfi_commit = 1'b1; // ROB has committed an instruction
+            // curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
             end
 
             /* if flush is in progress, reallocate tags in register file */

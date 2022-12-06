@@ -67,6 +67,8 @@ logic [31:0] regfile_mem_in;
 `define write_to_cdb(RES_STATION_EXEC, ALU_OUT, DATA_SEL, ALU_DATA) \
     if (``RES_STATION_EXEC) begin \
             itf.cdb_in[``ALU_OUT.tag].data[31:0] = ``DATA_SEL? ``ALU_OUT.pc : ``ALU_DATA; \
+            itf.cdb_in[``ALU_OUT.tag].rs1_data[31:0] = ``ALU_OUT.src1_data[31:0]; \
+            itf.cdb_in[``ALU_OUT.tag].rs2_data[31:0] = ``ALU_OUT.src2_data[31:0]; \
         end
 
 // only request memory on a commit, where address is on cdb

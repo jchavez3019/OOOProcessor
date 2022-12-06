@@ -47,14 +47,14 @@ end
 
 always_comb begin : EXECUTION
     unique case (aluop)
-        alu_and:  cdb_data.data = a + b;
+        alu_add:  cdb_data.data = a + b;
         alu_sll:  cdb_data.data = a << b[4:0];
         alu_sra:  cdb_data.data = $signed(a) >>> b[4:0];
         alu_sub:  cdb_data.data = a - b;
         alu_xor:  cdb_data.data = a ^ b;
         alu_srl:  cdb_data.data = a >> b[4:0];
         alu_or:   cdb_data.data = a | b;
-        alu_add:  cdb_data.data = a & b;
+        alu_and:  cdb_data.data = a & b;
     endcase
     // cdb_data.req = alu_word.load;
     // cdb_data.tag = alu_word.tag;

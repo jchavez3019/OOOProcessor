@@ -36,6 +36,15 @@ begin : assign_alu_data
     alu_data.funct7 = res_word.funct7;
     alu_data.tag = res_word.rd_tag;
     alu_data.pc = res_word.pc;
+
+    // if (res_word.src2_valid) begin
+    //     alu_data.src1_data = res_word.src1_data;
+    //     alu_data.src2_data = res_word.src2_data;
+    // end
+    // else begin
+    //     alu_data.src1_data = res_in.src1_data;
+    //     alu_data.src2_data = res_in.src2_data;
+    // end
 end
 
 

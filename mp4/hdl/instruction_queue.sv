@@ -38,7 +38,7 @@ import rv32i_types::*;
 logic [3:0] res_snoop;
 logic control_o_valid, dequeue, enqueue;
 tomasula_types::ctl_word control_o_buf;
-rv32i_types::rvfi_word rvfi_word_buf;
+// rv32i_types::rvfi_word rvfi_word_buf;
 assign res_snoop = {res4_empty, res3_empty, res2_empty, res1_empty};
 
 logic ready_o;
@@ -90,7 +90,7 @@ fifo_synch_1r1w #(.DTYPE(rv32i_types::rvfi_word)) rvfi_queue (
     .valid_i(enqueue),
     .ready_o(),
     .valid_o(),
-    .data_o(rvfi_word_buf),
+    .data_o(rvfi_word),
     .yumi_i(dequeue)
 );
 
