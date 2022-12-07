@@ -80,7 +80,7 @@ Please refer to rvfi_itf.sv for more information.
 
 /********************* Assign Shadow Memory Signals Here *********************/
 // This section not required until CP2
-
+/*
 assign itf.inst_read    =  dut.i_cache.mem_read;
 assign itf.inst_addr    =  dut.i_cache.mem_address;
 assign itf.inst_resp    =  dut.i_cache.mem_resp;
@@ -92,6 +92,7 @@ assign itf.data_addr    =  dut.d_cache.mem_address;
 assign itf.data_wdata   =  dut.d_cache.mem_wdata;
 assign itf.data_resp    =  dut.d_cache.mem_resp;
 assign itf.data_rdata   =  dut.d_cache.mem_rdata;
+*/
 
 /*
 The following signals need to be set:
@@ -146,7 +147,6 @@ mp4 dut(
     .rst(itf.rst),
     
      // Remove after CP1
-     /*
     .instr_mem_resp(itf.inst_resp),
     .instr_mem_rdata(itf.inst_rdata),
 	.data_mem_resp(itf.data_resp),
@@ -158,16 +158,17 @@ mp4 dut(
     .data_mbe(itf.data_mbe),
     .data_mem_address(itf.data_addr),
     .data_mem_wdata(itf.data_wdata)
-    */
 
 
     // Use for CP2 onwards
+    /*
     .pmem_read(itf.mem_read),
     .pmem_write(itf.mem_write),
     .pmem_wdata(itf.mem_wdata),
     .pmem_rdata(itf.mem_rdata),
     .pmem_address(itf.mem_addr),
     .pmem_resp(itf.mem_resp)
+    */
 );
 /***************************** End Instantiation *****************************/
 

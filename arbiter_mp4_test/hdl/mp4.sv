@@ -5,6 +5,7 @@ import adaptor_types::*;
     input clk,
     input rst,
 	
+    /*
 	//Remove after CP1
     input 					instr_mem_resp,
     input rv32i_word 	instr_mem_rdata,
@@ -17,10 +18,9 @@ import adaptor_types::*;
     output logic [3:0] 	data_mbe,
     output rv32i_word 	data_mem_address,
     output rv32i_word 	data_mem_wdata
+    */
 
 	
-	// For CP2
-    /*
     input pmem_resp,
     input [63:0] pmem_rdata,
 
@@ -29,15 +29,12 @@ import adaptor_types::*;
     output logic pmem_write,
     output rv32i_word pmem_address,
     output [63:0] pmem_wdata
-    */
 );
 
-/*
 logic instr_mem_resp, data_mem_resp;
 logic instr_read, instr_write, data_read, data_write; 
 rv32i_word instr_mem_rdata, data_mem_rdata, data_mem_wdata;
 logic [3:0] data_mbe;
-*/
 
 rv32i_word instr_mem_address, data_mem_address;
 rv32i_word instr_cache_address, data_cache_address;
@@ -52,35 +49,35 @@ logic cache_resp;
 
 ooo ooo(.*);
 
-/*
 cache i_cache(
     .clk(clk),
-    .rst(rst),
+
     .mem_address(instr_mem_address),
-    .mem_rdata(instr_mem_rdata),
-    .mem_wdata(),
+    .mem_rdata_cpu(instr_mem_rdata),
+    .mem_wdata_cpu(),
     .mem_read(instr_read),
-    .mem_write(),
-    .mem_byte_enable(),
+    .mem_write(1'b0),
+    .mem_byte_enable_cpu(),
     .mem_resp(instr_mem_resp),
 
     .pmem_address(instr_cache_address),
     .pmem_rdata(instr_pmem_to_cache),
-    .pmem_wdata(instr_cache_to_pmem),
+    .pmem_wdata(),
     .pmem_read(instr_cache_read),
-    .pmem_write(instr_cache_write),
+    .pmem_write(),
     .pmem_resp(instr_cache_resp)
 );
 
+
 cache d_cache(
     .clk(clk),
-    .rst(rst),
+
     .mem_address(data_mem_address),
-    .mem_rdata(data_mem_rdata),
-    .mem_wdata(data_mem_wdata),
+    .mem_rdata_cpu(data_mem_rdata),
+    .mem_wdata_cpu(data_mem_wdata),
     .mem_read(data_read),
     .mem_write(data_write),
-    .mem_byte_enable(data_mbe),
+    .mem_byte_enable_cpu(data_mbe),
     .mem_resp(data_mem_resp),
 
     .pmem_address(data_cache_address),
@@ -138,6 +135,5 @@ cacheline_adaptor cacheline_adaptor
     .resp_i(pmem_resp)
 );
 
-*/
 
 endmodule : mp4

@@ -6,7 +6,6 @@ import adaptor_types::*;
     input rst,
 	
 	//Remove after CP1
-    /*
     input 					instr_mem_resp,
     input rv32i_word 	instr_mem_rdata,
 	input 					data_mem_resp,
@@ -18,10 +17,10 @@ import adaptor_types::*;
     output logic [3:0] 	data_mbe,
     output rv32i_word 	data_mem_address,
     output rv32i_word 	data_mem_wdata
-    */
 
 	
 	// For CP2
+    /*
     input pmem_resp,
     input [63:0] pmem_rdata,
 
@@ -30,12 +29,15 @@ import adaptor_types::*;
     output logic pmem_write,
     output rv32i_word pmem_address,
     output [63:0] pmem_wdata
+    */
 );
 
+/*
 logic instr_mem_resp, data_mem_resp;
 logic instr_read, instr_write, data_read, data_write; 
 rv32i_word instr_mem_rdata, data_mem_rdata, data_mem_wdata;
 logic [3:0] data_mbe;
+*/
 
 rv32i_word instr_mem_address, data_mem_address;
 rv32i_word instr_cache_address, data_cache_address;
@@ -50,15 +52,16 @@ logic cache_resp;
 
 ooo ooo(.*);
 
+/*
 cache i_cache(
     .clk(clk),
-
+    .rst(rst),
     .mem_address(instr_mem_address),
-    .mem_rdata_cpu(instr_mem_rdata),
-    .mem_wdata_cpu(),
+    .mem_rdata(instr_mem_rdata),
+    .mem_wdata(),
     .mem_read(instr_read),
     .mem_write(),
-    .mem_byte_enable_cpu(),
+    .mem_byte_enable(),
     .mem_resp(instr_mem_resp),
 
     .pmem_address(instr_cache_address),
@@ -71,13 +74,13 @@ cache i_cache(
 
 cache d_cache(
     .clk(clk),
-
+    .rst(rst),
     .mem_address(data_mem_address),
-    .mem_rdata_cpu(data_mem_rdata),
-    .mem_wdata_cpu(data_mem_wdata),
+    .mem_rdata(data_mem_rdata),
+    .mem_wdata(data_mem_wdata),
     .mem_read(data_read),
     .mem_write(data_write),
-    .mem_byte_enable_cpu(data_mbe),
+    .mem_byte_enable(data_mbe),
     .mem_resp(data_mem_resp),
 
     .pmem_address(data_cache_address),
@@ -115,18 +118,18 @@ arbiter arbiter (
     .cache_resp(cache_resp)
 );
 
-cacheline_adaptor cacheline_adaptor
+cacheline_adaptor cacheline_adaptor 
 (
     .clk(clk),
     .reset_n(~rst),
-    
+
     .line_i(cache_to_pmem),
     .line_o(pmem_to_cache),
     .address_i(cache_address),
     .read_i(cache_read),
     .write_i(cache_write),
     .resp_o(cache_resp),
- 
+
     .burst_i(pmem_rdata),
     .burst_o(pmem_wdata),
     .address_o(pmem_address),
@@ -134,4 +137,7 @@ cacheline_adaptor cacheline_adaptor
     .write_o(pmem_write),
     .resp_i(pmem_resp)
 );
+
+*/
+
 endmodule : mp4

@@ -25,6 +25,7 @@ end
 
 /************************ Signals necessary for monitor **********************/
 // This section not required until CP2
+/*
 logic rvfi_commit_buff;
 logic [4:0] rvfi_rdaddr_buff;
 
@@ -84,7 +85,7 @@ always_comb
 begin : pc_next
     if (dut.itf.rob_ld_pc) // only happens for a branch mispredict
         rvfi.pc_wdata = dut.itf.cdb_out[dut.itf.br_ptr].data[31:0] ; // always works but fix later
-    /* cases where jalr was calculated and we can finally unstall the pipeline */
+    // cases where jalr was calculated and we can finally unstall the pipeline
     else if (dut.itf.res1_jalr_executed)
         // itf.pc_in = itf.cdb_out[itf.res1_alu_out.pc].data[31:0];
         rvfi.pc_wdata = dut.itf.alu1_calculation.data[31:0];
@@ -117,8 +118,8 @@ assign rvfi.rd_addr =   dut.regfile.dest;
 assign rvfi.rd_wdata =  dut.regfile.in;
 assign rvfi.pc_rdata =  dut.PC.out;
 assign rvfi.pc_wdata =  dut.PC.out + 4;
-*/
 
+*/
 /*
 Instruction and trap:
     rvfi.inst
@@ -152,6 +153,7 @@ Please refer to rvfi_itf.sv for more information.
 /********************* Assign Shadow Memory Signals Here *********************/
 // This section not required until CP2
 
+/*
 assign itf.inst_read    =  dut.i_cache.mem_read;
 assign itf.inst_addr    =  dut.i_cache.mem_address;
 assign itf.inst_resp    =  dut.i_cache.mem_resp;
@@ -163,6 +165,7 @@ assign itf.data_addr    =  dut.d_cache.mem_address;
 assign itf.data_wdata   =  dut.d_cache.mem_wdata;
 assign itf.data_resp    =  dut.d_cache.mem_resp;
 assign itf.data_rdata   =  dut.d_cache.mem_rdata;
+*/
 
 /*
 The following signals need to be set:
@@ -217,7 +220,6 @@ mp4 dut(
     .rst(itf.rst),
     
      // Remove after CP1
-     /*
     .instr_mem_resp(itf.inst_resp),
     .instr_mem_rdata(itf.inst_rdata),
 	.data_mem_resp(itf.data_resp),
@@ -229,9 +231,9 @@ mp4 dut(
     .data_mbe(itf.data_mbe),
     .data_mem_address(itf.data_addr),
     .data_mem_wdata(itf.data_wdata)
-    */
 
 
+   /*
     // Use for CP2 onwards
     .pmem_read(itf.mem_read),
     .pmem_write(itf.mem_write),
@@ -239,6 +241,7 @@ mp4 dut(
     .pmem_rdata(itf.mem_rdata),
     .pmem_address(itf.mem_addr),
     .pmem_resp(itf.mem_resp)
+    */
 );
 /***************************** End Instantiation *****************************/
 

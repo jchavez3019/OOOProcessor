@@ -8,7 +8,6 @@ import rv32i_types::*;
 // Signals from the instruction register to the instruction queue
 tomasula_types::ctl_word control_word;
 logic ld_iq;
-rv32i_types::rvfi_word rvfi;
 
 // Signals from the instruction queue to the instruction register
 logic issue_q_full_n, ack_o;
@@ -18,16 +17,14 @@ modport IR_SIG(
     input issue_q_full_n,
     input ack_o,
     output control_word,
-    output ld_iq,
-    output rvfi
+    output ld_iq
 );
 
 modport IQ_SIG(
     output issue_q_full_n,
     output ack_o,
     input control_word,
-    input ld_iq,
-    input rvfi
+    input ld_iq
 );
 
 endinterface : IQ_2_IR

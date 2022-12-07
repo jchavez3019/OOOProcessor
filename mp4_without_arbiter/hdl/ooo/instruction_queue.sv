@@ -22,15 +22,6 @@ import rv32i_types::*;
     output logic resbr_load,
     output tomasula_types::ctl_word control_o,
 
-    /* outputs to ROB for rvfi monitor */
-    output logic [31:0] original_instr,
-    output logic [31:0] instr_pc,
-    output logic [31:0] instr_next_pc,
-
-    output rv32i_types::rvfi_word rvfi_word,
-
-    output logic ack_o,
-
     IQ_2_IR.IQ_SIG iq_ir_itf
 );
 
@@ -38,7 +29,6 @@ import rv32i_types::*;
 logic [3:0] res_snoop;
 logic control_o_valid, dequeue, enqueue;
 tomasula_types::ctl_word control_o_buf;
-// rv32i_types::rvfi_word rvfi_word_buf;
 assign res_snoop = {res4_empty, res3_empty, res2_empty, res1_empty};
 
 logic ready_o;
@@ -59,14 +49,7 @@ always_comb begin : control_o_logic
         control_o.funct7 = 1'b0;
         control_o.rd = 5'b00000;
         control_o.pc = 32'h00000000;
-        control_o.og_pc = 32'h00000000;
-        control_o.og_instr = 32'h00000000;
     end
-
-    /* assign outputs to ROB for rvfi monitor */
-    original_instr = control_o.og_instr;
-    instr_pc = control_o.og_pc;
-    instr_next_pc = control_o.pc;
 end
 
 
@@ -83,26 +66,15 @@ fifo_synch_1r1w #(.DTYPE(tomasula_types::ctl_word)) instruction_queue
     .yumi_i(dequeue)
 );
 
-fifo_synch_1r1w #(.DTYPE(rv32i_types::rvfi_word)) rvfi_queue (
-    .clk_i(clk),
-    .reset_n_i(~rst),
-    .data_i(iq_ir_itf.rvfi),
-    .valid_i(enqueue),
-    .ready_o(),
-    .valid_o(),
-    .data_o(rvfi_word),
-    .yumi_i(dequeue)
-);
-
 always_comb begin : enqueue_logic 
 
-    ack_o = 1'b0; // by default
+    iq_ir_itf.ack_o = 1'b0; // by default
     enqueue = 1'b0;
 
     if (iq_ir_itf.ld_iq) begin
         if (ready_o) begin
             enqueue = 1'b1;
-            ack_o = 1'b1;
+            iq_ir_itf.ack_o = 1'b1;
         end
     end
 

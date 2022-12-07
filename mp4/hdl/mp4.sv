@@ -6,7 +6,6 @@ import adaptor_types::*;
     input rst,
 	
 	//Remove after CP1
-    /*
     input 					instr_mem_resp,
     input rv32i_word 	instr_mem_rdata,
 	input 					data_mem_resp,
@@ -18,9 +17,9 @@ import adaptor_types::*;
     output logic [3:0] 	data_mbe,
     output rv32i_word 	data_mem_address,
     output rv32i_word 	data_mem_wdata
-    */
 
 	
+    /*
 	// For CP2
     input pmem_resp,
     input [63:0] pmem_rdata,
@@ -30,8 +29,10 @@ import adaptor_types::*;
     output logic pmem_write,
     output rv32i_word pmem_address,
     output [63:0] pmem_wdata
+    */
 );
 
+/*
 logic instr_read, instr_write, data_read, data_write; 
 rv32i_word instr_mem_rdata, data_mem_rdata, data_mem_wdata;
 logic [3:0] data_mbe;
@@ -46,8 +47,11 @@ line_t pmem_to_cache, cache_to_pmem;
 rv32i_word cache_address;
 logic cache_read, cache_write;
 logic cache_resp;
+*/
 
 ooo ooo(.*);
+
+/*
 
 cache i_cache(
     .clk(clk),
@@ -136,5 +140,6 @@ cacheline_adaptor cacheline_adaptor
     .resp_i(pmem_resp)
 );
 
+*/
 
 endmodule : mp4

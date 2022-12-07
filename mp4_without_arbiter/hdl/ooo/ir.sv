@@ -12,8 +12,6 @@ import rv32i_types::*;
     input executed_jalr,
     input flush_ip,
 
-    input iq_ack,
-
     output rv32i_word instr_mem_address, // ir will have to communicate with pc to get this, or maybe pc just wires directly to icache
     output logic instr_read,
     output logic ld_pc,
@@ -43,22 +41,6 @@ assign rs2 = data[24:20];
 assign rd = data[11:7];
 assign instr_mem_address = pc;
 
-/* this is an rvfi word that will get passed so that the rvfi can properly debug */
-rv32i_types::rvfi_word rvfi;
-
-assign iq_ir_itf.rvfi = rvfi;
-
-always_comb
-begin : generate_rvfi_word
-    rvfi.inst = data;
-    rvfi.rs1_addr = rs1;
-    rvfi.rs2_addr = rs2;
-    rvfi.rd_addr = rd;
-    rvfi.pc_rdata = pc;
-    
-    // rvfi.pc_wdata = iq_ir_itf.control_word.pc;
-end
-
 enum int unsigned {
     RESET = 0,
     FETCH = 1,
@@ -75,17 +57,11 @@ begin : immediate_op_logic
     iq_ir_itf.control_word.src1_valid = 1'b0;
     iq_ir_itf.control_word.src2_reg = rs2; // should be rs2 if no immediate is used, otherwise 0
     iq_ir_itf.control_word.pc = pc + 4;
-    iq_ir_itf.control_word.og_pc = pc;
     iq_ir_itf.control_word.src2_valid = 1'b0;
     iq_ir_itf.control_word.src2_data = 32'h0000;
     iq_ir_itf.control_word.funct3 = funct3;
     iq_ir_itf.control_word.funct7 = data[30];
     iq_ir_itf.control_word.rd = rd;
-    iq_ir_itf.control_word.og_instr = data;
-
-    /* rvfi signals to be set */
-    rvfi.pc_wdata = iq_ir_itf.control_word.pc;
-    rvfi.imm = iq_ir_itf.control_word.src2_valid;
     case (opcode)
         op_lui: begin
             iq_ir_itf.control_word.op = tomasula_types::LUI;
@@ -93,8 +69,6 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.pc = u_imm;
-
-            rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end
         op_auipc: begin 
             iq_ir_itf.control_word.op = tomasula_types::AUIPC;
@@ -102,8 +76,6 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.pc = pc + u_imm;
-
-            rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end
         op_jal: begin
             iq_ir_itf.control_word.op = tomasula_types::JAL;
@@ -111,9 +83,6 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.pc = pc + 4; 
-            rvfi.pc_wdata = pc_calc;
-
-            rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end
         op_br: begin
             iq_ir_itf.control_word.op = tomasula_types::BRANCH;
@@ -123,13 +92,10 @@ begin : immediate_op_logic
                 iq_ir_itf.control_word.pc = pc_calc;
                 // 0 0 0 PREDICTION 0
                 iq_ir_itf.control_word.rd = 5'b00000; 
-                rvfi.pc_wdata = pc + 4;
             end begin
                 iq_ir_itf.control_word.pc = pc + 4;
                 iq_ir_itf.control_word.rd = 5'b00010;
-                rvfi.pc_wdata = pc_calc;
             end
-            rvfi.imm = 1'b0;
         end
         op_store: begin
             // for stores, src2_reg is not correlated with s_imm
@@ -142,23 +108,17 @@ begin : immediate_op_logic
             endcase
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_data = s_imm;
-
-            rvfi.imm = 1'b0;
         end
         op_imm: begin
             iq_ir_itf.control_word.op = tomasula_types::ARITH;
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_data = i_imm;
-
-            rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end 
         op_csr: begin
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_data = i_imm;
-
-            rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end
         op_jalr: begin
             iq_ir_itf.control_word.op = tomasula_types::JALR;
@@ -166,8 +126,6 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_data = i_imm;
             iq_ir_itf.control_word.pc = pc + 4; 
-
-            rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end
         op_load: begin
             case (funct3) 
@@ -180,12 +138,8 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_data = i_imm;
-
-            rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end
     endcase
-    // rvfi.imm = iq_ir_itf.control_word.src2_valid;
-    
 end
 
 always_ff @(posedge clk)
@@ -266,7 +220,7 @@ begin : next_state_logic
             if (flush_ip) begin
                 next_state = STALL_FLUSH;
             end
-            else if (iq_ack) begin
+            else if (iq_ir_itf.ack_o) begin
                 if(opcode == op_jalr) 
                     next_state = STALL_JALR;
                 else
@@ -276,7 +230,7 @@ begin : next_state_logic
                 next_state = STALL;
         end
         STALL: begin
-            if (iq_ack) begin
+            if (iq_ir_itf.ack_o) begin
                 if (flush_ip)
                     next_state = STALL_FLUSH;
                 else if(opcode == op_jalr) 
