@@ -10,17 +10,17 @@
 	.hidden	_start
 	.type	_start, @function
 _start:
-	li	sp,0x84000000
-	addi	sp,sp,-16
-	sw	ra,12(sp)
-	sw	s0,8(sp)
-	sw	s10,4(sp)
-	li	s10,-553656320
-	addi	s10,s10,-257
-	call	test_uncorrelated_branches
-	mv	s0,a0
-	call	test_correlated_branches
-	or	s0,s0,a0
+	li	sp,0x84000000 # 60
+	addi	sp,sp,-16 # 64
+	sw	ra,12(sp) # 68
+	sw	s0,8(sp) # 6c
+	sw	s10,4(sp) # 70 
+	li	s10,-553656320 # 74
+	addi	s10,s10,-257 # 78
+	call	test_uncorrelated_branches # 7c
+	mv	s0,a0 # 80
+	call	test_correlated_branches # 84
+	or	s0,s0,a0 # 88 
 	call	test_mixed
 	or	s0,s0,a0
 	li	a0,12

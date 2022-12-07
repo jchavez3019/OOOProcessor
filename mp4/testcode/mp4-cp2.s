@@ -10,39 +10,39 @@ _start:
 
 # Mispredict taken branch flushing tests
 taken_branches:
-    beq x0, x0, forward_br
-    lw x7, BAD
+    beq x0, x0, forward_br # 60
+    lw x7, BAD # 64
 
 backward_br:
-    beq x0, x0, not_taken_branches
-    beq x0, x0, oof                    # Also, test back-to-back branches
+    beq x0, x0, not_taken_branches # 68
+    beq x0, x0, oof                    # Also, test back-to-back branches 6c
 
 forward_br:
-    beq x0, x0, backward_br
-    lw x7, BAD
+    beq x0, x0, backward_br # 70
+    lw x7, BAD # 74
 
 # Mispredict not-taken branch flushing tests
 not_taken_branches:
-    add x1, x0, 1                      # Also, test branching on forwarded value :)
-    beq x0, x1, oof                    # Don't take
+    add x1, x0, 1                      # Also, test branching on forwarded value :) 78
+    beq x0, x1, oof                    # Don't take 7c
 
-    beq x0, x0, backward_br_nt         # Take
+    beq x0, x0, backward_br_nt         # Take 80
 
 
 forwarding_tests:
     # Forwarding x0 test
-    add x3, x3, 1
-    add x0, x1, 0
-    add x2, x0, 0
+    add x3, x3, 1 # 84
+    add x0, x1, 0 # 88
+    add x2, x0, 0 # 8c
 
-    beq x2, x3, oof
+    beq x2, x3, oof # 90
 
     # Forwarding sr2 imm test
-    add x2, x1, 0
-    add x3, x1, 2                      # 2 immediate makes sr2 bits point to x2
-    add x4, x0, 3
+    add x2, x1, 0   # 94
+    add x3, x1, 2   # 98                  # 2 immediate makes sr2 bits point to x2
+    add x4, x0, 3   # 9c
 
-    bne x3, x4, oof                    # Also, test branching on 2 forwarded values :)
+    bne x3, x4, oof # a0                   # Also, test branching on 2 forwarded values :)
 
     # MEM -> EX forwarding with stall
     lw x1, NOPE
