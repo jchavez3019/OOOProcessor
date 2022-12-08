@@ -39,18 +39,25 @@ logic cache_read, cache_write;
 logic instr_cache_resp, data_cache_resp;
 */
 
-enum logic [1:0] {
+enum logic [2:0] {
     NONE,
-    INSTR,
-    DATA,
-    DONE
+    INSTR1,
+    INSTR2,
+    DATA1,
+    DATA2
 } state, next_state;
 
-logic curr_req, random_sel;
+logic instr_req, data_req;
+assign instr_req = instr_cache_read;
+assign data_req = data_cache_read | data_cache_write;
 /*****************************************************************************/
 
 function void set_defaults();
     cache_to_pmem = '0;
+    /*
+    instr_pmem_to_cache = '0;
+    data_pmem_to_cache = '0;
+    */
     cache_address = 32'h00000000;
     cache_read = 1'b0;
     cache_write = 1'b0;
@@ -67,42 +74,26 @@ endfunction
 always_comb begin
     set_defaults();
     case (state)
-    NONE: begin
-    end
-    INSTR: begin
+    NONE: ;
+    INSTR1: begin
         cache_to_pmem = instr_cache_to_pmem;
         cache_address = instr_cache_address;
         cache_read = instr_cache_read;
         cache_write = instr_cache_write;
-        /*
-        if (cache_resp) begin
-            instr_pmem_to_cache = pmem_to_cache;
-            instr_cache_resp = 1'b1;
-        end
-        */
+        instr_pmem_to_cache = pmem_to_cache;
+        instr_cache_resp = cache_resp;
+        data_cache_resp = 1'b0;
     end
-    DATA: begin
+    DATA1: begin
         cache_to_pmem = data_cache_to_pmem;
         cache_address = data_cache_address;
         cache_read = data_cache_read;
         cache_write = data_cache_write;
-        /*
-        if (cache_resp) begin
-            data_pmem_to_cache = pmem_to_cache;
-            data_cache_resp = 1'b1;
-        end
-        */
+        data_pmem_to_cache = pmem_to_cache;
+        data_cache_resp = cache_resp;
+        instr_cache_resp = 1'b0;
     end
-    DONE: begin
-        if (curr_req) begin
-            instr_pmem_to_cache = pmem_to_cache;
-            instr_cache_resp = 1'b1;
-        end
-        else begin
-            data_pmem_to_cache = pmem_to_cache;
-            data_cache_resp = 1'b1;
-        end
-    end
+    INSTR2, DATA2:;
     endcase
 end
 /*****************************************************************************/
@@ -112,44 +103,50 @@ always_comb begin
     next_state = state;
     case (state)
     NONE: begin
-        if (random_sel) begin
-            if (instr_cache_read || instr_cache_write) begin
-                next_state = INSTR;
-                random_sel = 1'b0;
-                curr_req = 1'b1;
-            end
-            if (data_cache_read || data_cache_write) begin
-                    next_state = DATA;
-                    random_sel = 1'b1;
-                    curr_req = 1'b0;
-            end
+        if (data_req) begin
+            next_state = DATA1;
         end
         else begin
-            if (data_cache_read || data_cache_write) begin
-                next_state = DATA;
-                random_sel = 1'b1;
-                curr_req = 1'b0;
-            end
-            if (instr_cache_read || instr_cache_write) begin
-                next_state = INSTR;
-                random_sel = 1'b0;
-                curr_req = 1'b1;
+            if (instr_req) begin
+                next_state = INSTR1;
             end
         end
     end
-    INSTR: begin
+    INSTR1: begin
         if (cache_resp) begin
-            next_state = DONE;
+            next_state = INSTR2;
         end
     end
-    DATA: begin
-        if (cache_resp) begin
-            next_state = DONE;
+    INSTR2: begin
+        if (data_req) begin
+            next_state = DATA1;
         end
-
+        else begin
+            if (instr_req) begin
+                next_state = INSTR1;
+            end
+            else begin
+                next_state = NONE;
+            end
+        end
     end
-    DONE: begin
-        next_state = NONE;
+    DATA1: begin
+        if (cache_resp) begin
+            next_state = DATA2;
+        end
+    end
+    DATA2: begin
+        if (data_req) begin
+            next_state = DATA1;
+        end
+        else begin
+            if (instr_req) begin
+                next_state = INSTR1;
+            end
+            else begin
+                next_state = NONE;
+            end
+        end
     end
     endcase
 end

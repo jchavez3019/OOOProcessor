@@ -2,27 +2,12 @@ package rv32i_types;
 // Mux types are in their own packages to prevent identiier collisions
 // e.g. pcmux::pc_plus4 and regfilemux::pc_plus4 are seperate identifiers
 // for seperate enumerated types
-// import rvfi_types::*;
 import pcmux::*;
 import marmux::*;
 import cmpmux::*;
 import alumux::*;
 import regfilemux::*;
 import tomasula_types::*;
-
-/* for rvfi word */
-typedef struct {
-    logic [31:0] inst;
-    logic [4:0] rs1_addr;
-    logic [4:0] rs2_addr;
-    // logic [31:0] rs1_rdata;
-    // logic [31:0] rs2_rdata;
-    logic [4:0] rd_addr;
-    // logic [31:0] rd_wdata;
-    logic [31:0] pc_rdata;
-    logic [31:0] pc_wdata;
-    logic imm;
-} rvfi_word; // totals 199 bits
 
 typedef logic [31:0] rv32i_word;
 typedef logic [4:0] rv32i_reg;

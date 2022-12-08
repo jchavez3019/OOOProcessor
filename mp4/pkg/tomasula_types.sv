@@ -35,10 +35,7 @@ typedef struct {
     logic [2:0] funct3; 
     logic funct7;
     logic [4:0] rd;
-
     logic [31:0] pc;
-    logic [31:0] og_pc;
-    logic [31:0] og_instr;
 } ctl_word; // totals 199 bits
 
 
@@ -61,8 +58,6 @@ typedef struct {
 typedef struct packed {
     // logic [2:0] tag;
     logic [31:0] data;
-    logic [31:0] rs1_data;
-    logic [31:0] rs2_data;
     // logic request;
 } cdb_data; // totals 35 bits
 

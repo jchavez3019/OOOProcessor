@@ -10,11 +10,9 @@ _start:
     # in an effort to help you understand the assembly style.
 
     # Note that one/two/eight are data labels
-    # lw  x1, threshold # X1 <- 0x80
-    # lui  x2, 2       # X2 <= 2
-    # lui  x3, 8     # X3 <= 8
-    
-
+    lw  x1, threshold # X1 <- 0x80
+    lui  x2, 2       # X2 <= 2
+    lui  x3, 8     # X3 <= 8
     srli x2, x2, 12
     srli x3, x3, 12
 
@@ -26,7 +24,7 @@ loop1:
     addi x5, x5, 1    # X5 <= X5 + 1
     addi x4, x4, 4    # X4 <= X4 + 8
 
-    bge x4, x1, loop1   # Branch if last result was zero or positive.
+    bleu x4, x1, loop1   # Branch if last result was zero or positive.
 
     andi x6, x3, 64   # X6 <= X3 + 64
 
