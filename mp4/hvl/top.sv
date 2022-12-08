@@ -29,56 +29,56 @@ logic rvfi_commit_buff;
 logic [4:0] rvfi_rdaddr_buff;
 
 always_ff @(posedge itf.clk) begin
-    if (dut.rob.rvfi_commit | dut.itf.rob_ld_pc)
+    if (dut.ooo.rob.rvfi_commit | dut.ooo.itf.rob_ld_pc)
         rvfi_commit_buff <= 1'b1;
     else
         rvfi_commit_buff <= 1'b0;
 
-    if (dut.rob.regfile_load)
-        // rvfi_rdaddr_buff[4:0] <= dut.rob.curr_rvfi_word.rd_addr[4:0];
-        rvfi_rdaddr_buff[4:0] <= dut.regfile.dest[4:0];
+    if (dut.ooo.rob.regfile_load)
+        // rvfi_rdaddr_buff[4:0] <= dut.ooo.rob.curr_rvfi_word.rd_addr[4:0];
+        rvfi_rdaddr_buff[4:0] <= dut.ooo.regfile.dest[4:0];
     else
         rvfi_rdaddr_buff[4:0] <= rvfi_rdaddr_buff[4:0];
 
 end
 
-assign rvfi.commit = dut.rob.regfile_load | dut.itf.rob_ld_pc | dut.rob.rvfi_commit;
-assign rvfi.halt = (rvfi.inst == 32'h0007d463) ? 1 : 0;  // check if 'ret' call was made
+assign rvfi.commit = dut.ooo.rob.regfile_load | dut.ooo.itf.rob_ld_pc | dut.ooo.rob.rvfi_commit;
+assign rvfi.halt = (rvfi.inst == 32'h0007d463 | rvfi.inst == 32'h00000063) ? 1 : 0;  // check if 'ret' call was made
 initial rvfi.order = 0;
 always @(posedge itf.clk iff rvfi.commit) rvfi.order <= rvfi.order + 1; // Modify for OoO
-assign rvfi.load_regfile = dut.rob.regfile_load;
+assign rvfi.load_regfile = dut.ooo.rob.regfile_load;
 
 //Instruction and trap:
-assign rvfi.inst = dut.rob.curr_rvfi_word.inst;
+assign rvfi.inst = dut.ooo.rob.curr_rvfi_word.inst;
 assign rvfi.trap = 1'b0;
 
 
 
 
 // registers and pc for architectural state tracking
-assign rvfi.rd_wdata = rvfi.rd_addr ? dut.regfile.in : 0; // rd_wdata only valid when writing to a register that is not x0
-assign rvfi.rs1_addr =  dut.rob.curr_rvfi_word.rs1_addr;
-// assign rvfi.rs2_addr =  dut.rob.curr_rvfi_word.rs2_addr;
-// assign rvfi.rs2_addr =  dut.rob.curr_rvfi_word.imm ? 5'b00000 : dut.rob.curr_rvfi_word.rs2_addr;
+assign rvfi.rd_wdata = rvfi.rd_addr ? dut.ooo.regfile.in : 0; // rd_wdata only valid when writing to a register that is not x0
+assign rvfi.rs1_addr =  dut.ooo.rob.curr_rvfi_word.rs1_addr;
+// assign rvfi.rs2_addr =  dut.ooo.rob.curr_rvfi_word.rs2_addr;
+// assign rvfi.rs2_addr =  dut.ooo.rob.curr_rvfi_word.imm ? 5'b00000 : dut.ooo.rob.curr_rvfi_word.rs2_addr;
 always_comb begin : set_rs2
-    if (dut.rob.curr_rvfi_word.inst[6:0] == 7'b0100011) begin
-        rvfi.rs2_addr = dut.rob.rd_arr[dut.rob._head_ptr];
-        rvfi.rs2_rdata = dut.data_mem_wdata;
+    if (dut.ooo.rob.curr_rvfi_word.inst[6:0] == 7'b0100011) begin
+        rvfi.rs2_addr = dut.ooo.rob.rd_arr[dut.ooo.rob._head_ptr];
+        rvfi.rs2_rdata = dut.ooo.data_mem_wdata;
     end
-    else if (dut.rob.curr_rvfi_word.imm) begin
+    else if (dut.ooo.rob.curr_rvfi_word.imm) begin
         rvfi.rs2_addr = 5'b00000;
         rvfi.rs2_rdata = 32'h00000000;
     end
     else begin
-        rvfi.rs2_addr = dut.rob.curr_rvfi_word.rs2_addr;
-        rvfi.rs2_rdata = dut.cdb.out[dut.rob._head_ptr].rs2_data;
+        rvfi.rs2_addr = dut.ooo.rob.curr_rvfi_word.rs2_addr;
+        rvfi.rs2_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;
     end
 end
-assign rvfi.rs1_rdata = dut.cdb.out[dut.rob._head_ptr].rs1_data;
-// assign rvfi.rs2_rdata = dut.cdb.out[dut.rob._head_ptr].rs2_data;
-// assign rvfi.rs2_rdata = dut.rob.curr_rvfi_word.imm ? 32'h00000000 : dut.cdb.out[dut.rob._head_ptr].rs2_data;
-assign rvfi.rd_addr =   dut.rob.curr_rvfi_word.rd_addr;
-assign rvfi.pc_rdata = dut.rob.curr_rvfi_word.pc_rdata;
+assign rvfi.rs1_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs1_data;
+// assign rvfi.rs2_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;
+// assign rvfi.rs2_rdata = dut.ooo.rob.curr_rvfi_word.imm ? 32'h00000000 : dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;
+assign rvfi.rd_addr =   dut.ooo.rob.curr_rvfi_word.rd_addr;
+assign rvfi.pc_rdata = dut.ooo.rob.curr_rvfi_word.pc_rdata;
 
 /* display correct pc for rvfi */
 logic res_jalr_buff;
@@ -91,20 +91,20 @@ always_ff @(posedge itf.clk) begin
     end
     else begin
         
-        if (dut.itf.res1_jalr_executed) begin
-            jalr_pc_buff <= dut.itf.alu1_calculation.data[31:0];
+        if (dut.ooo.itf.res1_jalr_executed) begin
+            jalr_pc_buff <= dut.ooo.itf.alu1_calculation.data[31:0];
             res_jalr_buff <= 1'b1;
         end
-        else if (dut.itf.res2_jalr_executed) begin
-            jalr_pc_buff <= dut.itf.alu1_calculation.data[31:0];
+        else if (dut.ooo.itf.res2_jalr_executed) begin
+            jalr_pc_buff <= dut.ooo.itf.alu1_calculation.data[31:0];
             res_jalr_buff <= 1'b1;
         end
-        else if (dut.itf.res3_jalr_executed) begin
-            jalr_pc_buff <= dut.itf.alu1_calculation.data[31:0];
+        else if (dut.ooo.itf.res3_jalr_executed) begin
+            jalr_pc_buff <= dut.ooo.itf.alu1_calculation.data[31:0];
             res_jalr_buff <= 1'b1;
         end
-        else if (dut.itf.res4_jalr_executed) begin
-            jalr_pc_buff <= dut.itf.alu1_calculation.data[31:0];
+        else if (dut.ooo.itf.res4_jalr_executed) begin
+            jalr_pc_buff <= dut.ooo.itf.alu1_calculation.data[31:0];
             res_jalr_buff <= 1'b1;
         end
         else begin 
@@ -116,21 +116,21 @@ end
 
 always_comb
 begin : pc_next
-    if (dut.itf.rob_ld_pc) // only happens for a branch mispredict
-        rvfi.pc_wdata = dut.itf.cdb_out[dut.itf.br_ptr].data[31:0] ; // always works but fix later
+    if (dut.ooo.itf.rob_ld_pc) // only happens for a branch mispredict
+        rvfi.pc_wdata = dut.ooo.itf.cdb_out[dut.ooo.itf.br_ptr].data[31:0] ; // always works but fix later
     /* cases where jalr was calculated and we can finally unstall the pipeline */
-    // else if (dut.itf.res1_jalr_executed)
-    //     rvfi.pc_wdata = dut.itf.alu1_calculation.data[31:0];
-    // else if (dut.itf.res2_jalr_executed)
-    //     rvfi.pc_wdata = dut.itf.alu2_calculation.data[31:0];
-    // else if (dut.itf.res3_jalr_executed)
-    //     rvfi.pc_wdata = dut.itf.alu3_calculation.data[31:0];
-    // else if (dut.itf.res4_jalr_executed)
-    //     rvfi.pc_wdata = dut.itf.alu4_calculation.data[31:0];
+    // else if (dut.ooo.itf.res1_jalr_executed)
+    //     rvfi.pc_wdata = dut.ooo.itf.alu1_calculation.data[31:0];
+    // else if (dut.ooo.itf.res2_jalr_executed)
+    //     rvfi.pc_wdata = dut.ooo.itf.alu2_calculation.data[31:0];
+    // else if (dut.ooo.itf.res3_jalr_executed)
+    //     rvfi.pc_wdata = dut.ooo.itf.alu3_calculation.data[31:0];
+    // else if (dut.ooo.itf.res4_jalr_executed)
+    //     rvfi.pc_wdata = dut.ooo.itf.alu4_calculation.data[31:0];
     else if (res_jalr_buff)
         rvfi.pc_wdata = jalr_pc_buff;
     else
-        rvfi.pc_wdata = dut.rob.curr_rvfi_word.pc_wdata;
+        rvfi.pc_wdata = dut.ooo.rob.curr_rvfi_word.pc_wdata;
 end
 
 
