@@ -192,6 +192,8 @@ always_ff @(posedge clk) begin
         _br_flush_ptr <= 3'b000;
         _br_ptr <= 3'b000;
         flush_ip <= 1'b0;
+        data_read <= 1'b0;
+        data_write <= 1'b0;
     end
 
     else begin
