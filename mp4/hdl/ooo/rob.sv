@@ -77,7 +77,6 @@ logic [4:0] _rd_commit, _st_src_commit;
 logic flush_ip;
 logic _ld_commit_sel;
 logic _ld_pc;
-logic _data_read, _data_write;
 logic _regfile_load;
 logic _rob_full;
 
@@ -116,8 +115,6 @@ assign st_src_commit = rd_arr[_head_ptr];
 assign commit_type = instr_arr[_head_ptr];
 assign ld_commit_sel = _ld_commit_sel;
 assign ld_pc = _ld_pc;
-assign data_read = _data_read;
-assign data_write = _data_write;
 assign regfile_load = _regfile_load;
 assign rob_full = _rob_full;
 assign curr_ptr = _curr_ptr;
@@ -298,11 +295,11 @@ always_ff @(posedge clk) begin
                 // end
                 /* check if it is a load and take appropiate action */
                 if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
-                    // _data_read <= 1'b1;
+                    data_read <= 1'b1;
                     // make sure instruction is not committed until data returned
                     // from d-cache...
                     if (data_mem_resp) begin
-                        // _data_read <= 1'b0;
+                        data_read <= 1'b0;
                         valid_arr[_head_ptr] <= 1'b0;
                         _allocated_entries[_head_ptr] <= 1'b0;
                         // use d-cache data
@@ -315,11 +312,12 @@ always_ff @(posedge clk) begin
                 end
                 /* check if it is a store and take appropiate action */
                 else if (instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11) begin
-                    // _data_write <= 1'b1;
+                    data_write <= 1'b1;
                     // for st address
                     // send regfile the register file to read from
                     // once store has been processed
                     if (data_mem_resp) begin
+                        data_write <= 1'b0;
                         valid_arr[_head_ptr] <= 1'b0;
                         _allocated_entries[_head_ptr] <= 1'b0;
                         _head_ptr <= _head_ptr + 1'b1;
@@ -348,10 +346,8 @@ end
 
 function void set_defaults();
     _ld_pc = 1'b0;
-    _data_read = 1'b0;
     _ld_commit_sel = 1'b0;
     _regfile_load = 1'b0;
-    _data_write = 1'b0;
     branch_mispredict = 1'b0;
     reallocate_reg_tag = 1'b0;
     rvfi_commit = 1'b0;
@@ -400,11 +396,9 @@ always_comb begin
 
             if (valid_arr[_head_ptr] & ~flush_in_prog & ~branch_mispredict) begin
                 if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
-                    _data_read = 1'b1;
                     // make sure instruction is not committed until data returned
                     // from d-cache...
                     if (data_mem_resp) begin
-                        _data_read = 1'b0;
                         // valid_arr[_head_ptr] <= 1'b0;
                         // use d-cache data
                         _ld_commit_sel = 1'b1;
@@ -415,13 +409,11 @@ always_comb begin
                     end
                 end
                 else if ((instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11)) begin
-                    _data_write = 1'b1;
                     // for st address
                     // send regfile the register file to read from
                     // _st_src_commit <= rd_arr[_head_ptr];
                     // once store has been processed
                     if (data_mem_resp) begin
-                        _data_write = 1'b0;
                         // valid_arr[_head_ptr] <= 1'b0;
                         // _head_ptr <= _head_ptr + 1'b1;
                     end
