@@ -17,10 +17,10 @@ _start:
 	sw	s10,4(sp) # 70 
 	li	s10,-553656320 # 74
 	addi	s10,s10,-257 # 78
-	call	test_uncorrelated_branches # 7c
-	mv	s0,a0 # 80
-	call	test_correlated_branches # 84
-	or	s0,s0,a0 # 88 
+	call	test_uncorrelated_branches # 
+	mv	s0,a0 # 
+	call	test_correlated_branches # 
+	or	s0,s0,a0 #  
 	call	test_mixed
 	or	s0,s0,a0
 	li	a0,12

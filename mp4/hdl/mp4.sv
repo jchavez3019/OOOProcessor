@@ -132,8 +132,8 @@ ir ir (
     .rst(rst),
     .instr_mem_resp(instr_mem_resp),
     .in(instr_mem_rdata),
-    .executed_jalr(itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed),
-    .br_pr_take (1'b1),
+    .executed_jalr(itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed | itf.rob_ld_pc), // included rob_ld_pc to get out of jalr wait state
+    .br_pr_take (1'b0),
     .flush_ip(itf.flush_in_prog),
     .pc(pc),
     .instr_mem_address(instr_mem_address),

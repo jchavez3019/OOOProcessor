@@ -232,10 +232,10 @@ begin : state_actions
         end
         CREATE: begin
             // address calculation 
-            if(opcode == op_jal) begin
+            if((opcode == op_jal) & ~flush_ip) begin
                 pc_calc = pc + j_imm;
             end
-            if(opcode == op_br) begin
+            if((opcode == op_br) & ~flush_ip) begin
                 pc_calc = pc + b_imm;
             end
             /*
@@ -299,6 +299,7 @@ begin : next_state_logic
         STALL_FLUSH: begin
             if (~flush_ip)
                 next_state = FETCH;
+                // next_state = CREATE; // could have made a better design choice to work around CREATE state instead
         end
     endcase
 end

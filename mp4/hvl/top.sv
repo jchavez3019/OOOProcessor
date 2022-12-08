@@ -43,7 +43,7 @@ always_ff @(posedge itf.clk) begin
 end
 
 assign rvfi.commit = dut.rob.regfile_load | dut.itf.rob_ld_pc | dut.rob.rvfi_commit;
-assign rvfi.halt = 0; //   
+assign rvfi.halt = (rvfi.inst == 32'h0007d463) ? 1 : 0;   
 initial rvfi.order = 0;
 always @(posedge itf.clk iff rvfi.commit) rvfi.order <= rvfi.order + 1; // Modify for OoO
 assign rvfi.load_regfile = dut.rob.regfile_load;
