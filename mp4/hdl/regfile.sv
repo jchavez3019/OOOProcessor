@@ -58,14 +58,14 @@ begin
     valid_a = 1'b0;
     valid_b = 1'b0;
 
-    if((dest == src_a) && load ) begin
+    if((dest == src_a) && (src_a != 5'b00000) && load ) begin
         reg_a = in;
         reg_b = src_b ? data[src_b] : 0;
         valid_a = 1'b1;
         valid_b = valid[src_b];
     end
 
-    else if((dest == src_b) && load) begin
+    else if((dest == src_b) && (src_b != 5'b00000) && load) begin
         reg_a = src_a ? data[src_a] : 0;
         reg_b = in;
         valid_a = valid [src_a];

@@ -14,6 +14,8 @@ _start:
     # lui  x2, 2       # X2 <= 2
     # lui  x3, 8     # X3 <= 8
     
+    add x1, x0, x0
+    add x2, x0, 0
 
     srli x2, x2, 12
     srli x3, x3, 12

@@ -14,35 +14,35 @@ taken_branches:
     lw x7, BAD # 64
 
 backward_br:
-    beq x0, x0, not_taken_branches # 68
-    beq x0, x0, oof                    # Also, test back-to-back branches 6c
+    beq x0, x0, not_taken_branches # 6c NOTE THHAT LOADS TAKE UP 2 PC's (one for auipc, one for the actual load)
+    beq x0, x0, oof # 70                    # Also, test back-to-back branches
 
 forward_br:
-    beq x0, x0, backward_br # 70
-    lw x7, BAD # 74
+    beq x0, x0, backward_br # 74
+    lw x7, BAD # 78
 
 # Mispredict not-taken branch flushing tests
 not_taken_branches:
-    add x1, x0, 1                      # Also, test branching on forwarded value :) 78
-    beq x0, x1, oof                    # Don't take 7c
+    add x1, x0, 1 # 80                      # Also, test branching on forwarded value :) 
+    beq x0, x1, oof # 84                    # Don't take 
 
-    beq x0, x0, backward_br_nt         # Take 80
+    beq x0, x0, backward_br_nt # 88         # Take 
 
 
 forwarding_tests:
     # Forwarding x0 test
-    add x3, x3, 1 # 84
-    add x0, x1, 0 # 88
-    add x2, x0, 0 # 8c
+    add x3, x3, 1 # 8c
+    add x0, x1, 0 # 90
+    add x2, x0, 0 # 94
 
-    beq x2, x3, oof # 90
+    beq x2, x3, oof # 98
 
     # Forwarding sr2 imm test
-    add x2, x1, 0   # 94
-    add x3, x1, 2   # 98                  # 2 immediate makes sr2 bits point to x2
-    add x4, x0, 3   # 9c
+    add x2, x1, 0   # 9c
+    add x3, x1, 2   # a0                  # 2 immediate makes sr2 bits point to x2
+    add x4, x0, 3   # a4
 
-    bne x3, x4, oof # a0                   # Also, test branching on 2 forwarded values :)
+    bne x3, x4, oof # a8                   # Also, test branching on 2 forwarded values :)
 
     # MEM -> EX forwarding with stall
     lw x1, NOPE
@@ -52,7 +52,7 @@ forwarding_tests:
     bne x5, x1, oof
 
     # WB -> MEM forwarding test
-    add x3, x1, 1 #2
+    add x3, x1, 1 # 2
     la x8, TEST
     sw  x3, 0(x8)
     lw  x4, TEST
