@@ -77,7 +77,7 @@ assign st_src_commit = rd_arr[_head_ptr];
 assign commit_type = instr_arr[_head_ptr];
 assign ld_commit_sel = _ld_commit_sel;
 assign ld_pc = _ld_pc;
-assign data_read = _data_read;
+//assign data_read = _data_read;
 assign data_write = _data_write;
 assign regfile_load = _regfile_load;
 assign rob_full = _rob_full;
@@ -222,11 +222,11 @@ always_ff @(posedge clk) begin
                 // //    _ld_pc <= 1'b1; 
                 // end
                 if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
-                    // _data_read <= 1'b1;
+                    data_read <= 1'b1;
                     // make sure instruction is not committed until data returned
                     // from d-cache...
                     if (data_mem_resp) begin
-                        // _data_read <= 1'b0;
+                        data_read <= 1'b0;
                         valid_arr[_head_ptr] <= 1'b0;
                         _allocated_entries[_head_ptr] <= 1'b0;
                         // use d-cache data
@@ -265,7 +265,7 @@ end
 
 function void set_defaults();
     _ld_pc = 1'b0;
-    _data_read = 1'b0;
+    //_data_read = 1'b0;
     _ld_commit_sel = 1'b0;
     _regfile_load = 1'b0;
     _data_write = 1'b0;
@@ -300,11 +300,11 @@ always_comb begin
 
             if (valid_arr[_head_ptr] & ~flush_in_prog & ~branch_mispredict) begin
                 if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
-                    _data_read = 1'b1;
+                    //_data_read = 1'b1;
                     // make sure instruction is not committed until data returned
                     // from d-cache...
                     if (data_mem_resp) begin
-                        _data_read = 1'b0;
+                        //_data_read = 1'b0;
                         // valid_arr[_head_ptr] <= 1'b0;
                         // use d-cache data
                         _ld_commit_sel = 1'b1;

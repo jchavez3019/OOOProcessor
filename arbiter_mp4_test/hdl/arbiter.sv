@@ -103,12 +103,12 @@ always_comb begin
     next_state = state;
     case (state)
     NONE: begin
-        if (instr_req) begin
-            next_state = INSTR1;
+        if (data_req) begin
+            next_state = DATA1;
         end
         else begin
-            if (data_req) begin
-                next_state = DATA1;
+            if (instr_req) begin
+                next_state = INSTR1;
             end
         end
     end
@@ -136,12 +136,12 @@ always_comb begin
         end
     end
     DATA2: begin
-        if (instr_req) begin
-            next_state = INSTR1;
+        if (data_req) begin
+            next_state = DATA1;
         end
         else begin
-            if (data_req) begin
-                next_state = DATA1;
+            if (instr_req) begin
+                next_state = INSTR1;
             end
             else begin
                 next_state = NONE;
