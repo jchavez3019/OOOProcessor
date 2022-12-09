@@ -14,7 +14,7 @@ halt:                 # Infinite loop to keep the processor
 deadend:
     lw x10, bad       
 deadloop:
-    beq x10, x10, deadloop
+    beq x0, x0, deadloop
 
 .section .rodata
 

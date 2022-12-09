@@ -42,7 +42,7 @@ always_ff @(posedge itf.clk) begin
 
 end
 
-assign rvfi.commit = dut.ooo.rob.regfile_load | dut.ooo.itf.rob_ld_pc | dut.ooo.rob.rvfi_commit;
+assign rvfi.commit = dut.ooo.rob.regfile_load | dut.ooo.itf.rob_ld_pc;// | dut.ooo.rob.rvfi_commit;
 assign rvfi.halt = (rvfi.inst == 32'h0007d463 | rvfi.inst == 32'h00000063) ? 1 : 0;  // check if 'ret' call was made
 initial rvfi.order = 0;
 always @(posedge itf.clk iff rvfi.commit) rvfi.order <= rvfi.order + 1; // Modify for OoO

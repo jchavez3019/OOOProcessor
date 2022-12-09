@@ -14,26 +14,26 @@ _start:
     # lui  x2, 2       # X2 <= 2
     # lui  x3, 8     # X3 <= 8
     
-    add x1, x0, x0
-    add x2, x0, 0
+    add x1, x0, x0 # 60
+    add x2, x0, 0 # 64
 
-    srli x2, x2, 12
-    srli x3, x3, 12
+    srli x2, x2, 12 # 68
+    srli x3, x3, 12 # 6c
 
-    addi x4, x3, 4    # X4 <= X3 + 2
+    addi x4, x3, 4 # 70   # X4 <= X3 + 2
 
 loop1:
-    slli x3, x3, 1    # X3 <= X3 << 1
-    xori x5, x2, 127  # X5 <= XOR (X2, 7b'1111111)
-    addi x5, x5, 1    # X5 <= X5 + 1
-    addi x4, x4, 4    # X4 <= X4 + 8
+    slli x3, x3, 1 # 74    # X3 <= X3 << 1
+    xori x5, x2, 127 # 78  # X5 <= XOR (X2, 7b'1111111)
+    addi x5, x5, 1 # 7c    # X5 <= X5 + 1
+    addi x4, x4, 4 # 80    # X4 <= X4 + 8
 
-    bge x4, x1, loop1   # Branch if last result was zero or positive.
+    bge x4, x1, loop1 # 84   # Branch if last result was zero or positive.
 
-    andi x6, x3, 64   # X6 <= X3 + 64
+    andi x6, x3, 64 # 88   # X6 <= X3 + 64
 
-    auipc x7, 8         # X7 <= PC + 8
-    lw x8, good         # X8 <= 0x600d600d
+    auipc x7, 8 # 8c        # X7 <= PC + 8
+    lw x8, good # 9c         # X8 <= 0x600d600d
     la x10, result      # X10 <= Addr[result]
     sw x8, 0(x10)       # [Result] <= 0x600d600d
     lw x9, result       # X9 <= [Result]
