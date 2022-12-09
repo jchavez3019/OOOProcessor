@@ -66,51 +66,53 @@ begin
 
         state <= EMPTY;
     end
-    else if (next_state == CHECK) begin
-        /* clock data coming in from instruction register and ROB */
+    if (load_word)
         res_word <= res_in;
+    // else if (next_state == CHECK) begin
+    //     /* clock data coming in from instruction register and ROB */
+    //     res_word <= res_in;
 
-        state <= next_state;
-    end
-    else if (next_state == PEEK_ONE) begin
-        /* clock valid bits and source data from RegFile */
-        res_word.src1_valid <= res_word.src1_valid | res_in.src1_valid;
-        if (~res_word.src1_valid)
-            res_word.src1_data <= res_in.src1_data;
+    //     state <= next_state;
+    // end
+    // else if (next_state == PEEK_ONE) begin
+    //     /* clock valid bits and source data from RegFile */
+    //     res_word.src1_valid <= res_word.src1_valid | res_in.src1_valid;
+    //     if (~res_word.src1_valid)
+    //         res_word.src1_data <= res_in.src1_data;
 
-        res_word.src2_valid <= res_word.src2_valid | res_in.src2_valid;
-        if (~res_word.src2_valid)
-            res_word.src2_data <= res_in.src2_data;
+    //     res_word.src2_valid <= res_word.src2_valid | res_in.src2_valid;
+    //     if (~res_word.src2_valid)
+    //         res_word.src2_data <= res_in.src2_data;
 
-        state <= next_state;
-    end
-    else if (next_state == PEEK_REST) begin
+    //     state <= next_state;
+    // end
+    // else if (next_state == PEEK_REST) begin
 
-        res_word.src1_valid <= res_word.src1_valid | robs_calculated[res_word.src1_tag];
-        if (~res_word.src1_valid)
-            res_word.src1_data <= cdb[res_word.src1_tag].data;
+    //     res_word.src1_valid <= res_word.src1_valid | robs_calculated[res_word.src1_tag];
+    //     if (~res_word.src1_valid)
+    //         res_word.src1_data <= cdb[res_word.src1_tag].data;
 
-        res_word.src2_valid <= res_word.src2_valid | robs_calculated[res_word.src2_tag];
-        if (~res_word.src2_valid)
-            res_word.src2_data <= cdb[res_word.src2_tag].data;
+    //     res_word.src2_valid <= res_word.src2_valid | robs_calculated[res_word.src2_tag];
+    //     if (~res_word.src2_valid)
+    //         res_word.src2_data <= cdb[res_word.src2_tag].data;
 
-        state <= next_state;
-    end
-    else if (next_state == EMPTY) begin
-        res_word.op <= tomasula_types::BRANCH;
-        res_word.funct3 <= 3'b000;
-        res_word.funct7 <= 1'b0;
-        res_word.src1_tag <= 3'b000;
-        res_word.src1_data <= 32'h0000;
-        res_word.src1_valid <= 1'b0;
-        res_word.src2_tag <= 3'b000;
-        res_word.src2_data <= 32'h0000;
-        res_word.src2_valid <= 1'b0;
-        res_word.rd_tag <= 3'b000;
+    //     state <= next_state;
+    // end
+    // else if (state == EMPTY) begin
+    //     res_word.op <= tomasula_types::BRANCH;
+    //     res_word.funct3 <= 3'b000;
+    //     res_word.funct7 <= 1'b0;
+    //     res_word.src1_tag <= 3'b000;
+    //     res_word.src1_data <= 32'h0000;
+    //     res_word.src1_valid <= 1'b0;
+    //     res_word.src2_tag <= 3'b000;
+    //     res_word.src2_data <= 32'h0000;
+    //     res_word.src2_valid <= 1'b0;
+    //     res_word.rd_tag <= 3'b000;
 
-        state <= next_state;
-    end
-    else
+    //     state <= next_state;
+    // end
+    // else
         state <= next_state;
 end
 
@@ -136,7 +138,9 @@ begin : state_actions
         end
         CHECK: begin
             /* both source registers are valid and we can execute in this same cycle */
-            if (res_in.src1_valid & (res_word.src2_valid | res_in.src2_valid))
+            // if (res_in.src1_valid & (res_word.src2_valid | res_in.src2_valid))
+            //     start_exe = 1'b1;
+            if (res_word.src1_valid & res_word.src2_valid)
                 start_exe = 1'b1;
 
             /* deal with jalr special case to unstall pipeline */
@@ -165,15 +169,17 @@ begin : state_actions
             end
             
 
-            if (res_word.src1_valid)
-                alu_data.src1_data = res_word.src1_data;
-            else
-                alu_data.src1_data = res_in.src1_data;
+            // if (res_word.src1_valid)
+            //     alu_data.src1_data = res_word.src1_data;
+            // else
+            //     alu_data.src1_data = res_in.src1_data;
+            alu_data.src1_data = res_word.src1_data;
                 
-            if (res_word.src2_valid)
-                alu_data.src2_data = res_word.src2_data;
-            else
-                alu_data.src2_data = res_in.src2_data;
+            // if (res_word.src2_valid)
+            //     alu_data.src2_data = res_word.src2_data;
+            // else
+            //     alu_data.src2_data = res_in.src2_data;
+            alu_data.src2_data = res_word.src2_data;
         end
         PEEK_ONE, PEEK_REST: begin
             /* check if data is valid and execute */
@@ -228,10 +234,12 @@ begin : next_state_logic
                 next_state = CHECK;
         end
         CHECK: begin
-            if ((res_word.src1_valid | res_in.src1_valid) & (res_word.src2_valid | res_in.src2_valid))
+            // if ((res_word.src1_valid | res_in.src1_valid) & (res_word.src2_valid | res_in.src2_valid))
+            //     next_state = EMPTY;
+            // else
+            //     next_state = PEEK_ONE;
+            if (res_word.src1_valid & res_word.src2_valid)
                 next_state = EMPTY;
-            else
-                next_state = PEEK_ONE;
 
             /* in the case reservation station needs to get flushed */
             if (~allocated_rob_entries[res_word.rd_tag])

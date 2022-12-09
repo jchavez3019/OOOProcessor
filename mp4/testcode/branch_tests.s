@@ -16,8 +16,8 @@ _start:
 
     beq x1, x2, branch_label # 70
 
-    addi x3, x3, 5 # 74
-    addi x3, x3, 5 # 78
+    addi x3, x3, 3 # 74
+    addi x3, x3, 4 # 78
     addi x3, x3, 5 # 7c
     addi x3, x3, 5 # 80
     addi x3, x3, 5 # 84

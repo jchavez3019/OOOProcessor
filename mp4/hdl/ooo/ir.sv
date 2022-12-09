@@ -236,7 +236,10 @@ begin : state_actions
                 pc_calc = pc + j_imm;
             end
             if((opcode == op_br) & ~flush_ip) begin
-                pc_calc = pc + b_imm;
+                if (br_pr_take)
+                    pc_calc = pc + b_imm;
+                else
+                    pc_calc = pc + 4;
             end
             /*
             intuitively, we only we wouldn't care about the next instruction if the opcode is jalr but we can safely
@@ -292,14 +295,16 @@ begin : next_state_logic
             end
         end
         STALL_JALR: begin
-            if(executed_jalr == 1) begin
+            if (flush_ip)
+                next_state = STALL_FLUSH;
+            else if(executed_jalr == 1) begin
                 next_state = FETCH;
             end
         end
         STALL_FLUSH: begin
             if (~flush_ip)
-                next_state = FETCH;
-                // next_state = CREATE; // could have made a better design choice to work around CREATE state instead
+                // next_state = FETCH;
+                next_state = CREATE; // could have made a better design choice to work around CREATE state instead
         end
     endcase
 end
