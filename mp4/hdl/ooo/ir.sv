@@ -7,16 +7,26 @@ import rv32i_types::*;
     input instr_mem_resp,
     // input iq_resp,
     input [31:0] in,
-    input [31:0] pc,
-    input br_pr_take,
-    input executed_jalr,
+    // input [31:0] pc,
+    input logic br_pr_take,
+    input executed_jalr_one,
+    input executed_jalr_two,
+    input executed_jalr_three,
+    input executed_jalr_four,
+    input logic [31:0] jalr_pc_one,
+    input logic [31:0] jalr_pc_two,
+    input logic [31:0] jalr_pc_three,
+    input logic [31:0] jalr_pc_four,
     input flush_ip,
 
     input iq_ack,
 
+    input logic ld_br_pc,
+    input logic [31:0] br_pc,
+
     output rv32i_word instr_mem_address, // ir will have to communicate with pc to get this, or maybe pc just wires directly to icache
     output logic instr_read,
-    output logic ld_pc,
+    // output logic ld_pc,
     output logic [31:0] pc_calc,
     output logic [31:0] curr_instr,
 
@@ -24,6 +34,14 @@ import rv32i_types::*;
 );
 
 logic [31:0] data; // holds current instruction from cache
+logic [31:0] br_pc_buffer; // holds the pc to request from branch mispredict
+logic [31:0] jalr_pc_buffer; // holds the pc to request from jalr instruction
+logic [31:0] pc; // internal pc counter
+logic [31:0] prev_pc; // previous pc state to hold for instructions that need to stall such as JALR
+logic [31:0] instr_pc; // pc to store alongside an instruction/rvfi_word
+logic [31:0] predicted_br_pc_buffer; // buffer to hold what the predicted branch to take is in the case that branch instruction is stalled due to iq being full
+logic [31:0] predicted_br_pc;
+logic ld_pc; // signal to update pc
 
 logic [2:0] funct3;
 logic [6:0] funct7;
@@ -44,7 +62,7 @@ assign j_imm = {{12{data[31]}}, data[19:12], data[20], data[30:21], 1'b0};
 assign rs1 = data[19:15];
 assign rs2 = data[24:20];
 assign rd = data[11:7];
-assign instr_mem_address = pc;
+// assign instr_mem_address = pc;
 
 /* this is an rvfi word that will get passed so that the rvfi can properly debug */
 rv32i_types::rvfi_word rvfi;
@@ -68,16 +86,27 @@ enum int unsigned {
     CREATE = 2,
     STALL = 3,
     STALL_JALR = 4,
-    STALL_FLUSH = 5
+    STALL_JALR_TWO = 5,
+    STALL_FLUSH = 6,
+    STALL_FLUSH_TWO = 7
 } state, next_state;
 
 always_comb
 begin : immediate_op_logic
+    if (state == STALL) begin
+        instr_pc = prev_pc;
+        predicted_br_pc = predicted_br_pc_buffer;
+    end
+    else begin
+        instr_pc = pc;
+        predicted_br_pc = pc + b_imm;
+    end
+
     iq_ir_itf.control_word.op = tomasula_types::ARITH;
     iq_ir_itf.control_word.src1_reg = rs1;
     iq_ir_itf.control_word.src1_valid = 1'b0;
     iq_ir_itf.control_word.src2_reg = rs2; // should be rs2 if no immediate is used, otherwise 0
-    iq_ir_itf.control_word.pc = pc + 4;
+    iq_ir_itf.control_word.pc = instr_pc + 4;
     iq_ir_itf.control_word.og_pc = pc;
     iq_ir_itf.control_word.src2_valid = 1'b0;
     iq_ir_itf.control_word.src2_data = 32'h0000;
@@ -104,7 +133,7 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src1_reg = 5'b00000;
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
-            iq_ir_itf.control_word.pc = pc + u_imm;
+            iq_ir_itf.control_word.pc = instr_pc + u_imm;
 
             rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end
@@ -113,7 +142,7 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src1_reg = 5'b00000;
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
-            iq_ir_itf.control_word.pc = pc + 4; 
+            iq_ir_itf.control_word.pc = instr_pc + 4; 
             rvfi.pc_wdata = pc_calc;
 
             rvfi.imm = iq_ir_itf.control_word.src2_valid;
@@ -123,14 +152,15 @@ begin : immediate_op_logic
             // if predicted to not be taken, save target address for taking
             // the branch
             if (~br_pr_take) begin
-                iq_ir_itf.control_word.pc = pc_calc;
+                iq_ir_itf.control_word.pc = predicted_br_pc;
                 // 0 0 0 PREDICTION 0
                 iq_ir_itf.control_word.rd = 5'b00000; 
-                rvfi.pc_wdata = pc + 4;
-            end begin
-                iq_ir_itf.control_word.pc = pc + 4;
+                rvfi.pc_wdata = instr_pc + 4;
+            end 
+            else begin
+                iq_ir_itf.control_word.pc = instr_pc + 4;
                 iq_ir_itf.control_word.rd = 5'b00010;
-                rvfi.pc_wdata = pc_calc;
+                rvfi.pc_wdata = predicted_br_pc;
             end
             rvfi.imm = 1'b0;
         end
@@ -171,7 +201,7 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_data = i_imm;
-            iq_ir_itf.control_word.pc = pc + 4; 
+            iq_ir_itf.control_word.pc = instr_pc + 4; 
 
             rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end
@@ -200,18 +230,50 @@ begin
     begin
         data <= '0;
         state <= RESET;
+        br_pc_buffer <= 32'h00000000;
+        jalr_pc_buffer <= 32'h00000000;
+        predicted_br_pc_buffer <= 32'h00000000;
+        pc <= 32'h00000060;
+        prev_pc <= 32'h00000000;
     end
-    else if (next_state == FETCH)
-    begin
+    // else if (next_state == FETCH)
+    // begin
+    //     state <= next_state;
+    // end
+    // else if (next_state == CREATE)
+    // begin
+    //     data <= in;
+    //     state <= next_state;
+    // end
+    else begin
+        if (ld_br_pc)
+            br_pc_buffer <= br_pc;
+
+        if (executed_jalr_one)
+            jalr_pc_buffer <= jalr_pc_one;
+        if (executed_jalr_two)
+            jalr_pc_buffer <= jalr_pc_two;
+        if (executed_jalr_three)
+            jalr_pc_buffer <= jalr_pc_three;
+        if (executed_jalr_four)
+            jalr_pc_buffer <= jalr_pc_four;
+        
+        if (ld_pc) begin
+            pc <= pc_calc;
+            prev_pc <= pc;
+        end
+
+        /* states in which new data is fetched */
+        if (state == FETCH | state == STALL_FLUSH_TWO | state == STALL_JALR_TWO) begin
+            data <= in;
+            state <=next_state;
+        end
+
+        if ((state == CREATE) & (opcode == op_br))
+            predicted_br_pc_buffer <= pc + b_imm;
+
         state <= next_state;
     end
-    else if (next_state == CREATE)
-    begin
-        data <= in;
-        state <= next_state;
-    end
-    else
-        state <= next_state;
 end
 
 function void set_defaults();
@@ -219,6 +281,7 @@ function void set_defaults();
     ld_pc = 1'b0;
     iq_ir_itf.ld_iq = 1'b0;
     pc_calc = pc + 4;
+    instr_mem_address = pc;
 endfunction
 
 always_comb
@@ -231,24 +294,26 @@ begin : state_actions
             instr_read = 1'b1;
         end
         CREATE: begin
-            // address calculation 
-            if((opcode == op_jal) & ~flush_ip) begin
-                pc_calc = pc + j_imm;
+            if (~flush_ip) begin
+                // address calculation 
+                if(opcode == op_jal) begin
+                    pc_calc = pc + j_imm;
+                end
+                if(opcode == op_br) begin
+                    if (br_pr_take)
+                        pc_calc = pc + b_imm;
+                    else
+                        pc_calc = pc + 4;
+                end
+                /*
+                intuitively, we only we wouldn't care about the next instruction if the opcode is jalr but we can safely
+                assume with the jalr_stall state that even though pc gets loaded with pc + 4, we will never fetch this address from i-cache,
+                we will only fetch the calculated address from jalr since jalr will load pc with its calculated address eventually in order to
+                leave the jalr_stall state
+                */
+                ld_pc = 1'b1; 
+                iq_ir_itf.ld_iq = 1'b1;
             end
-            if((opcode == op_br) & ~flush_ip) begin
-                if (br_pr_take)
-                    pc_calc = pc + b_imm;
-                else
-                    pc_calc = pc + 4;
-            end
-            /*
-            intuitively, we only we wouldn't care about the next instruction if the opcode is jalr but we can safely
-            assume with the jalr_stall state that even though pc gets loaded with pc + 4, we will never fetch this address from i-cache,
-            we will only fetch the calculated address from jalr since jalr will load pc with its calculated address eventually in order to
-            leave the jalr_stall state
-            */
-            ld_pc = 1'b1; 
-            iq_ir_itf.ld_iq = 1'b1;
         end
         STALL: begin
             iq_ir_itf.ld_iq = 1'b1;
@@ -256,8 +321,17 @@ begin : state_actions
         STALL_JALR: begin
             // do nothing
         end
-        STALL_FLUSH: begin
-            // do nothing
+        STALL_JALR_TWO: begin
+            instr_read = 1'b1;
+            instr_mem_address = jalr_pc_buffer;
+            pc_calc = jalr_pc_buffer;
+            ld_pc = 1'b1;
+        end
+        STALL_FLUSH, STALL_FLUSH_TWO: begin
+            instr_read = 1'b1;
+            instr_mem_address = br_pc_buffer; // request the branch pc address from memory instead of current pc
+            pc_calc = br_pc_buffer; // current pc is now branch pc; gets incrememnted by 4 once transitioned to CREATE state
+            ld_pc = 1'b1;
         end
     endcase
 end
@@ -268,12 +342,15 @@ begin : next_state_logic
     case(state)
         RESET: next_state = FETCH;
         FETCH: begin
+            if (flush_ip) begin
+                next_state = STALL_FLUSH;
+            end
             if (instr_mem_resp)
                 next_state = CREATE;
         end
         CREATE: begin
             if (flush_ip) begin
-                next_state = STALL_FLUSH;
+                next_state = STALL_FLUSH_TWO;
             end
             else if (iq_ack) begin
                 if(opcode == op_jalr) 
@@ -294,15 +371,26 @@ begin : next_state_logic
                     next_state = FETCH;
             end
         end
+        /* instruction register must stall because it can't speculate the instruction to be taken from JALR */
         STALL_JALR: begin
             if (flush_ip)
                 next_state = STALL_FLUSH;
-            else if(executed_jalr == 1) begin
-                next_state = FETCH;
+            else if (executed_jalr_one | executed_jalr_two | executed_jalr_three | executed_jalr_four) begin
+                next_state = STALL_JALR_TWO;
             end
         end
+        /* instruction register has now resolved JALR instruction, now to request its address and continue */
+        STALL_JALR_TWO: begin
+            if (instr_mem_resp)
+                next_state = CREATE;
+        end
+        /* must wait for instr_read to be resolved before requesting branch instruction */
         STALL_FLUSH: begin
-            if (~flush_ip)
+            if (instr_mem_resp)
+                next_state = STALL_FLUSH_TWO;
+        end
+        STALL_FLUSH_TWO: begin
+            if (~flush_ip & instr_mem_resp)
                 // next_state = FETCH;
                 next_state = CREATE; // could have made a better design choice to work around CREATE state instead
         end

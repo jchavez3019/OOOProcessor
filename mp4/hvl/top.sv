@@ -41,9 +41,9 @@ always_ff @(posedge itf.clk) begin
         rvfi_rdaddr_buff[4:0] <= rvfi_rdaddr_buff[4:0];
 
 end
-
+// assign rvfi.commit = dut.ooo.rob.rvfi_commit;
 assign rvfi.commit = dut.ooo.rob.regfile_load | dut.ooo.itf.rob_ld_pc | dut.ooo.rob.rvfi_commit;
-assign rvfi.halt = 1'b0;//(rvfi.inst == 32'h0007d463 | rvfi.inst == 32'h00000063) ? 1 : 0;  // check if 'ret' call was made
+assign rvfi.halt = (rvfi.inst == 32'h0007d463 | rvfi.inst == 32'h00000063) ? 1 : 0;  // check if 'ret' call was made
 initial rvfi.order = 0;
 always @(posedge itf.clk iff rvfi.commit) rvfi.order <= rvfi.order + 1; // Modify for OoO
 assign rvfi.load_regfile = dut.ooo.rob.regfile_load;
@@ -210,7 +210,6 @@ mp4 dut(
     .rst(itf.rst),
     
      // Remove after CP1
-     /*
     .instr_mem_resp(itf.inst_resp),
     .instr_mem_rdata(itf.inst_rdata),
 	.data_mem_resp(itf.data_resp),
@@ -222,14 +221,13 @@ mp4 dut(
     .data_mbe(itf.data_mbe),
     .data_mem_address(itf.data_addr),
     .data_mem_wdata(itf.data_wdata)
-    */
 
-    .pmem_read(itf.mem_read),
-    .pmem_write(itf.mem_write),
-    .pmem_wdata(itf.mem_wdata),
-    .pmem_rdata(itf.mem_rdata),
-    .pmem_address(itf.mem_addr),
-    .pmem_resp(itf.mem_resp)
+    // .pmem_read(itf.mem_read),
+    // .pmem_write(itf.mem_write),
+    // .pmem_wdata(itf.mem_wdata),
+    // .pmem_rdata(itf.mem_rdata),
+    // .pmem_address(itf.mem_addr),
+    // .pmem_resp(itf.mem_resp)
     
 );
 /***************************** End Instantiation *****************************/

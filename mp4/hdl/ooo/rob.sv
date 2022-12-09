@@ -73,6 +73,7 @@ logic [31:0] curr_instr_next_pc;
 rv32i_types::rvfi_word rvfi_word_arr [8];
 rv32i_types::rvfi_word curr_rvfi_word;
 logic rvfi_commit;
+logic [2:0] prev_head_ptr; // for comparison to check if instruction has committed
 logic [4:0] _rd_commit, _st_src_commit;
 logic flush_ip;
 logic _ld_commit_sel;
@@ -86,6 +87,7 @@ assign curr_original_instr = original_instr[_head_ptr];
 assign curr_instr_pc = instr_pc[_head_ptr];
 assign curr_instr_next_pc = instr_next_pc[_head_ptr];
 assign curr_rvfi_word = rvfi_word_arr[_head_ptr];
+// assign curr_rvfi_word = rvfi_word_arr[prev_head_ptr];
 
 // always_comb
 // begin : set_curr_rvfi_word
@@ -189,6 +191,7 @@ always_ff @(posedge clk) begin
         end
         _curr_ptr <= 3'b000;
         _head_ptr <= 3'b000;
+        prev_head_ptr <= 3'b000;
         _br_flush_ptr <= 3'b000;
         _br_ptr <= 3'b000;
         flush_ip <= 1'b0;
@@ -202,6 +205,13 @@ always_ff @(posedge clk) begin
             if (set_rob_valid[i]) 
                 valid_arr[i] <= 1'b1;
         end
+
+        if (rvfi_commit)
+            prev_head_ptr <= _head_ptr;
+        else if (prev_head_ptr == _head_ptr)
+            prev_head_ptr <= prev_head_ptr;
+        else
+            prev_head_ptr <= _head_ptr - 1;
 
         br_dequeue <= 1'b0;
 
@@ -405,6 +415,7 @@ always_comb begin
                         // use d-cache data
                         _ld_commit_sel = 1'b1;
                         _regfile_load = 1'b1;
+                        rvfi_commit = 1'b1;
                         // _rd_commit <= rd_arr[_head_ptr];
                         // update head
                         // _head_ptr <= _head_ptr + 1'b1;
@@ -416,6 +427,7 @@ always_comb begin
                     // _st_src_commit <= rd_arr[_head_ptr];
                     // once store has been processed
                     if (data_mem_resp) begin
+                        rvfi_commit = 1'b1;
                         // valid_arr[_head_ptr] <= 1'b0;
                         // _head_ptr <= _head_ptr + 1'b1;
                     end
@@ -429,7 +441,8 @@ always_comb begin
                     // _rd_commit <= rd_arr[_head_ptr];
                     // _head_ptr <= _head_ptr + 1'b1;
                 end
-                rvfi_commit = 1'b1; // ROB has committed an instruction
+                if ((prev_head_ptr != _head_ptr) & instr_arr[_head_ptr] <= 7)
+                    rvfi_commit = 1'b1; // ROB has committed an instruction
             end
 
 end

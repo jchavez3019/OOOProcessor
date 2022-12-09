@@ -46,7 +46,7 @@ always_comb begin : OPERATION
 end
 
 always_comb begin : EXECUTION
-    unique case (aluop)
+    case (aluop)
         alu_add:  cdb_data.data = a + b;
         alu_sll:  cdb_data.data = a << b[4:0];
         alu_sra:  cdb_data.data = $signed(a) >>> b[4:0];
@@ -55,6 +55,8 @@ always_comb begin : EXECUTION
         alu_srl:  cdb_data.data = a >> b[4:0];
         alu_or:   cdb_data.data = a | b;
         alu_and:  cdb_data.data = a & b;
+        
+        default: cdb_data.data = a + b;
     endcase
     // cdb_data.req = alu_word.load;
     // cdb_data.tag = alu_word.tag;

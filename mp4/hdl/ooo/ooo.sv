@@ -118,51 +118,59 @@ ir ir (
     .rst(rst),
     .instr_mem_resp(instr_mem_resp),
     .in(instr_mem_rdata),
-    .executed_jalr(itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed | itf.rob_ld_pc), // included rob_ld_pc to get out of jalr wait state
+    // .executed_jalr(itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed | itf.rob_ld_pc), // included rob_ld_pc to get out of jalr wait state
+    .executed_jalr_one(itf.res1_jalr_executed),
+    .executed_jalr_two(itf.res2_jalr_executed),
+    .executed_jalr_three(itf.res3_jalr_executed),
+    .executed_jalr_four(itf.res4_jalr_executed),
+    .jalr_pc_one(itf.alu1_calculation.data[31:0]),
+    .jalr_pc_two(itf.alu2_calculation.data[31:0]),
+    .jalr_pc_three(itf.alu3_calculation.data[31:0]),
+    .jalr_pc_four(itf.alu4_calculation.data[31:0]),
     .br_pr_take (1'b1),
     .flush_ip(itf.flush_in_prog),
-    .pc(pc),
+    // .pc(pc),
     .instr_mem_address(instr_mem_address),
     .instr_read(instr_read),
-    .ld_pc(itf.ir_ld_pc),
+    // .ld_pc(itf.ir_ld_pc),
     .pc_calc(itf.pc_calc),
     .iq_ack(itf.iq_ir_ack),
-    .curr_instr(itf.ir_instr)
-
-
+    .curr_instr(itf.ir_instr),
+    .ld_br_pc(itf.rob_ld_pc),
+    .br_pc(itf.cdb_out[itf.br_ptr].data[31:0])
 );
 
-/* NOTE:  update rob logic for loading branches since it is necessary for branch mispredicts */
-always_comb begin : pc_mux        
-    if (itf.rob_ld_pc) // only happens for a branch mispredict
-        itf.pc_in[31:0] = itf.cdb_out[itf.br_ptr].data[31:0];// - 4; // always works but fix later
-    /* cases where jalr was calculated and we can finally unstall the pipeline */
-    else if (itf.res1_jalr_executed)
-        // itf.pc_in = itf.cdb_out[itf.res1_alu_out.pc].data[31:0];
-        itf.pc_in[31:0] = itf.alu1_calculation.data[31:0];
-    else if (itf.res2_jalr_executed)
-        // itf.pc_in = itf.cdb_out[itf.res2_alu_out.pc].data[31:0];
-        itf.pc_in[31:0] = itf.alu2_calculation.data[31:0];
-    else if (itf.res3_jalr_executed)
-        // itf.pc_in = itf.cdb_out[itf.res3_alu_out.pc].data[31:0];
-        itf.pc_in[31:0] = itf.alu3_calculation.data[31:0];
-    else if (itf.res4_jalr_executed)
-        // itf.pc_in = itf.cdb_out[itf.res4_alu_out.pc].data[31:0];
-        itf.pc_in[31:0] = itf.alu4_calculation.data[31:0];
-    /* default */
-    else
-        itf.pc_in[31:0] = itf.pc_calc[31:0];
-end
+// /* NOTE:  update rob logic for loading branches since it is necessary for branch mispredicts */
+// always_comb begin : pc_mux        
+//     // if (itf.rob_ld_pc) // only happens for a branch mispredict
+//     //     itf.pc_in[31:0] = itf.cdb_out[itf.br_ptr].data[31:0];// - 4; // always works but fix later
+//     /* cases where jalr was calculated and we can finally unstall the pipeline */
+//     if (itf.res1_jalr_executed)
+//         // itf.pc_in = itf.cdb_out[itf.res1_alu_out.pc].data[31:0];
+//         itf.pc_in[31:0] = itf.alu1_calculation.data[31:0];
+//     else if (itf.res2_jalr_executed)
+//         // itf.pc_in = itf.cdb_out[itf.res2_alu_out.pc].data[31:0];
+//         itf.pc_in[31:0] = itf.alu2_calculation.data[31:0];
+//     else if (itf.res3_jalr_executed)
+//         // itf.pc_in = itf.cdb_out[itf.res3_alu_out.pc].data[31:0];
+//         itf.pc_in[31:0] = itf.alu3_calculation.data[31:0];
+//     else if (itf.res4_jalr_executed)
+//         // itf.pc_in = itf.cdb_out[itf.res4_alu_out.pc].data[31:0];
+//         itf.pc_in[31:0] = itf.alu4_calculation.data[31:0];
+//     /* default */
+//     else
+//         itf.pc_in[31:0] = itf.pc_calc[31:0];
+// end
 
-pc_register PC (
-        .clk (clk),
-        .rst (rst),
-        .load(itf.ir_ld_pc | itf.rob_ld_pc | itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed),
-        // .load(ld_pc),
-        .in(itf.pc_in),
-        // .in(itf.pc_calc),
-        .out(pc)
-    );
+// pc_register PC (
+//         .clk (clk),
+//         .rst (rst),
+//         .load(itf.ir_ld_pc | itf.rob_ld_pc | itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed),
+//         // .load(ld_pc),
+//         .in(itf.pc_in),
+//         // .in(itf.pc_calc),
+//         .out(pc)
+//     );
 
 iq iq (
     .*,

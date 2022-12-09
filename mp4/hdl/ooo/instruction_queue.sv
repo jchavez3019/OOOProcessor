@@ -135,7 +135,7 @@ always_comb begin : dequeue_logic
                     dequeue = 1'b1;
 
                     // allocate to register file
-                    if (!control_o_buf.op[3]) begin
+                    if (!(control_o_buf.op > 7 && control_o_buf.op < 11)) begin
                         regfile_allocate = 1'b1;
                     end
                

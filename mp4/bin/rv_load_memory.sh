@@ -8,7 +8,8 @@ OBJCOPY=/class/ece411/software/riscv-tools/bin/riscv32-unknown-elf-objcopy
 OBJDUMP=/class/ece411/software/riscv-tools/bin/riscv32-unknown-elf-objdump
 
 # CHANGE FOR CP2
-ADDRESSABILITY=32
+# ADDRESSABILITY=32
+ADDRESSABILITY=1
 
 
 # Command line parameters

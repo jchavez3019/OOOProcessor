@@ -16,21 +16,22 @@ _start:
 
     beq x1, x2, branch_label # 70
 
-    addi x3, x3, 3 # 74
+    addi x5, x3, 3 # 74
     addi x3, x3, 4 # 78
     addi x3, x3, 5 # 7c
     addi x3, x3, 5 # 80
     addi x3, x3, 5 # 84
     addi x3, x3, 5 # 88
-
-    jal x1, halt # 8c
+    
+    auipc x7, 0 # 8c # test of auipc and jalr to go to halt # jal x1, halt # 8c
+    jalr x1, x7, 16 # 90 next instruction goes to in x1, use address in x7 and offset that goes to halt
 
 branch_label:
     addi x3, x3, 7 # 90
     addi x3, x3, 7 # 94
 
 halt:                 # Infinite loop to keep the processor
-    beq x0, x0, halt # 98  # from trying to execute the data below.
+    beq x0, x0, halt # jal:98 jalr: 9c # from trying to execute the data below.
                       # Your own programs should also make use
                       # of an infinite loop at the end.
 
