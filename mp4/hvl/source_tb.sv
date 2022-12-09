@@ -28,7 +28,7 @@ initial begin
 end
 
 /**************************** Halting Conditions *****************************/
-int timeout = 100000000; // 10000; // old time out
+int timeout = 100000000000;// 100000000; // 10000; // old time out
 
 always @(posedge tb_itf.clk) begin
     if (rvfi.halt)
