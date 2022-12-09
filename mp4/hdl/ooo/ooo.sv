@@ -100,17 +100,6 @@ always_ff @(posedge clk) begin
 end
 */
 
-fifo_synch_1r1w #(logic[31:0]) rvfi_instr_queue (
-    .clk_i(clk),
-    .reset_n_i(~rst),
-    .data_i(itf.ir_instr),
-    .valid_i(itf.iq_ir_ack),
-    .ready_o(),
-    .valid_o(),
-    .data_o(),
-    .yumi_i(itf.regfile_load)
-);
-
 
 ir ir (
     .*,
@@ -238,6 +227,7 @@ rob rob (
      .update_br(itf.resbr_update_br),
      .curr_ptr (itf.curr_ptr), 
      .head_ptr (itf.head_ptr), 
+     .rd_updated(itf.rd_updated),
      .br_ptr (itf.br_ptr), 
      .br_flush_ptr(itf.br_flush_ptr),
      .flush_in_prog(itf.flush_in_prog),
@@ -273,6 +263,8 @@ regfile regfile (
     .clk (clk),
     .rst (rst),
     .load (itf.regfile_load),
+    .commit_reg(itf.rd_updated),
+    .commit_tag(itf.head_ptr),
     .allocate (itf.rob_reallocate_reg_tags | itf.regfile_allocate), // rob_load from instruction queue, more appropiate to call it allocate
     .reg_allocate (itf.rob_reallocate_reg_tags ? itf.br_flush_ptr : itf.control_o.rd), // gets register to allocate from control word of instruction queue
     .in (regfile_in),

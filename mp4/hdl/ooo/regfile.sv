@@ -4,12 +4,17 @@ module regfile
     input clk,
     input rst,
     input load,
-    input allocate,
-    input logic [4:0] reg_allocate,
+    input allocate, // input signal to allocate a new tag to be assigned to a register while also declaring the register's data as not valid (not up to date)
+    input logic [4:0] reg_allocate, // the register to update with a new tag and set valid to 0
+    input logic [2:0] tag_in, // rob tag that will right into dest register next
+    // input logic commit, // high when cdb is committing a value to a register // same as register load
+    input logic [4:0] commit_reg, // register to update to valid if possible
+    input logic [2:0] commit_tag, // rob tag that is committing; if matches register's tag, valid gets set high since it no longer waits on floating instruction in cdb to update it
+
     input logic [31:0] in, // data to place into dest register
     input logic [4:0] src_a, src_b, dest, // src registers to read and dest register to change
-    input logic [2:0] tag_in, // rob tag that will right into dest register next
     output logic [31:0] reg_a, reg_b,
+
     output logic valid_a, valid_b,
     output logic [2:0] tag_a, tag_b, //tag_dest,
 
@@ -42,12 +47,13 @@ begin
             data[dest] <= in;
             valid[dest] <= 1'b1;
         end
-
-        if(allocate && reg_allocate)
+        /* updating tag that register will be updated by, ignore incoming tag from register load */
+        if(allocate && reg_allocate)// & ~load)
         begin
             valid[reg_allocate] <= 1'b0;
             tag[reg_allocate] <= tag_in;
         end 
+        // else if (load )
     end
 
 end

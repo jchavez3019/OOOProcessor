@@ -67,6 +67,27 @@ generate
 
     if (`USE_RVFI_MONITOR) begin
         /* Instantiate RVFI Monitor */
+        logic [10:0] instr_counter;
+        logic [31:0] prev_pc;
+        logic counter_halt;
+        always_ff @(rvfi.clk) begin
+            if (rvfi.rst) begin
+                instr_counter <= 11'b00000000000;
+                prev_pc <= 32'h00000060;
+            end
+            else begin
+                prev_pc <= rvfi.pc_rdata;
+                if (prev_pc == rvfi.pc_rdata)
+                    instr_counter <= instr_counter + 1;
+                else
+                    instr_counter <= 11'b00000000000;
+            end
+        end
+        always_comb begin
+            counter_halt = 1'b0;
+            if (instr_counter == 11'b11111111111)
+                counter_halt = 1'b1;
+        end
         riscv_formal_monitor_rv32imc monitor(
             .clock(rvfi.clk),
             .reset(rvfi.rst),
@@ -74,7 +95,7 @@ generate
             .rvfi_order(rvfi.order),
             .rvfi_insn(rvfi.inst),
             .rvfi_trap(rvfi.trap),
-            .rvfi_halt(rvfi.halt),
+            .rvfi_halt(rvfi.halt | counter_halt),
             .rvfi_intr(1'b0),
             .rvfi_mode(2'b00),
             .rvfi_rs1_addr(rvfi.rs1_addr),

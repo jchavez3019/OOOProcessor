@@ -66,54 +66,24 @@ begin
 
         state <= EMPTY;
     end
+    /* load information available from instruction queue, register file, and rob */
     if (load_word)
         res_word <= res_in;
-    // else if (next_state == CHECK) begin
-    //     /* clock data coming in from instruction register and ROB */
-    //     res_word <= res_in;
 
-    //     state <= next_state;
-    // end
-    // else if (next_state == PEEK_ONE) begin
-    //     /* clock valid bits and source data from RegFile */
-    //     res_word.src1_valid <= res_word.src1_valid | res_in.src1_valid;
-    //     if (~res_word.src1_valid)
-    //         res_word.src1_data <= res_in.src1_data;
+    /* update reservation word if additional information needs to be scope from the cdb */
+    if (state == CHECK) begin
+        if (~res_word.src1_valid & robs_calculated[res_word.src1_tag]) begin
+            res_word.src1_valid <= 1'b1;
+            res_word.src1_data <= cdb[res_word.src1_tag].data;
+        end
 
-    //     res_word.src2_valid <= res_word.src2_valid | res_in.src2_valid;
-    //     if (~res_word.src2_valid)
-    //         res_word.src2_data <= res_in.src2_data;
+        if (~res_word.src2_valid & robs_calculated[res_word.src2_tag]) begin
+            res_word.src2_valid <= 1'b1;
+            res_word.src2_data <= cdb[res_word.src2_tag].data;
+        end
+    end
 
-    //     state <= next_state;
-    // end
-    // else if (next_state == PEEK_REST) begin
-
-    //     res_word.src1_valid <= res_word.src1_valid | robs_calculated[res_word.src1_tag];
-    //     if (~res_word.src1_valid)
-    //         res_word.src1_data <= cdb[res_word.src1_tag].data;
-
-    //     res_word.src2_valid <= res_word.src2_valid | robs_calculated[res_word.src2_tag];
-    //     if (~res_word.src2_valid)
-    //         res_word.src2_data <= cdb[res_word.src2_tag].data;
-
-    //     state <= next_state;
-    // end
-    // else if (state == EMPTY) begin
-    //     res_word.op <= tomasula_types::BRANCH;
-    //     res_word.funct3 <= 3'b000;
-    //     res_word.funct7 <= 1'b0;
-    //     res_word.src1_tag <= 3'b000;
-    //     res_word.src1_data <= 32'h0000;
-    //     res_word.src1_valid <= 1'b0;
-    //     res_word.src2_tag <= 3'b000;
-    //     res_word.src2_data <= 32'h0000;
-    //     res_word.src2_valid <= 1'b0;
-    //     res_word.rd_tag <= 3'b000;
-
-    //     state <= next_state;
-    // end
-    // else
-        state <= next_state;
+    state <= next_state;
 end
 
 function void set_defaults();

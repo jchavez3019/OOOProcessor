@@ -3,12 +3,12 @@ ldst_mp2test.s:
 .section .text
 .globl _start
 
-    lw x2, cooleceb             # X1 <= 0x1111eceb
+    lw x2, cooleceb # 60             # X1 <= 0x1111eceb
 
 done:
-    lw x7, good
+    lw x7, good # 68
 halt:                 # Infinite loop to keep the processor
-    beq x0, x0, halt  # from trying to execute the data below.
+    beq x0, x0, halt # 70  # from trying to execute the data below.
                       # Your own programs should also make use
                       # of an infinite loop at the end.
 deadend:

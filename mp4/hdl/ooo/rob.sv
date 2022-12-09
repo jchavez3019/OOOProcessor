@@ -42,6 +42,7 @@ import rv32i_types::*;
     output logic [4:0] st_src_commit,
     output logic regfile_load,
     output logic rob_full,
+    output logic [4:0] rd_updated,
 
     // signal to select between using data from cdb or d-cache
     output ld_commit_sel,
@@ -122,6 +123,7 @@ assign rob_full = _rob_full;
 assign curr_ptr = _curr_ptr;
 assign head_ptr = _head_ptr;
 assign br_flush_ptr = _br_flush_ptr;
+assign rd_updated = rd_arr[_head_ptr];
 
 logic [2:0] fifo_br;
 logic br_enqueue, br_dequeue;
@@ -195,7 +197,7 @@ always_ff @(posedge clk) begin
         _br_flush_ptr <= 3'b000;
         _br_ptr <= 3'b000;
         flush_ip <= 1'b0;
-        data_read <= 1'b0;
+        // data_read <= 1'b0;
         data_write <= 1'b0;
     end
 
@@ -206,6 +208,7 @@ always_ff @(posedge clk) begin
                 valid_arr[i] <= 1'b1;
         end
 
+        /* logic preventing from branches holding commit signal longer than one cycle */
         if (rvfi_commit)
             prev_head_ptr <= _head_ptr;
         else if (prev_head_ptr == _head_ptr)
@@ -307,11 +310,11 @@ always_ff @(posedge clk) begin
                 // end
                 /* check if it is a load and take appropiate action */
                 if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
-                    data_read <= 1'b1;
+                    // data_read <= 1'b1;
                     // make sure instruction is not committed until data returned
                     // from d-cache...
                     if (data_mem_resp) begin
-                        data_read <= 1'b0;
+                        // data_read <= 1'b0;
                         valid_arr[_head_ptr] <= 1'b0;
                         _allocated_entries[_head_ptr] <= 1'b0;
                         // use d-cache data
@@ -365,6 +368,7 @@ function void set_defaults();
     rvfi_commit = 1'b0;
 
     br_enqueue = 1'b0;
+    data_read = 1'b0;
     // br_dequeue = 1'b0;
 
     // curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
@@ -403,6 +407,7 @@ always_comb begin
                 if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
                     // make sure instruction is not committed until data returned
                     // from d-cache...
+                    data_read = 1'b1;
                     if (data_mem_resp) begin
                         _ld_commit_sel = 1'b1;
                         _regfile_load = 1'b1;
