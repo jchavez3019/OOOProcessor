@@ -127,7 +127,7 @@ ir ir (
     .jalr_pc_two(itf.alu2_calculation.data[31:0]),
     .jalr_pc_three(itf.alu3_calculation.data[31:0]),
     .jalr_pc_four(itf.alu4_calculation.data[31:0]),
-    .br_pr_take (1'b1),
+    .br_pr_take (1'b0),
     .flush_ip(itf.flush_in_prog),
     // .pc(pc),
     .instr_mem_address(instr_mem_address),
