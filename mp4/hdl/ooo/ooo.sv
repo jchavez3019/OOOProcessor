@@ -264,7 +264,7 @@ always_comb begin : assign_res_word
     res_word.src2_tag = itf.tag_b;
     res_word.src2_data = src2_data;
     res_word.src2_valid = src2_v;
-    res_word.rd = itf.control_o.rd;
+    res_word.src2_reg = itf.control_o.src2_reg;
     res_word.rd_tag = itf.curr_ptr;
     res_word.pc = itf.control_o.pc;
 end

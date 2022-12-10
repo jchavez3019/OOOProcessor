@@ -76,7 +76,7 @@ always_ff @(posedge clk) begin
             entries[i].src2_tag <= 3'b000;
             entries[i].src2_data <= 32'h0000;
             entries[i].src2_valid <= 1'b0;
-            entries[i].rd <= 5'b00000;
+            entries[i].src2_reg <= 5'b00000;
             entries[i].rd_tag <= 3'b000;
             entries[i].pc <= 32'h00000000;
             entries_allocated[i] <= 1'b0;
@@ -98,7 +98,7 @@ always_ff @(posedge clk) begin
             entries[curr_ptr].src2_tag <= res_in.src2_tag;
             entries[curr_ptr].src2_data <= res_in.src2_data;
             entries[curr_ptr].src2_valid <= res_in.src2_valid;
-            entries[curr_ptr].rd <= res_in.rd;
+            entries[curr_ptr].src2_reg <= res_in.src2_reg;
             entries[curr_ptr].rd_tag <= res_in.rd_tag;
             entries[curr_ptr].pc <= res_in.pc;
             // entries[curr_ptr] <= res_in;
@@ -159,7 +159,7 @@ always_comb begin : actions
                 end
                 else begin
                     data_write = 1'b1;
-                    wdata_reg = entries[head_ptr].rd;
+                    wdata_reg = entries[head_ptr].src2_reg;
                 end
                 data_mem_address = entries[head_ptr].src1_data + entries[head_ptr].src2_data;
             end
@@ -180,7 +180,7 @@ always_comb begin : actions
                 end
                 else begin
                     data_write = 1'b1;
-                    wdata_reg = entries[head_ptr].rd;
+                    wdata_reg = entries[head_ptr].src2_reg;
                 end
                 data_mem_address = entries[head_ptr].src1_data + entries[head_ptr].src2_data;
             end
@@ -192,7 +192,7 @@ always_comb begin : actions
             end
             else begin
                 data_write = 1'b1;
-                wdata_reg = entries[head_ptr].rd;
+                wdata_reg = entries[head_ptr].src2_reg;
             end
             if (data_mem_resp)
                 self_rst = 1'b1;

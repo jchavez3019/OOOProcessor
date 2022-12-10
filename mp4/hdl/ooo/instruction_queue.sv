@@ -59,7 +59,6 @@ always_comb begin : control_o_logic
         control_o.src2_data = 32'h00000000;
         control_o.funct3 = 3'b000;
         control_o.funct7 = 1'b0;
-        control_o.rd = 5'b00000;
         control_o.pc = 32'h00000000;
         control_o.og_pc = 32'h00000000;
         control_o.og_instr = 32'h00000000;
