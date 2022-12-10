@@ -81,7 +81,7 @@ end
 assign rvfi.rs1_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs1_data;
 // assign rvfi.rs2_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;
 // assign rvfi.rs2_rdata = dut.ooo.rob.curr_rvfi_word.imm ? 32'h00000000 : dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;
-assign rvfi.rd_addr =   dut.ooo.rob.curr_rvfi_word.rd_addr;
+assign rvfi.rd_addr =  (dut.ooo.rob.curr_rvfi_word.inst[6:0] == 7'b0100011) ? 5'b00000 : dut.ooo.rob.curr_rvfi_word.rd_addr;
 assign rvfi.pc_rdata = dut.ooo.rob.curr_rvfi_word.pc_rdata;
 
 /* display correct pc for rvfi */
