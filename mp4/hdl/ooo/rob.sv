@@ -408,11 +408,11 @@ always_comb begin
                 // end
                 // for all other instructions except branch since branch doesn't load regfile
                 // else if (instr_arr[_head_ptr] != tomasula_types::BRANCH) begin
-                if (instr_arr[_head_ptr] != tomasula_types::BRANCH | (instr_arr[_head_ptr] < 8 & instr_arr[_head_ptr] > 10)) begin
+                if (instr_arr[_head_ptr] != tomasula_types::BRANCH & (instr_arr[_head_ptr] < 8 | instr_arr[_head_ptr] > 10)) begin
                     _regfile_load = 1'b1;
                 end
                 /* check that the instruction is not a store */
-                if ((prev_head_ptr != _head_ptr) & (instr_arr[_head_ptr] <= 7 & instr_arr[_head_ptr >= 11]))
+                if (prev_head_ptr != _head_ptr)
                     rvfi_commit = 1'b1; // ROB has committed an instruction
             end
 
