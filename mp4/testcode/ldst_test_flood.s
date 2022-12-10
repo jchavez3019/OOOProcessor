@@ -7,6 +7,7 @@ ldst_mp2test.s:
     lw x3, ecebeceb # 68
     lw x4, eceb # 70
     lw x5, answer # 78
+    nop
     lw x6, answer_2 # 80
     lw x8, answer_3 # 88
 

@@ -74,18 +74,19 @@ always_ff @(posedge clk) begin
     else begin
         // update curr_ptr when allocating a new entries
         if (load & (lsq_state == ACTIVE | lsq_state == IDLE)) begin
-            // entries[curr_ptr].op <= res_in.op;
-            // entries[curr_ptr].funct3 <= res_in.funct3;
-            // entries[curr_ptr].funct7 <= res_in.funct7;
-            // entries[curr_ptr].src1_tag <= res_in.src1_tag;
-            // entries[curr_ptr].src1_data <= robs_calculated[res_in.src1_tag] ? cdb[res_in.src1_tag].data : res_in.src1_data;
-            // entries[curr_ptr].src1_valid <= res_in.src1_valid | robs_calculated[res_in.src1_tag];
-            // entries[curr_ptr].src2_tag <= res_in.src2_tag;
-            // entries[curr_ptr].src2_data <= res_in.src2_data;
-            // entries[curr_ptr].src2_valid <= res_in.src2_valid;
-            // entries[curr_ptr].rd_tag <= res_in.rd_tag;
-            // entries[curr_ptr].pc <= res_in.pc;
-            entries[curr_ptr] <= res_in;
+            entries[curr_ptr].op <= res_in.op;
+            entries[curr_ptr].funct3 <= res_in.funct3;
+            entries[curr_ptr].funct7 <= res_in.funct7;
+            entries[curr_ptr].src1_tag <= res_in.src1_tag;
+            entries[curr_ptr].src1_data <= robs_calculated[res_in.src1_tag] ? cdb[res_in.src1_tag].data : res_in.src1_data;
+            addr_rdy[curr_ptr] <= res_in.src1_valid | robs_calculated[res_in.src1_tag];
+            entries[curr_ptr].src1_valid <= res_in.src1_valid | robs_calculated[res_in.src1_tag];
+            entries[curr_ptr].src2_tag <= res_in.src2_tag;
+            entries[curr_ptr].src2_data <= res_in.src2_data;
+            entries[curr_ptr].src2_valid <= res_in.src2_valid;
+            entries[curr_ptr].rd_tag <= res_in.rd_tag;
+            entries[curr_ptr].pc <= res_in.pc;
+            // entries[curr_ptr] <= res_in;
             curr_ptr <= curr_ptr + 1;
             entries_allocated[curr_ptr] <= 1'b1;
         end
@@ -97,29 +98,13 @@ always_ff @(posedge clk) begin
             entries[head_ptr].src1_valid <= 1'b0;
         end
 
-        // for (int i = 0; i < 4; i++) begin
-        //     if (~addr_rdy[i] & robs_calculated[entries[i].src1_tag] & entries_allocated[i]) begin
-        //             entries[i].src1_data <= cdb[entries[i].src1_tag].data;
-        //             addr_rdy[i] <= 1'b1;
-        //             entries[i].src1_valid <= 1'b1;
-        //     end 
-        // end
-
-        // if (lsq_state == ACTIVE | lsq_state == FULL) begin
-            /* scan cdb for base mem address */
-            for (int i = head_ptr; i != curr_ptr; i = (i + 1) % 4) begin
-                if (~addr_rdy[i] & robs_calculated[entries[i].src1_tag]) begin
+        for (int i = 0; i < 4; i++) begin
+            if (~addr_rdy[i] & robs_calculated[entries[i].src1_tag] & entries_allocated[i]) begin
                     entries[i].src1_data <= cdb[entries[i].src1_tag].data;
                     addr_rdy[i] <= 1'b1;
                     entries[i].src1_valid <= 1'b1;
-                end 
-            end
-            if (~addr_rdy[head_ptr] & robs_calculated[entries[head_ptr].src1_tag]) begin
-                    entries[head_ptr].src1_data <= cdb[entries[head_ptr].src1_tag].data;
-                    addr_rdy[head_ptr] <= 1'b1;
-                    entries[head_ptr].src1_valid <= 1'b1;
             end 
-        // end
+        end
 
         lsq_state <= lsq_next_state;
     end
@@ -205,7 +190,7 @@ always_comb begin : next_state_logic
         FULL: begin
             if (flush_ip & data_read & ~data_mem_resp)
                 lsq_next_state = FLUSH;
-            else if (curr_ptr != head_ptr - 1)
+            else if (curr_ptr != head_ptr + 2'b11)
                 lsq_next_state = ACTIVE;
         end
         FLUSH: begin
