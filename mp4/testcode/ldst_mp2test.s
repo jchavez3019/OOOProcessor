@@ -31,12 +31,11 @@ ldst_mp2test.s:
     lb x5, 3(x20)
     lb x3, 1(x20)
 
-    # addi x15, x15, 19
     la x1, target
     sh x2, 0(x1)
     sb x3, 1(x1)
     sb x5, 3(x1)
-    sb x4, 2(x1) # 100
+    sb x4, 2(x1)
      
     lw x10, cooleceb
     lw x6, target
@@ -54,7 +53,7 @@ halt:                 # Infinite loop to keep the processor
 deadend:
     lw x10, bad       
 deadloop:
-    beq x0, x0, deadloop
+    beq x10, x10, deadloop
 
 .section .rodata
 
