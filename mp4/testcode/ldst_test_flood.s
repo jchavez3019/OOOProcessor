@@ -7,9 +7,15 @@ ldst_mp2test.s:
     lw x3, ecebeceb # 68
     lw x4, eceb # 70
     lw x5, answer # 78
-    nop
     lw x6, answer_2 # 80
     lw x8, answer_3 # 88
+    la x1, result
+    sw x2, 0(x1)
+    sw x3, 0(x1)
+    sw x4, 0(x1)
+    sw x5, 0(x1)
+    sw x6, 0(x1)
+    sw x8, 0(x1)
 
 done:
     lw x7, good # 68

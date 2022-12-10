@@ -271,7 +271,7 @@ end
 
 lsq lsq(
     .clk(clk),
-    .rst(rst),
+    .rst(rst | itf.flush_in_prog),
     .load(itf.lsq_load),
     .flush_ip(itf.flush_in_prog),
     .res_in(res_word),

@@ -64,7 +64,7 @@ always_comb begin : store_mask
 end
 
 always_ff @(posedge clk) begin
-    if (rst | self_rst) begin
+    if (rst) begin// | self_rst) begin
         for (int i = 0; i < 4; i++) begin : initialize_arrays
             addr_rdy[i] <= 1'b0;
             entries[i].op <= tomasula_types::BRANCH;
@@ -148,9 +148,12 @@ always_comb begin : actions
         end
         ACTIVE: begin
             /* finished getting the data for the current entries */
-            if (data_mem_resp) begin
+            if (data_mem_resp & ~flush_ip) begin
                 finished_entry = 1'b1;
             end
+
+            if (entries_allocated[0] & entries_allocated[1] & entries_allocated[2] & entries_allocated[3])
+                full = 1'b1;
 
             /* address ready for head of queue, request data from memory */
             if (addr_rdy[head_ptr] & (rob_head_ptr == entries[head_ptr].rd_tag)) begin
@@ -165,13 +168,13 @@ always_comb begin : actions
             end
 
             /* flush is in progress and we are requesting data */
-            if (flush_ip & ~data_read)
+            if (flush_ip & ~data_read & ~data_write)
                 self_rst = 1'b1;
         end
         FULL: begin
             full = 1'b1;
 
-            if (data_mem_resp)
+            if (data_mem_resp & ~flush_ip)
                 finished_entry = 1'b1;
 
             if (addr_rdy[head_ptr] & (rob_head_ptr == entries[head_ptr].rd_tag)) begin
@@ -184,6 +187,9 @@ always_comb begin : actions
                 end
                 data_mem_address = entries[head_ptr].src1_data + entries[head_ptr].src2_data;
             end
+
+            if (flush_ip & ~data_read & ~data_write)
+                self_rst = 1'b1;
         end
         FLUSH: begin
             full = 1'b1;
@@ -206,31 +212,32 @@ always_comb begin : next_state_logic
     case (lsq_state)
         RESET: begin
             if (~rst)
-                lsq_next_state = IDLE;
+                lsq_next_state = ACTIVE;
         end
         IDLE: begin
             if (flush_ip)
                 lsq_next_state = RESET;
-            if (load)
+            else if (load | (head_ptr != curr_ptr))
                 lsq_next_state = ACTIVE;
         end
         ACTIVE: begin
-            if (flush_ip & data_read & ~data_mem_resp)
-                lsq_next_state = FLUSH;
-            else if (curr_ptr == head_ptr + 2'b11)
-                lsq_next_state = FULL;
-            else if (data_mem_resp & (head_ptr == curr_ptr))
-                lsq_next_state = IDLE;
+            // if (flush_ip & (data_read | data_write) & ~data_mem_resp)
+            //     lsq_next_state = FLUSH;
+            // else if (curr_ptr == head_ptr + 2'b11)
+            // else if (entries_allocated[0] & entries_allocated[1] & entries_allocated[2] & entries_allocated[3])
+            //     lsq_next_state = FULL;
+            // else if (data_mem_resp & (head_ptr == curr_ptr))
+            //     lsq_next_state = IDLE;
         end
         FULL: begin
-            if (flush_ip & data_read & ~data_mem_resp)
+            if (flush_ip & (data_read | data_write) & ~data_mem_resp)
                 lsq_next_state = FLUSH;
-            else if (curr_ptr != head_ptr + 2'b11)
+            // else if (curr_ptr != head_ptr + 2'b11)
+            else if (~(entries_allocated[0] & entries_allocated[1] & entries_allocated[2] & entries_allocated[3]))
                 lsq_next_state = ACTIVE;
         end
         FLUSH: begin
-            // if (data_mem_resp)
-            //     lsq_next_state = RESET;
+
         end
     endcase
 end
