@@ -307,19 +307,20 @@ always_ff @(posedge clk) begin
                 // end
                 /* check if it is a store and take appropiate action */
                 // else if (instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11) begin
-                if (instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11) begin
-                    data_write <= 1'b1;
-                    // for st address
-                    // send regfile the register file to read from
-                    // once store has been processed
-                    if (data_mem_resp) begin
-                        data_write <= 1'b0;
-                        valid_arr[_head_ptr] <= 1'b0;
-                        _allocated_entries[_head_ptr] <= 1'b0;
-                        _head_ptr <= _head_ptr + 1'b1;
-                    end
-                end
-                else if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
+                // if (instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11) begin
+                //     data_write <= 1'b1;
+                //     // for st address
+                //     // send regfile the register file to read from
+                //     // once store has been processed
+                //     if (data_mem_resp) begin
+                //         data_write <= 1'b0;
+                //         valid_arr[_head_ptr] <= 1'b0;
+                //         _allocated_entries[_head_ptr] <= 1'b0;
+                //         _head_ptr <= _head_ptr + 1'b1;
+                //     end
+                // end
+                // else if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
+                if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
                     valid_arr[_head_ptr] <= 1'b0;
                     _allocated_entries[_head_ptr] <= 1'b0;
                     _head_ptr <= _head_ptr + 1'b1;
@@ -396,17 +397,18 @@ always_comb begin
                 //     end
                 // end
                 // else if ((instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11)) begin
-                if ((instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11)) begin
-                    // for st address
-                    // send regfile the register file to read from
-                    // _st_src_commit <= rd_arr[_head_ptr];
-                    // once store has been processed
-                    if (data_mem_resp) begin
-                        rvfi_commit = 1'b1;
-                    end
-                end
+                // if ((instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11)) begin
+                //     // for st address
+                //     // send regfile the register file to read from
+                //     // _st_src_commit <= rd_arr[_head_ptr];
+                //     // once store has been processed
+                //     if (data_mem_resp) begin
+                //         rvfi_commit = 1'b1;
+                //     end
+                // end
                 // for all other instructions except branch since branch doesn't load regfile
-                else if (instr_arr[_head_ptr] != tomasula_types::BRANCH) begin
+                // else if (instr_arr[_head_ptr] != tomasula_types::BRANCH) begin
+                if (instr_arr[_head_ptr] != tomasula_types::BRANCH | (instr_arr[_head_ptr] < 8 & instr_arr[_head_ptr] > 10)) begin
                     _regfile_load = 1'b1;
                 end
                 /* check that the instruction is not a store */

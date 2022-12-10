@@ -10,14 +10,17 @@ import rv32i_types::*;
     output logic finished_entry,
     output tomasula_types::alu_word finished_entry_data,
     input logic [7:0] robs_calculated,
+    input logic [2:0] rob_head_ptr,
     output logic full,
+    output logic [4:0] wdata_reg,
 
     // signals between memory
     input data_mem_resp,
     output logic data_read,
     output logic data_write,
     output rv32i_word data_mem_address,
-    output rv32i_word data_mem_wdata
+    output tomasula_types::op_t load_type,
+    output logic [3:0] data_mbe
 );
 // NOTE: for now this lsq will only handle loads, but should incorporate stores soon
 
@@ -29,8 +32,9 @@ logic self_rst; // cases where lsq needs to reset itself
 logic [1:0] head_ptr, curr_ptr;
 logic addr_rdy [4];
 logic entries_allocated [4];
+logic [1:0] memaddr_offset;
 tomasula_types::res_word entries [4];
-assign data_write = 1'b0;
+assign memaddr_offset = data_mem_address[1:0];
 
 enum int unsigned {
     RESET = 0,
@@ -48,6 +52,15 @@ always_comb begin : assign_alu_output
     finished_entry_data.src2_data = entries[head_ptr].src2_data;
     finished_entry_data.pc = entries[head_ptr].pc;
     finished_entry_data.tag = entries[head_ptr].rd_tag;
+    load_type = entries[head_ptr].op;
+end
+
+always_comb begin : store_mask
+    case(entries[head_ptr].op) 
+        tomasula_types::SW: data_mbe = 4'b1111;
+        tomasula_types::SH: data_mbe = 4'b0011 << memaddr_offset;
+        tomasula_types::SB: data_mbe = 4'b0001 << memaddr_offset;
+    endcase
 end
 
 always_ff @(posedge clk) begin
@@ -63,6 +76,7 @@ always_ff @(posedge clk) begin
             entries[i].src2_tag <= 3'b000;
             entries[i].src2_data <= 32'h0000;
             entries[i].src2_valid <= 1'b0;
+            entries[i].rd <= 5'b00000;
             entries[i].rd_tag <= 3'b000;
             entries[i].pc <= 32'h00000000;
             entries_allocated[i] <= 1'b0;
@@ -84,6 +98,7 @@ always_ff @(posedge clk) begin
             entries[curr_ptr].src2_tag <= res_in.src2_tag;
             entries[curr_ptr].src2_data <= res_in.src2_data;
             entries[curr_ptr].src2_valid <= res_in.src2_valid;
+            entries[curr_ptr].rd <= res_in.rd;
             entries[curr_ptr].rd_tag <= res_in.rd_tag;
             entries[curr_ptr].pc <= res_in.pc;
             // entries[curr_ptr] <= res_in;
@@ -114,8 +129,10 @@ function void set_defaults();
     full = 1'b0;
     finished_entry = 1'b0;
     data_mem_address = 32'h00000000;
+    wdata_reg = 5'b00000;
     self_rst = 1'b0;
     data_read = 1'b0;
+    data_write = 1'b0;
 endfunction
 
 always_comb begin : actions
@@ -136,8 +153,14 @@ always_comb begin : actions
             end
 
             /* address ready for head of queue, request data from memory */
-            if (addr_rdy[head_ptr]) begin
-                data_read = 1'b1;
+            if (addr_rdy[head_ptr] & (rob_head_ptr == entries[head_ptr].rd_tag)) begin
+                if (entries[head_ptr].op > 10) begin
+                    data_read = 1'b1;
+                end
+                else begin
+                    data_write = 1'b1;
+                    wdata_reg = entries[head_ptr].rd;
+                end
                 data_mem_address = entries[head_ptr].src1_data + entries[head_ptr].src2_data;
             end
 
@@ -151,14 +174,26 @@ always_comb begin : actions
             if (data_mem_resp)
                 finished_entry = 1'b1;
 
-            if (addr_rdy[head_ptr]) begin
-                data_read = 1'b1;
+            if (addr_rdy[head_ptr] & (rob_head_ptr == entries[head_ptr].rd_tag)) begin
+                if (entries[head_ptr].op > 10) begin
+                    data_read = 1'b1;
+                end
+                else begin
+                    data_write = 1'b1;
+                    wdata_reg = entries[head_ptr].rd;
+                end
                 data_mem_address = entries[head_ptr].src1_data + entries[head_ptr].src2_data;
             end
         end
         FLUSH: begin
             full = 1'b1;
-            data_read = 1'b1;
+            if (entries[head_ptr].op > 10) begin
+                data_read = 1'b1;
+            end
+            else begin
+                data_write = 1'b1;
+                wdata_reg = entries[head_ptr].rd;
+            end
             if (data_mem_resp)
                 self_rst = 1'b1;
         end

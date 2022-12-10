@@ -4,7 +4,11 @@ ldst_mp2test.s:
 .globl _start
 
     lw x2, cooleceb # 60             # X1 <= 0x1111eceb
-
+    # la x3, good
+    # sw x2, 4(x3)
+    la x3, result
+    sw x2, 0(x3)
+    lw x4, result
 done:
     lw x7, good # 68
 halt:                 # Infinite loop to keep the processor

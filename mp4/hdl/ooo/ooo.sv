@@ -70,7 +70,7 @@ always_comb begin : data_mem_req
     // default byte enable value
     //wmask = 4'b0000;
     //`mbe_calc(itf.commit_type, memaddr_offset, data_mem_rdata);
-    case(itf.commit_type) 
+    case(itf.lsq_load_type) 
         tomasula_types::LW: regfile_mem_in = data_mem_rdata; 
         tomasula_types::LH: regfile_mem_in = {{16{data_mem_rdata[16 * ((memaddr_offset/2)+1) - 1]}}, data_mem_rdata[8 * memaddr_offset+:16]};
         tomasula_types::LHU: regfile_mem_in = {{16{1'b0}}, data_mem_rdata[8 * memaddr_offset+:16]}; 
@@ -179,7 +179,7 @@ rob rob (
      .st_src (itf.control_o.src2_reg),
     //  .branch_mispredict (1'b0),
      .data_mem_resp (data_mem_resp),
-     .memaddr_offset (memaddr_offset),
+     .memaddr_offset (),// (memaddr_offset),
      .status_rob_valid (itf.status_rob_valid),
      .set_rob_valid (itf.set_rob_valid),
      .allocated_rob_entries (itf.allocated_rob_entries),
@@ -194,15 +194,15 @@ rob rob (
      .flush_in_prog(itf.flush_in_prog),
      .reallocate_reg_tag(itf.rob_reallocate_reg_tags),
      .rd_commit (itf.rd_commit),
-     .st_src_commit (itf.st_src_commit),
+     .st_src_commit (),//(itf.st_src_commit),
      .regfile_load (itf.regfile_load),
      .rob_full (itf.rob_full),
      .ld_commit_sel (itf.ld_commit_sel),
      .ld_pc (itf.rob_ld_pc),
      .data_read (),//(data_read),
      .data_write (),//(data_write),
-     .wmask (data_mbe),
-     .commit_type (itf.commit_type),
+     .wmask (),//(data_mbe),
+     .commit_type (),//(itf.commit_type),
      .new_instr(itf.original_instr),
      .new_pc(itf.original_instr_pc),
      .new_next_pc(itf.original_instr_next_pc),
@@ -264,6 +264,7 @@ always_comb begin : assign_res_word
     res_word.src2_tag = itf.tag_b;
     res_word.src2_data = src2_data;
     res_word.src2_valid = src2_v;
+    res_word.rd = itf.control_o.rd;
     res_word.rd_tag = itf.curr_ptr;
     res_word.pc = itf.control_o.pc;
 end
@@ -278,11 +279,15 @@ lsq lsq(
     .finished_entry(itf.finished_lsq_entry),
     .finished_entry_data(itf.finished_lsq_entry_data),
     .robs_calculated(itf.status_rob_valid),
+    .rob_head_ptr(itf.head_ptr),
     .full(itf.lsq_full),
+    .wdata_reg(itf.st_src_commit),
     .data_mem_resp(data_mem_resp),
     .data_read(data_read),
     .data_write(data_write),
-    .data_mem_address(itf.lsq_data_mem_address)
+    .data_mem_address(itf.lsq_data_mem_address),
+    .data_mbe(data_mbe),
+    .load_type(itf.lsq_load_type)
 );
 
 reservation_station res1(
@@ -431,8 +436,8 @@ always_comb begin : cdb_enable_logic
     // Data propogation for branch computation. All 1's if taken otherwise 0
     `write_to_cdb(itf.resbr_exec, itf.resbr_alu_out, itf.resbr_update_br, 32'h00000000);
 
-    // data loaded from memory to cdb through lsq
-    `write_to_cdb(itf.finished_lsq_entry, itf.finished_lsq_entry_data, 1'b0, data_mem_rdata);
+    // data loaded from memory to cdb through lsq; store 0's in cdb for a store
+    `write_to_cdb(itf.finished_lsq_entry, itf.finished_lsq_entry_data, 1'b0, (itf.finished_lsq_entry_data.op > 10) ? regfile_mem_in : 32'h00000000);
     
     cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag) | (itf.resbr_exec << itf.resbr_alu_out.tag | (itf.finished_lsq_entry << itf.finished_lsq_entry_data.tag));
 end

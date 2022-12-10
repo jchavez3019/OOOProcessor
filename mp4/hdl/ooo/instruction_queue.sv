@@ -132,8 +132,8 @@ always_comb begin : dequeue_logic
                     resbr_load = 1'b1;
                 end
             end
-            // the instruction is a load
-            else if (control_o_buf.op > 10) begin
+            // the instruction is a load/store
+            else if (control_o_buf.op > 7) begin
                 if (lsq_empty) begin
                     dequeue = 1'b1;
                     regfile_allocate = 1'b1;

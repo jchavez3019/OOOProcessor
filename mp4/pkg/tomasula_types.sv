@@ -53,6 +53,7 @@ typedef struct {
     logic [2:0] src2_tag;
     logic [31:0] src2_data;
     logic src2_valid;
+    logic [2:0] rd;
     logic [2:0] rd_tag; // rob tag where destination will be saved
     logic [31:0] pc;
 } res_word; // totals 82 bits

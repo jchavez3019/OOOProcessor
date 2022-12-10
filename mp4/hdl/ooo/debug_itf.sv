@@ -79,7 +79,7 @@ logic set_rob_valid[8];
 logic [2:0] curr_ptr, head_ptr, br_ptr, br_flush_ptr;
 logic [4:0] rd_commit, st_src_commit;
 logic rob_reallocate_reg_tags;
-tomasula_types::op_t commit_type;
+// tomasula_types::op_t commit_type;
 
 /* cdb signals */
 tomasula_types::cdb_data cdb_in[8];
@@ -96,6 +96,7 @@ tomasula_types::cdb_data alu4_calculation;
 logic finished_lsq_entry, lsq_full;
 logic [31:0] lsq_data_mem_address;
 tomasula_types::alu_word finished_lsq_entry_data; 
+tomasula_types::op_t lsq_load_type;
 
 /* mux logic */
 logic [31:0] pc_in;
