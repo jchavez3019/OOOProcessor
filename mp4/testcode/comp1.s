@@ -11,48 +11,48 @@
 	.type	_start, @function
 _start:
 	li	sp,0x84000000 # 60
-	addi	sp,sp,-16 # 64
-	sw	ra,12(sp) # 68
-	sw	s0,8(sp) # 6c
-	sw	s10,4(sp) # 70 
-	li	s10,-553656320 # 74
-	addi	s10,s10,-257 # 78
-	call	test_uncorrelated_branches # 
-	mv	s0,a0 # 
-	call	test_correlated_branches # 
-	or	s0,s0,a0 #  
+	addi	sp,sp,-16 #
+	sw	ra,12(sp) # 
+	sw	s0,8(sp) # 
+	sw	s10,4(sp) # 
+	li	s10,-553656320 # 78
+	addi	s10,s10,-257 # 7c
+	call	test_uncorrelated_branches # 80 
+	mv	s0,a0 # 88
+	call	test_correlated_branches # 8c
+	or	s0,s0,a0 # 
 	call	test_mixed
 	or	s0,s0,a0
 	li	a0,12
 	call	fib
-	beqz	s0,.L43
-	li	s10,12247040
-	addi	s10,s10,-1107
-	j	.L44
+	beqz	s0,.L43 # ac
+	li	s10,12247040 # b0
+	addi	s10,s10,-1107 # b4
+	j	.L44 # b8
 .L43:
-	li	s10,1611489280
-	addi	s10,s10,13
+	li	s10,1611489280 # bc
+	addi	s10,s10,13 # c0
 .L44:
 .L45:
-	j	.L45
+	j	.L45 # c4
 	.size	_start, .-_start
 	.align	2
 	.globl	uncorrelated_branches_kernel
 	.hidden	uncorrelated_branches_kernel
 	.type	uncorrelated_branches_kernel, @function
 uncorrelated_branches_kernel:
-	mv	a5,a0
-	andi	a0,a0,1
+	mv	a5,a0 # c8
+	andi	a0,a0,1 # cc
 	andi	a4,a5,2
-	beqz	a4,.L2
-	ori	a0,a0,2
+	beqz	a4,.L2 # d4
+	ori	a0,a0,2 # d8
 .L2:
-	andi	a4,a5,4
-	beqz	a4,.L3
-	ori	a0,a0,4
+	andi	a4,a5,4 # dc
+	beqz	a4,.L3 # e0
+	ori	a0,a0,4 # e4
 .L3:
-	andi	a4,a5,8
-	beqz	a4,.L4
+	andi	a4,a5,8 # e8
+	beqz	a4,.L4 # ec
 	ori	a0,a0,8
 .L4:
 	andi	a4,a5,16
@@ -72,7 +72,7 @@ uncorrelated_branches_kernel:
 	bgez	a5,.L8
 	ori	a0,a0,128
 .L8:
-	ret
+	ret # 128
 	.size	uncorrelated_branches_kernel, .-uncorrelated_branches_kernel
 	.align	2
 	.globl	correlated_branches_kernel
@@ -122,7 +122,7 @@ correlated_branches_kernel:
 	.hidden	test_uncorrelated_branches
 	.type	test_uncorrelated_branches, @function
 test_uncorrelated_branches:
-	addi	sp,sp,-16
+	addi	sp,sp,-16 # 1a4
 	sw	ra,12(sp)
 	sw	s0,8(sp)
 	sw	s1,4(sp)
@@ -130,14 +130,14 @@ test_uncorrelated_branches:
 	li	s1,255
 .L20:
 	mv	a0,s0
-	call	uncorrelated_branches_kernel
-	andi	a0,a0,0xff
-	bne	a0,s0,.L21
-	addi	s0,s0,1
-	andi	s0,s0,0xff
-	bne	s0,s1,.L20
-	li	a0,0
-	j	.L18
+	call	uncorrelated_branches_kernel # 1c4
+	andi	a0,a0,0xff # 1c8
+	bne	a0,s0,.L21 # 1cc
+	addi	s0,s0,1 # 1d0
+	andi	s0,s0,0xff # 1d4
+	bne	s0,s1,.L20 # 1d8
+	li	a0,0 # 1dc
+	j	.L18 # 1e0
 .L21:
 	li	a0,1
 .L18:
@@ -145,7 +145,7 @@ test_uncorrelated_branches:
 	lw	s0,8(sp)
 	lw	s1,4(sp)
 	addi	sp,sp,16
-	jr	ra
+	jr	ra # 
 	.size	test_uncorrelated_branches, .-test_uncorrelated_branches
 	.align	2
 	.globl	test_correlated_branches

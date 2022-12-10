@@ -16,6 +16,7 @@ halt:                 # Infinite loop to keep the processor
                       # Your own programs should also make use
                       # of an infinite loop at the end.
 deadend:
+    addi x13, x13, 3
     lw x10, bad       
 deadloop:
     beq x10, x10, deadloop
