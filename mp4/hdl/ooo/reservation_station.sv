@@ -14,6 +14,9 @@ import rv32i_types::*;
     output logic ld_pc_to_cdb, // used for jal and jalr instructions to load pc + 4 into cdb instead of alu output
     output logic update_br, // used by branch instructions to update rd array in rob
     input tomasula_types::res_word res_in
+    // input logic [2:0] curr_head_ptr,
+    // input mem_resp, // a dependent load has finally received its data
+    // input logic [31:0] mem_rdata
 );
 
 tomasula_types::res_word res_word;
@@ -37,14 +40,6 @@ begin : assign_alu_data
     alu_data.tag = res_word.rd_tag;
     alu_data.pc = res_word.pc;
 
-    // if (res_word.src2_valid) begin
-    //     alu_data.src1_data = res_word.src1_data;
-    //     alu_data.src2_data = res_word.src2_data;
-    // end
-    // else begin
-    //     alu_data.src1_data = res_in.src1_data;
-    //     alu_data.src2_data = res_in.src2_data;
-    // end
 end
 
 
@@ -72,7 +67,8 @@ begin
 
     /* update reservation word if additional information needs to be scope from the cdb */
     if (state == CHECK) begin
-        if (~res_word.src1_valid & robs_calculated[res_word.src1_tag]) begin
+        /* check that src1 is not waiting data from a load, only then can it scope cdb */
+        if (~res_word.src1_valid & robs_calculated[res_word.src1_tag] & res_word.op < 11) begin
             res_word.src1_valid <= 1'b1;
             res_word.src1_data <= cdb[res_word.src1_tag].data;
         end
@@ -138,17 +134,8 @@ begin : state_actions
                 ld_pc_to_cdb = 1'b1;
             end
             
-
-            // if (res_word.src1_valid)
-            //     alu_data.src1_data = res_word.src1_data;
-            // else
-            //     alu_data.src1_data = res_in.src1_data;
             alu_data.src1_data = res_word.src1_data;
                 
-            // if (res_word.src2_valid)
-            //     alu_data.src2_data = res_word.src2_data;
-            // else
-            //     alu_data.src2_data = res_in.src2_data;
             alu_data.src2_data = res_word.src2_data;
         end
         PEEK_ONE, PEEK_REST: begin
@@ -204,22 +191,8 @@ begin : next_state_logic
                 next_state = CHECK;
         end
         CHECK: begin
-            // if ((res_word.src1_valid | res_in.src1_valid) & (res_word.src2_valid | res_in.src2_valid))
-            //     next_state = EMPTY;
-            // else
-            //     next_state = PEEK_ONE;
             if (res_word.src1_valid & res_word.src2_valid)
                 next_state = EMPTY;
-
-            /* in the case reservation station needs to get flushed */
-            if (~allocated_rob_entries[res_word.rd_tag])
-                next_state = EMPTY;
-        end
-        PEEK_ONE, PEEK_REST: begin
-            if ((res_word.src1_valid | robs_calculated[res_word.src1_tag]) & (res_word.src2_valid | robs_calculated[res_word.src2_tag]))
-                next_state = EMPTY;
-            else
-                next_state = PEEK_REST;
 
             /* in the case reservation station needs to get flushed */
             if (~allocated_rob_entries[res_word.rd_tag])

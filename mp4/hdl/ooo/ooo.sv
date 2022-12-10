@@ -62,8 +62,10 @@ logic [31:0] regfile_mem_in;
 logic [1:0] memaddr_offset; 
 
 always_comb begin : data_mem_req
-    data_mem_address = {itf.cdb_out[itf.head_ptr].data[31:2], 2'b00};
-    memaddr_offset = itf.cdb_out[itf.head_ptr].data[1:0];
+    // data_mem_address = {itf.cdb_out[itf.head_ptr].data[31:2], 2'b00};
+    // memaddr_offset = itf.cdb_out[itf.head_ptr].data[1:0];
+    data_mem_address = itf.lsq_data_mem_address & {{30{1'b1}}, 2'b00};
+    memaddr_offset = itf.lsq_data_mem_address[1:0];
     
     // default byte enable value
     //wmask = 4'b0000;
@@ -77,29 +79,7 @@ always_comb begin : data_mem_req
         default: regfile_mem_in = data_mem_rdata; 
     endcase 
 
-
-    /*
-    `mbe_calc(itf.res2_alu_out, memaddr_offset, data_mem_rdata);
-    `mbe_calc(itf.res3_alu_out, memaddr_offset, data_mem_rdata);
-    `mbe_calc(itf.res4_alu_out, memaddr_offset, data_mem_rdata);
-    */
-
 end
-
-/*
-always_ff @(posedge clk) begin
-    if (rst) begin 
-        _data_mbe <= 4'b0000;
-    end
-    else begin
-        if (regfile_allocate) begin
-        end
-        else begin
-        end
-    end
-end
-*/
-
 
 ir ir (
     .*,
@@ -170,6 +150,7 @@ iq iq (
     .res2_empty(itf.res2_empty),
     .res3_empty(itf.res3_empty),
     .res4_empty(itf.res4_empty),
+    .lsq_empty(~itf.lsq_full),
     .rob_full(itf.rob_full),
     .resbr_empty(itf.resbr_empty),
     .resbr_load(itf.resbr_load),
@@ -179,6 +160,7 @@ iq iq (
     .res2_load(itf.res2_load),
     .res3_load(itf.res3_load),
     .res4_load(itf.res4_load),
+    .lsq_load(itf.lsq_load),
     .control_o(itf.control_o),
     .ack_o(itf.iq_ir_ack),
     .original_instr(itf.original_instr),
@@ -186,27 +168,6 @@ iq iq (
     .instr_next_pc(itf.original_instr_next_pc),
     .rvfi_word(itf.rvfi_word)
 );
-
-always_comb begin : set_rob_valids
-    for (int i = 0; i < 8; i++) begin
-        itf.set_rob_valid[i] = 1'b0;
-    end
-    if (itf.res1_exec) begin
-        itf.set_rob_valid[itf.res1_alu_out.tag] = 1'b1;
-    end
-    if (itf.res2_exec) begin
-        itf.set_rob_valid[itf.res2_alu_out.tag] = 1'b1;
-    end
-    if (itf.res3_exec) begin
-        itf.set_rob_valid[itf.res3_alu_out.tag] = 1'b1;
-    end
-    if (itf.res4_exec) begin
-        itf.set_rob_valid[itf.res4_alu_out.tag] = 1'b1;
-    end
-    if (itf.resbr_exec) begin
-        itf.set_rob_valid[itf.resbr_alu_out.tag] = 1'b1;
-    end
-end
 
 rob rob (
      .*,
@@ -238,8 +199,8 @@ rob rob (
      .rob_full (itf.rob_full),
      .ld_commit_sel (itf.ld_commit_sel),
      .ld_pc (itf.rob_ld_pc),
-     .data_read (data_read),
-     .data_write (data_write),
+     .data_read (),//(data_read),
+     .data_write (),//(data_write),
      .wmask (data_mbe),
      .commit_type (itf.commit_type),
      .new_instr(itf.original_instr),
@@ -306,6 +267,23 @@ always_comb begin : assign_res_word
     res_word.rd_tag = itf.curr_ptr;
     res_word.pc = itf.control_o.pc;
 end
+
+lsq lsq(
+    .clk(clk),
+    .rst(rst),
+    .load(itf.lsq_load),
+    .flush_ip(itf.flush_in_prog),
+    .res_in(res_word),
+    .cdb(itf.cdb_out),
+    .finished_entry(itf.finished_lsq_entry),
+    .finished_entry_data(itf.finished_lsq_entry_data),
+    .robs_calculated(itf.status_rob_valid),
+    .full(itf.lsq_full),
+    .data_mem_resp(data_mem_resp),
+    .data_read(data_read),
+    .data_write(data_write),
+    .data_mem_address(itf.lsq_data_mem_address)
+);
 
 reservation_station res1(
     .clk (clk),
@@ -414,6 +392,30 @@ branch_alu CMP(
     .answer(itf.taken)
 );
 
+always_comb begin : set_rob_valids
+    for (int i = 0; i < 8; i++) begin
+        itf.set_rob_valid[i] = 1'b0;
+    end
+    if (itf.res1_exec) begin
+        itf.set_rob_valid[itf.res1_alu_out.tag] = 1'b1;
+    end
+    if (itf.res2_exec) begin
+        itf.set_rob_valid[itf.res2_alu_out.tag] = 1'b1;
+    end
+    if (itf.res3_exec) begin
+        itf.set_rob_valid[itf.res3_alu_out.tag] = 1'b1;
+    end
+    if (itf.res4_exec) begin
+        itf.set_rob_valid[itf.res4_alu_out.tag] = 1'b1;
+    end
+    if (itf.resbr_exec) begin
+        itf.set_rob_valid[itf.resbr_alu_out.tag] = 1'b1;
+    end
+    if (itf.finished_lsq_entry) begin
+        itf.set_rob_valid[itf.finished_lsq_entry_data.tag] = 1'b1;
+    end
+end
+
 logic [7:0] cdb_enable;
 always_comb begin : cdb_enable_logic
     // set default values to 0
@@ -428,8 +430,11 @@ always_comb begin : cdb_enable_logic
 
     // Data propogation for branch computation. All 1's if taken otherwise 0
     `write_to_cdb(itf.resbr_exec, itf.resbr_alu_out, itf.resbr_update_br, 32'h00000000);
+
+    // data loaded from memory to cdb through lsq
+    `write_to_cdb(itf.finished_lsq_entry, itf.finished_lsq_entry_data, 1'b0, data_mem_rdata);
     
-    cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag) | (itf.resbr_exec << itf.resbr_alu_out.tag);
+    cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag) | (itf.resbr_exec << itf.resbr_alu_out.tag | (itf.finished_lsq_entry << itf.finished_lsq_entry_data.tag));
 end
 
 cdb cdb(

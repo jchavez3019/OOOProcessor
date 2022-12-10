@@ -14,7 +14,7 @@ logic ir_ld_pc;
 logic [31:0] ir_instr;
 
 /* iq signals */
-logic res1_empty, res2_empty, res3_empty, res4_empty, rob_load, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load;
+logic res1_empty, res2_empty, res3_empty, res4_empty, rob_load, res1_load, res2_load, res3_load, res4_load, resbr_empty, resbr_load, lsq_load;
 logic regfile_allocate;
 tomasula_types::ctl_word control_o;
 logic iq_ir_ack;
@@ -91,6 +91,11 @@ tomasula_types::cdb_data alu2_calculation;
 tomasula_types::cdb_data alu3_calculation;
 tomasula_types::cdb_data alu4_calculation;
 // tomasula_types::cdb_data alu5_calculation;
+
+/* lsq signals */
+logic finished_lsq_entry, lsq_full;
+logic [31:0] lsq_data_mem_address;
+tomasula_types::alu_word finished_lsq_entry_data; 
 
 /* mux logic */
 logic [31:0] pc_in;

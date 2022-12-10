@@ -11,6 +11,7 @@ import rv32i_types::*;
     input logic res3_empty,
     input logic res4_empty,
     input logic resbr_empty,
+    input logic lsq_empty,
     input logic rob_full,
 
     output logic rob_load,
@@ -20,6 +21,7 @@ import rv32i_types::*;
     output logic res3_load,
     output logic res4_load,
     output logic resbr_load,
+    output logic lsq_load,
     output tomasula_types::ctl_word control_o,
 
     /* outputs to ROB for rvfi monitor */
@@ -116,6 +118,7 @@ always_comb begin : dequeue_logic
     res4_load = 1'b0;
     dequeue = 1'b0;
     resbr_load = 1'b0;
+    lsq_load = 1'b0;
     regfile_allocate = 1'b0;
 
     // if the fifo is holding a valid entry
@@ -127,6 +130,14 @@ always_comb begin : dequeue_logic
                 if (resbr_empty) begin
                     dequeue = 1'b1;
                     resbr_load = 1'b1;
+                end
+            end
+            // the instruction is a load
+            else if (control_o_buf.op > 10) begin
+                if (lsq_empty) begin
+                    dequeue = 1'b1;
+                    regfile_allocate = 1'b1;
+                    lsq_load = 1'b1;
                 end
             end
             else begin

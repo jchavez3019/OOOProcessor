@@ -88,26 +88,6 @@ assign curr_original_instr = original_instr[_head_ptr];
 assign curr_instr_pc = instr_pc[_head_ptr];
 assign curr_instr_next_pc = instr_next_pc[_head_ptr];
 assign curr_rvfi_word = rvfi_word_arr[_head_ptr];
-// assign curr_rvfi_word = rvfi_word_arr[prev_head_ptr];
-
-// always_comb
-// begin : set_curr_rvfi_word
-//     if (rob_load) begin
-//         curr_rvfi_word.inst = rvfi_word.inst;
-//         curr_rvfi_word.rs1_addr = rvfi_word.rs1_addr;
-//         curr_rvfi_word.rs2_addr = rvfi_word.rs2_addr;
-//         curr_rvfi_word.rd_addr[4:0] = rvfi_word.rd_addr[4:0];
-//         curr_rvfi_word.pc_rdata = rvfi_word.pc_rdata;
-//     end
-//     else begin
-//     curr_rvfi_word.inst = rvfi_word_arr[_head_ptr].inst;
-//     curr_rvfi_word.rs1_addr = rvfi_word_arr[_head_ptr].rs1_addr;
-//     curr_rvfi_word.rs2_addr = rvfi_word_arr[_head_ptr].rs2_addr;
-//     curr_rvfi_word.rd_addr[4:0] = rvfi_word_arr[_head_ptr].rd_addr[4:0];
-//     curr_rvfi_word.pc_rdata = rvfi_word_arr[_head_ptr].pc_rdata;
-//     // curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
-//     end
-// end
 
 logic branch_mispredict; // set high when branch is committing and there was a mispredict
 
@@ -309,24 +289,25 @@ always_ff @(posedge clk) begin
                 // //    _ld_pc <= 1'b1; 
                 // end
                 /* check if it is a load and take appropiate action */
-                if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
-                    // data_read <= 1'b1;
-                    // make sure instruction is not committed until data returned
-                    // from d-cache...
-                    if (data_mem_resp) begin
-                        // data_read <= 1'b0;
-                        valid_arr[_head_ptr] <= 1'b0;
-                        _allocated_entries[_head_ptr] <= 1'b0;
-                        // use d-cache data
-                        // _ld_commit_sel <= 1'b1;
-                        // _regfile_load <= 1'b1;
-                        // _rd_commit <= rd_arr[_head_ptr];
-                        // update head
-                        _head_ptr <= _head_ptr + 1'b1;
-                    end
-                end
+                // if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
+                //     // data_read <= 1'b1;
+                //     // make sure instruction is not committed until data returned
+                //     // from d-cache...
+                //     if (data_mem_resp & valid_arr[_head_ptr]) begin
+                //         // data_read <= 1'b0;
+                //         valid_arr[_head_ptr] <= 1'b0;
+                //         _allocated_entries[_head_ptr] <= 1'b0;
+                //         // use d-cache data
+                //         // _ld_commit_sel <= 1'b1;
+                //         // _regfile_load <= 1'b1;
+                //         // _rd_commit <= rd_arr[_head_ptr];
+                //         // update head
+                //         _head_ptr <= _head_ptr + 1'b1;
+                //     end
+                // end
                 /* check if it is a store and take appropiate action */
-                else if (instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11) begin
+                // else if (instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11) begin
+                if (instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11) begin
                     data_write <= 1'b1;
                     // for st address
                     // send regfile the register file to read from
@@ -404,17 +385,18 @@ always_comb begin
             /* check if rob entry at head pointer has been calculated and handle all instruction types */
 
             if (valid_arr[_head_ptr] & ~flush_in_prog & ~branch_mispredict) begin
-                if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
-                    // make sure instruction is not committed until data returned
-                    // from d-cache...
-                    data_read = 1'b1;
-                    if (data_mem_resp) begin
-                        _ld_commit_sel = 1'b1;
-                        _regfile_load = 1'b1;
-                        rvfi_commit = 1'b1;
-                    end
-                end
-                else if ((instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11)) begin
+                // if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
+                //     // make sure instruction is not committed until data returned
+                //     // from d-cache...
+                //     data_read = 1'b1;
+                //     if (data_mem_resp) begin
+                //         _ld_commit_sel = 1'b1;
+                //         _regfile_load = 1'b1;
+                //         rvfi_commit = 1'b1;
+                //     end
+                // end
+                // else if ((instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11)) begin
+                if ((instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11)) begin
                     // for st address
                     // send regfile the register file to read from
                     // _st_src_commit <= rd_arr[_head_ptr];
@@ -427,7 +409,8 @@ always_comb begin
                 else if (instr_arr[_head_ptr] != tomasula_types::BRANCH) begin
                     _regfile_load = 1'b1;
                 end
-                if ((prev_head_ptr != _head_ptr) & instr_arr[_head_ptr] <= 7)
+                /* check that the instruction is not a store */
+                if ((prev_head_ptr != _head_ptr) & (instr_arr[_head_ptr] <= 7 & instr_arr[_head_ptr >= 11]))
                     rvfi_commit = 1'b1; // ROB has committed an instruction
             end
 
