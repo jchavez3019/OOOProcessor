@@ -27,6 +27,7 @@ end
 // This section not required until CP2
 logic rvfi_commit_buff;
 logic [4:0] rvfi_rdaddr_buff;
+logic [31:0] mem_wdata_buff;
 
 always_ff @(posedge itf.clk) begin
     if (dut.ooo.rob.rvfi_commit | dut.ooo.itf.rob_ld_pc)
@@ -39,6 +40,9 @@ always_ff @(posedge itf.clk) begin
         rvfi_rdaddr_buff[4:0] <= dut.ooo.regfile.dest[4:0];
     else
         rvfi_rdaddr_buff[4:0] <= rvfi_rdaddr_buff[4:0];
+
+    if (dut.ooo.data_mem_resp)
+        mem_wdata_buff <= dut.ooo.data_mem_wdata;
 
 end
 // assign rvfi.commit = dut.ooo.rob.rvfi_commit;
@@ -58,12 +62,12 @@ assign rvfi.trap = 1'b0;
 // registers and pc for architectural state tracking
 assign rvfi.rd_wdata = rvfi.rd_addr ? dut.ooo.regfile.in : 0; // rd_wdata only valid when writing to a register that is not x0
 assign rvfi.rs1_addr =  dut.ooo.rob.curr_rvfi_word.rs1_addr;
-// assign rvfi.rs2_addr =  dut.ooo.rob.curr_rvfi_word.rs2_addr;
-// assign rvfi.rs2_addr =  dut.ooo.rob.curr_rvfi_word.imm ? 5'b00000 : dut.ooo.rob.curr_rvfi_word.rs2_addr;
+
 always_comb begin : set_rs2
     if (dut.ooo.rob.curr_rvfi_word.inst[6:0] == 7'b0100011) begin
         rvfi.rs2_addr = dut.ooo.rob.rd_arr[dut.ooo.rob._head_ptr];
-        rvfi.rs2_rdata = dut.ooo.data_mem_wdata;
+        // rvfi.rs2_rdata = dut.ooo.data_mem_wdata;
+        rvfi.rs2_rdata = mem_wdata_buff;
     end
     else if (dut.ooo.rob.curr_rvfi_word.imm) begin
         rvfi.rs2_addr = 5'b00000;

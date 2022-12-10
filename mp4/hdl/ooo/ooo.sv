@@ -437,7 +437,7 @@ always_comb begin : cdb_enable_logic
     `write_to_cdb(itf.resbr_exec, itf.resbr_alu_out, itf.resbr_update_br, 32'h00000000);
 
     // data loaded from memory to cdb through lsq; store 0's in cdb for a store
-    `write_to_cdb(itf.finished_lsq_entry, itf.finished_lsq_entry_data, 1'b0, (itf.finished_lsq_entry_data.op > 10) ? regfile_mem_in : 32'h00000000);
+    `write_to_cdb(itf.finished_lsq_entry, itf.finished_lsq_entry_data, 1'b0, regfile_mem_in);// (itf.finished_lsq_entry_data.op > 10) ? regfile_mem_in : 32'h00000000);
     
     cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag) | (itf.resbr_exec << itf.resbr_alu_out.tag | (itf.finished_lsq_entry << itf.finished_lsq_entry_data.tag));
 end
