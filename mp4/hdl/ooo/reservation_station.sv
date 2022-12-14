@@ -4,6 +4,7 @@ import rv32i_types::*;
     input clk, 
     input rst, 
     input load_word,
+    input flush_ip,
     input tomasula_types::cdb_data cdb[8],
     input logic [7:0] robs_calculated,
     input logic [7:0] allocated_rob_entries,
@@ -106,37 +107,39 @@ begin : state_actions
             /* both source registers are valid and we can execute in this same cycle */
             // if (res_in.src1_valid & (res_word.src2_valid | res_in.src2_valid))
             //     start_exe = 1'b1;
-            if (res_word.src1_valid & res_word.src2_valid)
-                start_exe = 1'b1;
+            if (allocated_rob_entries[res_word.rd_tag]) begin
+                if (res_word.src1_valid & res_word.src2_valid)
+                    start_exe = 1'b1;
 
-            /* deal with jalr special case to unstall pipeline */
-            if (start_exe & res_word.op == tomasula_types::JALR) begin
-                jalr_executed = 1'b1;
-                ld_pc_to_cdb = 1'b1;
-            end
+                /* deal with jalr special case to unstall pipeline */
+                if (start_exe & res_word.op == tomasula_types::JALR) begin
+                    jalr_executed = 1'b1;
+                    ld_pc_to_cdb = 1'b1;
+                end
 
-            /* reroute output for jal like above */
-            if (start_exe & res_word.op == tomasula_types::JAL) begin
-                ld_pc_to_cdb = 1'b1;
-            end
+                /* reroute output for jal like above */
+                if (start_exe & res_word.op == tomasula_types::JAL) begin
+                    ld_pc_to_cdb = 1'b1;
+                end
 
-            /* deal with branches */
-            if (start_exe & res_word.op == tomasula_types::BRANCH) begin
-                ld_pc_to_cdb = 1'b1;
-                update_br = 1'b1;
-            end
+                /* deal with branches */
+                if (start_exe & res_word.op == tomasula_types::BRANCH) begin
+                    ld_pc_to_cdb = 1'b1;
+                    update_br = 1'b1;
+                end
 
-            if (start_exe & res_word.op == tomasula_types::AUIPC) begin
-                ld_pc_to_cdb = 1'b1;
-            end
+                if (start_exe & res_word.op == tomasula_types::AUIPC) begin
+                    ld_pc_to_cdb = 1'b1;
+                end
 
-            if (start_exe & res_word.op == tomasula_types::LUI) begin
-                ld_pc_to_cdb = 1'b1;
-            end
-            
-            alu_data.src1_data = res_word.src1_data;
+                if (start_exe & res_word.op == tomasula_types::LUI) begin
+                    ld_pc_to_cdb = 1'b1;
+                end
                 
-            alu_data.src2_data = res_word.src2_data;
+                alu_data.src1_data = res_word.src1_data;
+                    
+                alu_data.src2_data = res_word.src2_data;
+            end
         end
         PEEK_ONE, PEEK_REST: begin
             /* check if data is valid and execute */
@@ -187,7 +190,7 @@ begin : next_state_logic
     next_state = state;
     case (state)
         EMPTY: begin
-            if (load_word)
+            if (load_word & ~flush_ip)
                 next_state = CHECK;
         end
         CHECK: begin

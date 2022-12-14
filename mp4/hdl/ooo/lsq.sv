@@ -28,7 +28,6 @@ import rv32i_types::*;
 ** reasonably entries should be half the size of rob since loads are broken 
 ** into auipc and load, thus only at most 4 auipc's can be in rob 
 */
-logic self_rst; // cases where lsq needs to reset itself
 logic [1:0] head_ptr, curr_ptr;
 logic addr_rdy [4];
 logic entries_allocated [4];
@@ -38,10 +37,8 @@ assign memaddr_offset = data_mem_address[1:0];
 
 enum int unsigned {
     RESET = 0,
-    IDLE = 1,
-    ACTIVE = 2,
-    FULL = 3, 
-    FLUSH = 4
+    ACTIVE = 1,
+    FLUSH = 2
 } lsq_state, lsq_next_state;
 
 always_comb begin : assign_alu_output
@@ -86,8 +83,28 @@ always_ff @(posedge clk) begin
         lsq_state <= RESET;
     end
     else begin
+        if (lsq_state == RESET) begin
+            for (int i = 0; i < 4; i++) begin : initialize_arrays
+            addr_rdy[i] <= 1'b0;
+            entries[i].op <= tomasula_types::BRANCH;
+            entries[i].funct3 <= 3'b000;
+            entries[i].funct7 <= 1'b0;
+            entries[i].src1_tag <= 3'b000;
+            entries[i].src1_data <= 32'h0000;
+            entries[i].src1_valid <= 1'b0;
+            entries[i].src2_tag <= 3'b000;
+            entries[i].src2_data <= 32'h0000;
+            entries[i].src2_valid <= 1'b0;
+            entries[i].src2_reg <= 5'b00000;
+            entries[i].rd_tag <= 3'b000;
+            entries[i].pc <= 32'h00000000;
+            entries_allocated[i] <= 1'b0;
+            end
+            head_ptr <= 2'b00;
+            curr_ptr <= 2'b00;
+        end
         // update curr_ptr when allocating a new entries
-        if (load & (lsq_state == ACTIVE | lsq_state == IDLE)) begin
+        if (load & (lsq_state == ACTIVE)) begin
             entries[curr_ptr].op <= res_in.op;
             entries[curr_ptr].funct3 <= res_in.funct3;
             entries[curr_ptr].funct7 <= res_in.funct7;
@@ -106,7 +123,7 @@ always_ff @(posedge clk) begin
             entries_allocated[curr_ptr] <= 1'b1;
         end
         // update head ptr when entries in queue has finished using memory
-        if (data_mem_resp & (lsq_state == ACTIVE | lsq_state == FULL)) begin
+        if (data_mem_resp & (lsq_state == ACTIVE)) begin
             head_ptr <= head_ptr + 1;
             entries_allocated[head_ptr] <= 1'b0;
             addr_rdy[head_ptr] <= 1'b0;
@@ -130,7 +147,6 @@ function void set_defaults();
     finished_entry = 1'b0;
     data_mem_address = 32'h00000000;
     wdata_reg = 5'b00000;
-    self_rst = 1'b0;
     data_read = 1'b0;
     data_write = 1'b0;
 endfunction
@@ -141,10 +157,6 @@ always_comb begin : actions
     case (lsq_state)
         RESET: begin
             full = 1'b1;
-        end
-        IDLE: begin
-            if (flush_ip)
-                self_rst = 1'b1;
         end
         ACTIVE: begin
             /* finished getting the data for the current entries */
@@ -168,40 +180,11 @@ always_comb begin : actions
             end
 
             /* flush is in progress and we are requesting data */
-            if (flush_ip & ~data_read & ~data_write)
-                self_rst = 1'b1;
-        end
-        FULL: begin
-            full = 1'b1;
-
-            if (data_mem_resp & ~flush_ip)
-                finished_entry = 1'b1;
-
-            if (addr_rdy[head_ptr] & (rob_head_ptr == entries[head_ptr].rd_tag)) begin
-                if (entries[head_ptr].op > 10) begin
-                    data_read = 1'b1;
-                end
-                else begin
-                    data_write = 1'b1;
-                    wdata_reg = entries[head_ptr].src2_reg;
-                end
-                data_mem_address = entries[head_ptr].src1_data + entries[head_ptr].src2_data;
-            end
-
-            if (flush_ip & ~data_read & ~data_write)
-                self_rst = 1'b1;
+            // if (flush_ip & ~data_read & ~data_write)
+            //     self_rst = 1'b1;
         end
         FLUSH: begin
             full = 1'b1;
-            if (entries[head_ptr].op > 10) begin
-                data_read = 1'b1;
-            end
-            else begin
-                data_write = 1'b1;
-                wdata_reg = entries[head_ptr].src2_reg;
-            end
-            if (data_mem_resp)
-                self_rst = 1'b1;
         end
     endcase
 end
@@ -214,30 +197,13 @@ always_comb begin : next_state_logic
             if (~rst)
                 lsq_next_state = ACTIVE;
         end
-        IDLE: begin
-            if (flush_ip)
-                lsq_next_state = RESET;
-            else if (load | (head_ptr != curr_ptr))
-                lsq_next_state = ACTIVE;
-        end
         ACTIVE: begin
-            // if (flush_ip & (data_read | data_write) & ~data_mem_resp)
-            //     lsq_next_state = FLUSH;
-            // else if (curr_ptr == head_ptr + 2'b11)
-            // else if (entries_allocated[0] & entries_allocated[1] & entries_allocated[2] & entries_allocated[3])
-            //     lsq_next_state = FULL;
-            // else if (data_mem_resp & (head_ptr == curr_ptr))
-            //     lsq_next_state = IDLE;
-        end
-        FULL: begin
-            if (flush_ip & (data_read | data_write) & ~data_mem_resp)
+            if (flush_ip & ~data_mem_resp)
                 lsq_next_state = FLUSH;
-            // else if (curr_ptr != head_ptr + 2'b11)
-            else if (~(entries_allocated[0] & entries_allocated[1] & entries_allocated[2] & entries_allocated[3]))
-                lsq_next_state = ACTIVE;
         end
         FLUSH: begin
-
+            if (data_mem_resp)
+                lsq_next_state = RESET;
         end
     endcase
 end

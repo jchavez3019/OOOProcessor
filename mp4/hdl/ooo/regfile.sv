@@ -3,25 +3,23 @@ module regfile
 (
     input clk,
     input rst,
-    input load,
+    input load, // update data in destination register
     input allocate, // input signal to allocate a new tag to be assigned to a register while also declaring the register's data as not valid (not up to date)
     input logic [4:0] reg_allocate, // the register to update with a new tag and set valid to 0
+    input logic [2:0] commit_tag, // potentially make the register valid if the committed tag matches the current tag
     input logic [2:0] tag_in, // rob tag that will right into dest register next
-    // input logic commit, // high when cdb is committing a value to a register // same as register load
-    input logic [4:0] commit_reg, // register to update to valid if possible
-    input logic [2:0] commit_tag, // rob tag that is committing; if matches register's tag, valid gets set high since it no longer waits on floating instruction in cdb to update it
 
     input logic [31:0] in, // data to place into dest register
     input logic [4:0] src_a, src_b, dest, // src registers to read and dest register to change
-    output logic [31:0] reg_a, reg_b,
+    output logic [31:0] reg_a, reg_b, // data from src a and b registers 
 
-    output logic valid_a, valid_b,
-    output logic [2:0] tag_a, tag_b, //tag_dest,
+    output logic valid_a, valid_b, // if data on registers is most up to date or if they are in the cdb
+    output logic [2:0] tag_a, tag_b, // where the data for the source registers exist in the cdb if not valid
 
     // signals for memory interaction
     
-    input logic [4:0]src_c,
-    output logic [31:0] data_out
+    input logic [4:0]src_c, // data to be read for a store
+    output logic [31:0] data_out // data from src c
 );
 
 logic [31:0] data [32];
@@ -45,10 +43,12 @@ begin
         if (load && dest)
         begin
             data[dest] <= in;
-            valid[dest] <= 1'b1;
+            /* only set to valid if the commit tag matches, otherwise the register is waiting on more rob entries to update it */
+            if (commit_tag == tag[dest])
+                valid[dest] <= 1'b1;
         end
         /* updating tag that register will be updated by, ignore incoming tag from register load */
-        if(allocate && reg_allocate)// & ~load)
+        if(allocate && reg_allocate)
         begin
             valid[reg_allocate] <= 1'b0;
             tag[reg_allocate] <= tag_in;

@@ -17,8 +17,6 @@ import rv32i_types::*;
     // from d-cache
     input data_mem_resp,
 
-    input [1:0] memaddr_offset,
-
     /* from instruction queue for rvfi monitor */
     input logic [31:0] new_instr,
     input logic [31:0] new_pc,
@@ -39,7 +37,6 @@ import rv32i_types::*;
     output logic [2:0] br_flush_ptr,
     output logic [2:0] br_ptr,
     output logic [4:0] rd_commit,
-    output logic [4:0] st_src_commit,
     output logic regfile_load,
     output logic rob_full,
     output logic [4:0] rd_updated,
@@ -50,13 +47,7 @@ import rv32i_types::*;
     // determined by branch output
     output logic ld_pc,
     output logic flush_in_prog, // let other modules know that flush is in progress
-    output logic reallocate_reg_tag,
-
-    // to d-cache
-    output logic data_read,
-    output logic data_write,
-    output logic [3:0] wmask,
-    output tomasula_types::op_t commit_type
+    output logic reallocate_reg_tag
 );
 
 tomasula_types::op_t instr_arr [8];
@@ -94,8 +85,6 @@ logic branch_mispredict; // set high when branch is committing and there was a m
 assign flush_in_prog = flush_ip;
 
 assign rd_commit = rd_arr[_head_ptr];
-assign st_src_commit = rd_arr[_head_ptr];
-assign commit_type = instr_arr[_head_ptr];
 assign ld_commit_sel = _ld_commit_sel;
 assign ld_pc = _ld_pc;
 assign regfile_load = _regfile_load;
@@ -178,7 +167,6 @@ always_ff @(posedge clk) begin
         _br_ptr <= 3'b000;
         flush_ip <= 1'b0;
         // data_read <= 1'b0;
-        data_write <= 1'b0;
     end
 
     else begin
@@ -285,41 +273,7 @@ always_ff @(posedge clk) begin
         else begin
             // if the head of the rob has been computed
             if (valid_arr[_head_ptr] & ~flush_in_prog & ~branch_mispredict) begin
-                // if(instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
-                // //    _ld_pc <= 1'b1; 
-                // end
-                /* check if it is a load and take appropiate action */
-                // if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
-                //     // data_read <= 1'b1;
-                //     // make sure instruction is not committed until data returned
-                //     // from d-cache...
-                //     if (data_mem_resp & valid_arr[_head_ptr]) begin
-                //         // data_read <= 1'b0;
-                //         valid_arr[_head_ptr] <= 1'b0;
-                //         _allocated_entries[_head_ptr] <= 1'b0;
-                //         // use d-cache data
-                //         // _ld_commit_sel <= 1'b1;
-                //         // _regfile_load <= 1'b1;
-                //         // _rd_commit <= rd_arr[_head_ptr];
-                //         // update head
-                //         _head_ptr <= _head_ptr + 1'b1;
-                //     end
-                // end
-                /* check if it is a store and take appropiate action */
-                // else if (instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11) begin
-                // if (instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11) begin
-                //     data_write <= 1'b1;
-                //     // for st address
-                //     // send regfile the register file to read from
-                //     // once store has been processed
-                //     if (data_mem_resp) begin
-                //         data_write <= 1'b0;
-                //         valid_arr[_head_ptr] <= 1'b0;
-                //         _allocated_entries[_head_ptr] <= 1'b0;
-                //         _head_ptr <= _head_ptr + 1'b1;
-                //     end
-                // end
-                // else if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
+
                 if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
                     valid_arr[_head_ptr] <= 1'b0;
                     _allocated_entries[_head_ptr] <= 1'b0;
@@ -328,12 +282,8 @@ always_ff @(posedge clk) begin
                 end
                 // for all other instructions
                 else begin
-                    // _regfile_load <= 1'b1;
                     valid_arr[_head_ptr] <= 1'b0;
                     _allocated_entries[_head_ptr] <= 1'b0;
-
-                    // increment _head_ptr
-                    // _rd_commit <= rd_arr[_head_ptr];
                     _head_ptr <= _head_ptr + 1'b1;
                 end
             end
@@ -348,21 +298,8 @@ function void set_defaults();
     branch_mispredict = 1'b0;
     reallocate_reg_tag = 1'b0;
     rvfi_commit = 1'b0;
-
-    br_enqueue = 1'b0;
-    data_read = 1'b0;
-    // br_dequeue = 1'b0;
-
-    // curr_rvfi_word.pc_wdata = rvfi_word_arr[_head_ptr].pc_wdata;
 endfunction
 
-always_comb begin 
-    case(tomasula_types::op_t'(instr_arr[_head_ptr])) 
-        tomasula_types::SW: wmask = 4'b1111;
-        tomasula_types::SH: wmask = 4'b0011 << memaddr_offset;
-        tomasula_types::SB: wmask = 4'b0001 << memaddr_offset;
-    endcase
-end
 always_comb begin
 
             set_defaults();
@@ -385,29 +322,8 @@ always_comb begin
 
             /* check if rob entry at head pointer has been calculated and handle all instruction types */
 
-            if (valid_arr[_head_ptr] & ~flush_in_prog & ~branch_mispredict) begin
-                // if (instr_arr[_head_ptr] > 10 && instr_arr[_head_ptr] < 16) begin
-                //     // make sure instruction is not committed until data returned
-                //     // from d-cache...
-                //     data_read = 1'b1;
-                //     if (data_mem_resp) begin
-                //         _ld_commit_sel = 1'b1;
-                //         _regfile_load = 1'b1;
-                //         rvfi_commit = 1'b1;
-                //     end
-                // end
-                // else if ((instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11)) begin
-                // if ((instr_arr[_head_ptr] > 7 && instr_arr[_head_ptr] < 11)) begin
-                //     // for st address
-                //     // send regfile the register file to read from
-                //     // _st_src_commit <= rd_arr[_head_ptr];
-                //     // once store has been processed
-                //     if (data_mem_resp) begin
-                //         rvfi_commit = 1'b1;
-                //     end
-                // end
-                // for all other instructions except branch since branch doesn't load regfile
-                // else if (instr_arr[_head_ptr] != tomasula_types::BRANCH) begin
+            if (valid_arr[_head_ptr] & _allocated_entries[_head_ptr] & ~flush_in_prog & ~branch_mispredict) begin
+
                 if (instr_arr[_head_ptr] != tomasula_types::BRANCH & (instr_arr[_head_ptr] < 8 | instr_arr[_head_ptr] > 10)) begin
                     _regfile_load = 1'b1;
                 end

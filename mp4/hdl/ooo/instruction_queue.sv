@@ -5,6 +5,7 @@ import rv32i_types::*;
 (
     input logic clk,
     input logic rst,
+    input logic flush_ip,
 
     input logic res1_empty,
     input logic res2_empty,
@@ -121,7 +122,7 @@ always_comb begin : dequeue_logic
     regfile_allocate = 1'b0;
 
     // if the fifo is holding a valid entry
-    if (control_o_valid) begin 
+    if (control_o_valid & ~flush_ip) begin 
         // if the rob has space and instruction queue has is not empty
         if (~rob_full) begin
             // branch goes to branching unit
