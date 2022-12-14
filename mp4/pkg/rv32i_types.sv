@@ -90,10 +90,10 @@ typedef enum {
     READ_ERROR
 } error_e;
 
-typedef struct {
-    time timestamp;
-    error_e err;
-} error_t;
+// typedef struct {
+//     time timestamp;
+//     error_e err;
+// } error_t;
 
 
 endpackage : rv32i_types

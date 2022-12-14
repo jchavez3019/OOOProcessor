@@ -35,7 +35,7 @@ begin
         for (int i=0; i<32; i=i+1) begin
             data[i] <= '0;
             tag[i] <= '0;
-            valid[i] = 1'b1;
+            valid[i] <= 1'b1;
         end
     end
     //FIXME: must support simultaneous load and allocate

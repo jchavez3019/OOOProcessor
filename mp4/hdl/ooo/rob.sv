@@ -23,7 +23,7 @@ import rv32i_types::*;
     input logic [31:0] new_instr,
     input logic [31:0] new_pc,
     input logic [31:0] new_next_pc,
-    input rv32i_types::rvfi_word rvfi_word,
+    input rv32i_types::rvfi_word rvfi_wrd,
     // determines if rob entry has been computed
     // from reservation station
     input logic set_rob_valid[8],
@@ -158,7 +158,7 @@ always_ff @(posedge clk) begin
             instr_arr[i] <= tomasula_types::op_t'(0);
             rd_arr[i] <= '0;
             valid_arr[i] <= '0;
-            _allocated_entries[i] = 1'b0;
+            _allocated_entries[i] <= 1'b0;
 
             /* reset rvfi arrays */
             original_instr[i] <= 32'h00000000;
@@ -218,7 +218,7 @@ always_ff @(posedge clk) begin
            original_instr[_curr_ptr] <= new_instr;
            instr_pc[_curr_ptr] <= new_pc;
            instr_next_pc[_curr_ptr] <= new_next_pc;
-           rvfi_word_arr[_curr_ptr] <= rvfi_word;
+           rvfi_word_arr[_curr_ptr] <= rvfi_wrd;
            // do not allocate regfile entry for st
            if (instr_type > 7 && instr_type < 11) begin 
                rd_arr[_curr_ptr] <= st_src;

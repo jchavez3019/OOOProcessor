@@ -166,7 +166,7 @@ iq iq (
     .original_instr(itf.original_instr),
     .instr_pc(itf.original_instr_pc),
     .instr_next_pc(itf.original_instr_next_pc),
-    .rvfi_word(itf.rvfi_word)
+    .rvfi_wrd(itf.rvfi_wrd)
 );
 
 rob rob (
@@ -206,7 +206,7 @@ rob rob (
      .new_instr(itf.original_instr),
      .new_pc(itf.original_instr_pc),
      .new_next_pc(itf.original_instr_next_pc),
-     .rvfi_word(itf.rvfi_word)
+     .rvfi_wrd(itf.rvfi_wrd)
  );
 
 
@@ -422,11 +422,13 @@ always_comb begin : set_rob_valids
 end
 
 logic [7:0] cdb_enable;
+logic false;
 always_comb begin : cdb_enable_logic
     // set default values to 0
     for (int i = 0; i < 8; i++) begin
         itf.cdb_in[i].data[31:0] = 32'h00000000;
     end
+    false = 1'b0;
     /* load cdb with alu outputs or pc in jal/jalr special cases */
     `write_to_cdb(itf.res1_exec, itf.res1_alu_out, itf.res1_pc_to_cdb, itf.alu1_calculation.data[31:0]);
     `write_to_cdb(itf.res2_exec, itf.res2_alu_out, itf.res2_pc_to_cdb, itf.alu2_calculation.data[31:0]);
@@ -437,9 +439,9 @@ always_comb begin : cdb_enable_logic
     `write_to_cdb(itf.resbr_exec, itf.resbr_alu_out, itf.resbr_update_br, 32'h00000000);
 
     // data loaded from memory to cdb through lsq; store 0's in cdb for a store
-    `write_to_cdb(itf.finished_lsq_entry, itf.finished_lsq_entry_data, 1'b0, regfile_mem_in);// (itf.finished_lsq_entry_data.op > 10) ? regfile_mem_in : 32'h00000000);
+    `write_to_cdb(itf.finished_lsq_entry, itf.finished_lsq_entry_data, false, regfile_mem_in);// (itf.finished_lsq_entry_data.op > 10) ? regfile_mem_in : 32'h00000000);
     
-    cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag) | (itf.resbr_exec << itf.resbr_alu_out.tag | (itf.finished_lsq_entry << itf.finished_lsq_entry_data.tag));
+    cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag) | (itf.resbr_exec << itf.resbr_alu_out.tag) | (itf.finished_lsq_entry << itf.finished_lsq_entry_data.tag);
 end
 
 cdb cdb(

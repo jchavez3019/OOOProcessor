@@ -102,7 +102,7 @@ tomasula_types::op_t lsq_load_type;
 logic [31:0] pc_in;
 
 /* rvfi signals */
-rv32i_types::rvfi_word rvfi_word;
+rv32i_types::rvfi_word rvfi_wrd;
 
 endinterface : debug_itf
 

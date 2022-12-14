@@ -29,7 +29,7 @@ import rv32i_types::*;
     output logic [31:0] instr_pc,
     output logic [31:0] instr_next_pc,
 
-    output rv32i_types::rvfi_word rvfi_word,
+    output rv32i_types::rvfi_word rvfi_wrd,
 
     output logic ack_o,
 
@@ -91,7 +91,7 @@ fifo_synch_1r1w #(.DTYPE(rv32i_types::rvfi_word)) rvfi_queue (
     .valid_i(enqueue),
     .ready_o(),
     .valid_o(),
-    .data_o(rvfi_word),
+    .data_o(rvfi_wrd),
     .yumi_i(dequeue)
 );
 
