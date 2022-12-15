@@ -258,7 +258,8 @@ always_ff @(posedge clk) begin
             if (_br_flush_ptr == br_ptr) begin
                 flush_ip <= 1'b0;
                 br_dequeue <= 1'b1;
-                if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
+                // if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
+                if (_head_ptr == br_ptr) begin
                     _curr_ptr <= br_ptr + 1;
                     _head_ptr <= _head_ptr + 1;
                 end

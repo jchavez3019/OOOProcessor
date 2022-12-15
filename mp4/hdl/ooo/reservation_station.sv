@@ -3,8 +3,8 @@ import rv32i_types::*;
 (
     input clk, 
     input rst, 
-    input load_word,
-    input flush_ip,
+    input logic load_word,
+    input logic flush_ip,
     input tomasula_types::cdb_data cdb[8],
     input logic [7:0] robs_calculated,
     input logic [7:0] allocated_rob_entries,
@@ -190,7 +190,7 @@ begin : next_state_logic
     next_state = state;
     case (state)
         EMPTY: begin
-            if (load_word & ~flush_ip)
+            if (load_word)// & ~flush_ip)
                 next_state = CHECK;
         end
         CHECK: begin

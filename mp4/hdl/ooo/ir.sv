@@ -345,7 +345,7 @@ begin : next_state_logic
             if (flush_ip) begin
                 next_state = STALL_FLUSH;
             end
-            if (instr_mem_resp)
+            else if (instr_mem_resp)
                 next_state = CREATE;
         end
         CREATE: begin
