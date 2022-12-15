@@ -109,38 +109,6 @@ ir ir (
     .br_pc(itf.cdb_out[itf.br_ptr].data[31:0])
 );
 
-// /* NOTE:  update rob logic for loading branches since it is necessary for branch mispredicts */
-// always_comb begin : pc_mux        
-//     // if (itf.rob_ld_pc) // only happens for a branch mispredict
-//     //     itf.pc_in[31:0] = itf.cdb_out[itf.br_ptr].data[31:0];// - 4; // always works but fix later
-//     /* cases where jalr was calculated and we can finally unstall the pipeline */
-//     if (itf.res1_jalr_executed)
-//         // itf.pc_in = itf.cdb_out[itf.res1_alu_out.pc].data[31:0];
-//         itf.pc_in[31:0] = itf.alu1_calculation.data[31:0];
-//     else if (itf.res2_jalr_executed)
-//         // itf.pc_in = itf.cdb_out[itf.res2_alu_out.pc].data[31:0];
-//         itf.pc_in[31:0] = itf.alu2_calculation.data[31:0];
-//     else if (itf.res3_jalr_executed)
-//         // itf.pc_in = itf.cdb_out[itf.res3_alu_out.pc].data[31:0];
-//         itf.pc_in[31:0] = itf.alu3_calculation.data[31:0];
-//     else if (itf.res4_jalr_executed)
-//         // itf.pc_in = itf.cdb_out[itf.res4_alu_out.pc].data[31:0];
-//         itf.pc_in[31:0] = itf.alu4_calculation.data[31:0];
-//     /* default */
-//     else
-//         itf.pc_in[31:0] = itf.pc_calc[31:0];
-// end
-
-// pc_register PC (
-//         .clk (clk),
-//         .rst (rst),
-//         .load(itf.ir_ld_pc | itf.rob_ld_pc | itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed),
-//         // .load(ld_pc),
-//         .in(itf.pc_in),
-//         // .in(itf.pc_calc),
-//         .out(pc)
-//     );
-
 iq iq (
     .*,
     .clk (clk),

@@ -299,6 +299,7 @@ function void set_defaults();
     branch_mispredict = 1'b0;
     reallocate_reg_tag = 1'b0;
     rvfi_commit = 1'b0;
+    br_enqueue = 1'b0;
 endfunction
 
 always_comb begin
