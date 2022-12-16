@@ -862,6 +862,10 @@ LoopRowsD:
     
     
     HALT:
+    # added code
+    and x13, x0, x0 # shouldn't reach this point
+    addi x13, x13, 9
+    # done added code
     beq x0, x0, HALT
 
 

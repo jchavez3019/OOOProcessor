@@ -41,6 +41,7 @@ logic [31:0] prev_pc; // previous pc state to hold for instructions that need to
 logic [31:0] instr_pc; // pc to store alongside an instruction/rvfi_word
 logic [31:0] predicted_br_pc_buffer; // buffer to hold what the predicted branch to take is in the case that branch instruction is stalled due to iq being full
 logic [31:0] predicted_br_pc;
+logic [31:0] prev_mem_address; // used to hold mem address for previous requests in stalling states
 logic ld_pc; // signal to update pc
 
 logic [2:0] funct3;
@@ -263,6 +264,9 @@ begin
             prev_pc <= pc;
         end
 
+        if (instr_read)
+            prev_mem_address <= instr_mem_address;
+
         /* states in which new data is fetched */
         if (state == FETCH | state == STALL_FLUSH_TWO | state == STALL_JALR_TWO) begin
             data <= in;
@@ -327,7 +331,11 @@ begin : state_actions
             pc_calc = jalr_pc_buffer;
             ld_pc = 1'b1;
         end
-        STALL_FLUSH, STALL_FLUSH_TWO: begin
+        STALL_FLUSH: begin
+            instr_read = 1'b1;
+            instr_mem_address = prev_mem_address;
+        end
+        STALL_FLUSH_TWO: begin
             instr_read = 1'b1;
             instr_mem_address = br_pc_buffer; // request the branch pc address from memory instead of current pc
             pc_calc = br_pc_buffer; // current pc is now branch pc; gets incrememnted by 4 once transitioned to CREATE state
@@ -362,10 +370,10 @@ begin : next_state_logic
                 next_state = STALL;
         end
         STALL: begin
-            if (iq_ack) begin
-                if (flush_ip)
-                    next_state = STALL_FLUSH;
-                else if(opcode == op_jalr) 
+            if (flush_ip)
+                next_state = STALL_FLUSH_TWO;
+            else if (iq_ack) begin
+                if(opcode == op_jalr) 
                     next_state = STALL_JALR;
                 else
                     next_state = FETCH;
@@ -381,7 +389,9 @@ begin : next_state_logic
         end
         /* instruction register has now resolved JALR instruction, now to request its address and continue */
         STALL_JALR_TWO: begin
-            if (instr_mem_resp)
+            if (flush_ip)
+                next_state = STALL_FLUSH;
+            else if (instr_mem_resp)
                 next_state = CREATE;
         end
         /* must wait for instr_read to be resolved before requesting branch instruction */

@@ -5,13 +5,13 @@ ldst_mp2test.s:
 
     lw x2, cooleceb # 60             # X1 <= 0x1111eceb
 
-    addi x3, x2, 1
+    addi x3, x2, 1 # 68
 
 done:
-    lw x7, good # 68
-    addi x8, x7, 2
+    lw x7, good # 6c
+    addi x8, x7, 2 # 74
 halt:                 # Infinite loop to keep the processor
-    beq x0, x0, halt # 70  # from trying to execute the data below.
+    beq x0, x0, halt # 78  # from trying to execute the data below.
                       # Your own programs should also make use
                       # of an infinite loop at the end.
 deadend:

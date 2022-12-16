@@ -11,7 +11,8 @@ halt:                 # Infinite loop to keep the processor
                       # of an infinite loop at the end.
 deadend:
     addi x13, x13, 3
-    lw x10, bad       
+    lw x10, bad
+    beq x0, x0, deadend       
 
 .section .rodata
 

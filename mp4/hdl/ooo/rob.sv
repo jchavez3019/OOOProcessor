@@ -96,12 +96,13 @@ assign br_flush_ptr = _br_flush_ptr;
 assign rd_updated = rd_arr[_head_ptr];
 
 logic [2:0] fifo_br;
-logic br_enqueue, br_dequeue;
+logic br_enqueue, br_dequeue, br_flush_rst, actual_br_rst;
+assign actual_br_rst = rst | br_flush_rst;
 
 fifo_synch_1r1w #(.DTYPE(logic[2:0])) branch_queue
 (
     .clk_i(clk),
-    .reset_n_i(~rst),
+    .reset_n_i(~actual_br_rst),
     .data_i(curr_ptr),
     .valid_i(br_enqueue),
     .ready_o(),
@@ -167,6 +168,7 @@ always_ff @(posedge clk) begin
         _br_flush_ptr <= 3'b000;
         _br_ptr <= 3'b000;
         flush_ip <= 1'b0;
+        br_flush_rst <= 1'b0;
         // data_read <= 1'b0;
     end
 
@@ -186,6 +188,7 @@ always_ff @(posedge clk) begin
             prev_head_ptr <= _head_ptr - 1;
 
         br_dequeue <= 1'b0;
+        br_flush_rst <= 1'b0;
 
         /* ----- ALLOCATE -----*/
         /* when branch wants to update rd for a branch taken/not taken */
@@ -265,6 +268,7 @@ always_ff @(posedge clk) begin
                 if (_head_ptr == br_ptr) begin
                     _curr_ptr <= br_ptr + 1;
                     _head_ptr <= _head_ptr + 1;
+                    br_flush_rst <= 1'b1;
                 end
                 else
                     _curr_ptr <= br_ptr;
