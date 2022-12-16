@@ -34,6 +34,7 @@ typedef struct {
     logic [31:0] src2_data;
     logic [2:0] funct3; 
     logic funct7;
+    // logic imm;
     logic [4:0] rd;
 
     logic [31:0] pc;
@@ -47,6 +48,7 @@ typedef struct {
     op_t op;
     logic [2:0] funct3;
     logic funct7; 
+    // logic imm;
     logic [2:0] src1_tag; // this could be removed to save area
     logic [31:0] src1_data;
     logic src1_valid;
@@ -72,6 +74,7 @@ typedef struct packed {
     op_t op;
     logic [2:0] funct3;
     logic funct7; 
+    // logic imm;
     logic [31:0] src1_data;
     logic [31:0] src2_data;
     // logic [31:0] imm;

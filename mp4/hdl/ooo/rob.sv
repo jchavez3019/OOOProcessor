@@ -65,6 +65,7 @@ logic [31:0] curr_instr_pc;
 logic [31:0] curr_instr_next_pc;
 rv32i_types::rvfi_word rvfi_word_arr [8];
 rv32i_types::rvfi_word curr_rvfi_word;
+rv32i_types::rvfi_word prev_rvfi_word;
 logic rvfi_commit;
 logic [2:0] prev_head_ptr; // for comparison to check if instruction has committed
 logic [4:0] _rd_commit, _st_src_commit;
@@ -189,6 +190,7 @@ always_ff @(posedge clk) begin
 
         br_dequeue <= 1'b0;
         br_flush_rst <= 1'b0;
+        prev_rvfi_word <= curr_rvfi_word;
 
         /* ----- ALLOCATE -----*/
         /* when branch wants to update rd for a branch taken/not taken */
@@ -349,7 +351,7 @@ always_comb begin
                     _regfile_load = 1'b1;
                 end
                 /* check that the instruction is not a store */
-                if (prev_head_ptr != _head_ptr)
+                // if (prev_head_ptr != _head_ptr) // may remove prev head ptr later since most likely unnecessary
                     rvfi_commit = 1'b1; // ROB has committed an instruction
             end
 

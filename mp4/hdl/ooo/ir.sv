@@ -183,10 +183,18 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.op = tomasula_types::ARITH;
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
-            if (funct3 == 3'b000 & i_imm[31])
+            /* need to do special logic for add immediates since they can potentially be subtractions, else normal */
+            if (funct3 == 3'b000 & i_imm[31]) begin
                 iq_ir_itf.control_word.src2_data = ~i_imm + 1;
-            else
+                iq_ir_itf.control_word.funct7 = 1'b1;
+            end
+            else if (funct3 == 3'b000) begin
                 iq_ir_itf.control_word.src2_data = i_imm;
+                iq_ir_itf.control_word.funct7 = 1'b0;
+            end
+            else begin
+                iq_ir_itf.control_word.src2_data = i_imm;
+            end
 
             rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end 

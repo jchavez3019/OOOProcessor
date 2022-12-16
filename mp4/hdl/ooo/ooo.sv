@@ -412,6 +412,7 @@ always_comb begin : cdb_enable_logic
 end
 
 cdb cdb(
+    .clk(clk),
     .ctl(itf.cdb_in),
     .enable(cdb_enable),
     .rst(rst),

@@ -80,6 +80,9 @@ always_comb begin : set_rs2
         rvfi.rs2_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;
     end
 end
+// always_comb begin : rs1_data_set
+//     if (dut.ooo.rob.regfile_load & rvfi.rs1_addr
+// end
 assign rvfi.rs1_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs1_data;
 // assign rvfi.rs2_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;
 // assign rvfi.rs2_rdata = dut.ooo.rob.curr_rvfi_word.imm ? 32'h00000000 : dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;

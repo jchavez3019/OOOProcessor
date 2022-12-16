@@ -30,6 +30,7 @@ always_comb begin : OPERATION
                 else
                     aluop = rv32i_types::alu_sra;
             end
+            /* check funct7 only when it matters in regular add, not immediate add */
             else if (alu_word.funct3 == rv32i_types::add) begin
                 if (alu_word.funct7 != 1'b1)
                     aluop = rv32i_types::alu_add;

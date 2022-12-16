@@ -7,7 +7,7 @@
 
 // Set these to 1 to enable the feature for CP2
 `define USE_SHADOW_MEMORY 1
-`define USE_RVFI_MONITOR 0
+`define USE_RVFI_MONITOR 1
 
 `include "tb_itf.sv"
 
@@ -28,7 +28,7 @@ initial begin
 end
 
 /**************************** Halting Conditions *****************************/
-int timeout = 100000000; //10000// old time out
+int timeout = 100000000; //10000 // old time out
 
 always @(posedge tb_itf.clk) begin
     if (rvfi.halt)

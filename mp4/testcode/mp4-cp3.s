@@ -4,7 +4,8 @@
 
 _start:
 
-    la x8, ZERO
+    # la x8, ZERO
+    la x8, FOED
     addi x1, x1, 12
     nop
     nop
@@ -268,7 +269,11 @@ HOWHIGH:
 
     sw x6, FUN, x15
 
-    lw x1,ZERO
+    # added code
+    and x13, x0, x0
+    addi x13, x13, 11
+    # end added
+    lw x1,ZERO # loading wrong value?? ERROR
     lw x2,ZERO
     lw x3,ZERO
     lw x4,GOOD
@@ -411,9 +416,9 @@ MUDDLER:
 
 HOPE:
     # added code 
-    addi x13, x13, 1 # should become 9 if returned succcessfully
+    addi x13, x13, 2 # should become 9 if returned succcessfully
     # end added
-    lw x1,GOOD
+    lw x1,GOOD # failing at this load ERROR
     lw x2,GOOD
     lw x3,GOOD
     lw x4,GOOD
