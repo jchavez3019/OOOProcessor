@@ -238,11 +238,13 @@ always_ff @(posedge clk) begin
             _head_ptr <= _head_ptr;
 
             /* invalidate entries starting from branch pointer to entry right before head pointer */
-            for (int i = br_ptr; i != _head_ptr; i = (i + 1) % 8) begin
+            // for (int i = br_ptr; i != _head_ptr; i = (i + 1) % 8) begin
+            for (logic [2:0] i = br_ptr + 1; i != _head_ptr; i = i + 1) begin
                 _allocated_entries[i] <= 1'b0;
                 valid_arr[i] <= 1'b0;
             end
 
+            /* also invalidate the current branch since we are dealing with it now */
             _allocated_entries[br_ptr] <= 1'b0;
             valid_arr[br_ptr] <= 1'b0;
 
@@ -313,7 +315,8 @@ always_comb begin
 
             /* need to output the entries that are now invalidated */
             if (flush_in_prog) begin
-                for (int i = br_ptr; i != _head_ptr; i = (i + 1) % 8) begin
+                // for (int i = br_ptr; i != _head_ptr; i = (i + 1) % 8) begin
+                for (logic [2:0] i = br_ptr + 1; i != _head_ptr; i = i + 1) begin
                     invalidated_n[i] = 1'b0;
                 end
             end

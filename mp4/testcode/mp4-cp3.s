@@ -214,7 +214,14 @@ HOWHIGH:
 
     lw x4, ZERO
 
+    # added code
+    and x13, x0, x0
+    add x13, x13, 9
+    # end added
     jal x7,  MUDDLE
+    # added code 
+    addi x13, x13, 1 # should become 10 if returned succcessfully
+    # end added
 
     sw x4, MUDPIE, x15
 
@@ -222,7 +229,14 @@ HOWHIGH:
     nop
     nop
     nop
+    # added code
+    and x13, x0, x0
+    add x13, x13, 7
+    # end added
     jalr x7, x5, 0
+    # added code 
+    addi x13, x13, 1 # should become 9 if returned succcessfully
+    # end added
 
     sw x5, MUDPIE, x15
 
@@ -243,8 +257,14 @@ HOWHIGH:
     nop
     nop
     add x6, x6, x7
-
+    # added code
+    and x13, x0, x0
+    addi x13, x13, 5
+    # end added
     jal x7, HOPE
+    # added code 
+    addi x13, x13, 1 # should become 7 if returned succcessfully
+    # end added
 
     sw x6, FUN, x15
 
@@ -270,6 +290,10 @@ HOWHIGH:
     sw x2, GOOF, x15
     nop
 
+    # added code
+    and x13, x0, x0
+    addi x13, x13, 3
+    # end added
     andi x3, x3, 0
     blt x0, x3, DOH
     bgt x0, x3, DOH
@@ -279,9 +303,15 @@ HOWHIGH:
     beq x0, x0, DOH
 
 DOH:
+    # added code 
+    addi x13, x13, -1 # should become 7 if returned succcessfully
+    # end added
     addi x3, x3, 4
 
 WOOHOO:
+    # added code 
+    addi x13, x13, 10 # should become 13 not 12 if returned succcessfully
+    # end added
     addi x3, x3, 6
     andi x4,x4,0
     beq x0, x3, SOFAR
@@ -320,6 +350,10 @@ GetOverHere:
     sw x3, SPOT3, x15
 
     la x1, Beg1
+    # added code
+    and x3, x0, x0 # shouldn't reach this point
+    addi x3, x3, 9
+    # done added code
 END_m:
     jalr x0, x1, 0
 
@@ -369,11 +403,16 @@ MUDDLE:
     jalr x0, x7, 0
 
 MUDDLER:
-
+    # added code
+    addi x13, x13, 1
+    # end added
     lw x5, LIFE
     jalr x0, x7, 0
 
 HOPE:
+    # added code 
+    addi x13, x13, 1 # should become 9 if returned succcessfully
+    # end added
     lw x1,GOOD
     lw x2,GOOD
     lw x3,GOOD

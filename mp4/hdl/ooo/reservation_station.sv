@@ -7,7 +7,7 @@ import rv32i_types::*;
     input logic flush_ip,
     input tomasula_types::cdb_data cdb[8],
     input logic [7:0] robs_calculated,
-    input logic [7:0] allocated_rob_entries,
+    input logic invalidated_rob_entries_n[8], // originally took the allocated entries in the rob
     output tomasula_types::alu_word alu_data,
     output logic start_exe,
     output logic res_empty,
@@ -107,7 +107,7 @@ begin : state_actions
             /* both source registers are valid and we can execute in this same cycle */
             // if (res_in.src1_valid & (res_word.src2_valid | res_in.src2_valid))
             //     start_exe = 1'b1;
-            if (allocated_rob_entries[res_word.rd_tag]) begin
+            if (invalidated_rob_entries_n[res_word.rd_tag]) begin
                 if (res_word.src1_valid & res_word.src2_valid)
                     start_exe = 1'b1;
 
@@ -198,7 +198,7 @@ begin : next_state_logic
                 next_state = EMPTY;
 
             /* in the case reservation station needs to get flushed */
-            if (~allocated_rob_entries[res_word.rd_tag])
+            if (~invalidated_rob_entries_n[res_word.rd_tag])
                 next_state = EMPTY;
         end
     endcase

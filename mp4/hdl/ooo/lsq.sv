@@ -116,7 +116,7 @@ always_ff @(posedge clk) begin
             /* snoop register file ONLY at first instead of both register file and cdb in the same cycle when loading */
             // entries[curr_ptr].src1_data <= robs_calculated[res_in.src1_tag] ? cdb[res_in.src1_tag].data : res_in.src1_data;
             entries[curr_ptr].src1_data <= res_in.src1_data;
-            addr_rdy[curr_ptr] <= res_in.src1_valid | robs_calculated[res_in.src1_tag];
+            addr_rdy[curr_ptr] <= res_in.src1_valid;// | robs_calculated[res_in.src1_tag];
             entries[curr_ptr].src1_valid <= res_in.src1_valid;// | robs_calculated[res_in.src1_tag];
             entries[curr_ptr].src2_tag <= res_in.src2_tag;
             entries[curr_ptr].src2_data <= res_in.src2_data;
