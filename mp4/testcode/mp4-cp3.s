@@ -140,6 +140,10 @@ _start:
 
 HOWHIGH:
     sw x1, dunk, x15
+    # added code
+    # and x3, x0, x0
+    # addi x3, x3, 3
+    # done added code
     nop
     nop
     nop

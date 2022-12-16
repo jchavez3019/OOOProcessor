@@ -26,7 +26,8 @@ import rv32i_types::*;
     // from reservation station
     input logic set_rob_valid[8],
     output logic [7:0] status_rob_valid,
-    output logic [7:0] allocated_rob_entries,
+    output logic [7:0] allocated_rob_entries, // need to output allocated entries so that when flush_ip, res station and lsq can check if their data has been invalidated
+    output logic invalidated_n[8], // note that this is negated
     input logic [2:0] br_entry,
     input logic br_taken,
     input logic update_br,
@@ -300,11 +301,22 @@ function void set_defaults();
     reallocate_reg_tag = 1'b0;
     rvfi_commit = 1'b0;
     br_enqueue = 1'b0;
+
+    for (int i = 0; i < 8; i++) begin
+        invalidated_n[i] = 1'b1;
+    end
 endfunction
 
 always_comb begin
 
             set_defaults();
+
+            /* need to output the entries that are now invalidated */
+            if (flush_in_prog) begin
+                for (int i = br_ptr; i != _head_ptr; i = (i + 1) % 8) begin
+                    invalidated_n[i] = 1'b0;
+                end
+            end
 
             if (instr_type == tomasula_types::BRANCH & rob_load) begin
                 br_enqueue = 1'b1;

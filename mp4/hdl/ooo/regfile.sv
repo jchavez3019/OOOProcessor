@@ -67,7 +67,8 @@ begin
     if((dest == src_a) && (src_a != 5'b00000) && load ) begin
         reg_a = in;
         reg_b = src_b ? data[src_b] : 0;
-        valid_a = 1'b1;
+        if (tag[src_a] == commit_tag)
+            valid_a = 1'b1;
         valid_b = valid[src_b];
     end
 
@@ -75,7 +76,8 @@ begin
         reg_a = src_a ? data[src_a] : 0;
         reg_b = in;
         valid_a = valid [src_a];
-        valid_b = 1'b1;
+        if (tag[src_b] == commit_tag)
+            valid_b = 1'b1;
     end
     else  begin
         reg_a = src_a ? data[src_a] : 0;

@@ -161,6 +161,12 @@ pcrel_GOOD: auipc x16, %pcrel_hi(GOOD)
     nop
     nop
     nop
+    # adding code
+    # addi x23, x16, %pcrel_lo(pcrel_GOOD) # X9 <= address of TEMP1 # 78th
+    # and x1, x0, x0
+    # addi x1, x1, 4
+    # sw x1, 0(x23)
+    # done adding code
     lw x1, %pcrel_lo(pcrel_GOOD)(x16)
 DONEb:
     beq x0, x0, DONEb
