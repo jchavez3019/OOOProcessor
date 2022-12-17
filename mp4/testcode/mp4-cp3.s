@@ -273,7 +273,7 @@ HOWHIGH:
     and x13, x0, x0
     addi x13, x13, 11
     # end added
-    lw x1,ZERO # loading wrong value?? ERROR
+    lw x1,ZERO 
     lw x2,ZERO
     lw x3,ZERO
     lw x4,GOOD
@@ -612,9 +612,9 @@ MoneyMoney:
     la x1, M00
     lw x2, Counter2
     lw x3, TWOFIVESIX
-FillM1:
+FillM1: # ERROR reading wrong data somehow
     sw x2, 0(x1)
-    addi x2, x2, -7
+    addi x2, x2, -7 # on third iteration, is loading wrong value form cdb instead of subtracting 7
     addi x1, x1, 4
     addi x3, x3, -1
     blt x0, x3, FillM1

@@ -21,6 +21,7 @@ typedef struct {
     // logic [31:0] rd_wdata;
     logic [31:0] pc_rdata;
     logic [31:0] pc_wdata;
+    logic [2:0] rd_tag;
     logic imm;
 } rvfi_word; // totals 199 bits
 

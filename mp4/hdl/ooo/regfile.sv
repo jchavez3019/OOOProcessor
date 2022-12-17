@@ -16,7 +16,10 @@ module regfile
     output logic valid_a, valid_b, // if data on registers is most up to date or if they are in the cdb
     output logic [2:0] tag_a, tag_b, // where the data for the source registers exist in the cdb if not valid
 
-    // signals for memory interaction
+    /* signal to set registers back to valid after a flush */
+    input logic set_reg_valid [8],
+    input logic [4:0] reg_valid [8],
+    input logic flush_ip,
     
     input logic [4:0]src_c, // data to be read for a store
     output logic [31:0] data_out // data from src c
@@ -47,13 +50,22 @@ begin
             if (commit_tag == tag[dest])
                 valid[dest] <= 1'b1;
         end
+
+        /* if a flush is in progress, registers need to know that their values are once again valid */
+        if (flush_ip) begin
+            for (int i = 0; i < 8; i=i+1) begin
+                if (set_reg_valid[i])
+                    valid[int'(reg_valid[i])] <= 1'b1;
+            end
+        end
         /* updating tag that register will be updated by, ignore incoming tag from register load */
-        if(allocate && reg_allocate)
+        else if(allocate && reg_allocate)
         begin
             valid[reg_allocate] <= 1'b0;
             tag[reg_allocate] <= tag_in;
         end 
-        // else if (load )
+
+        
     end
 
 end

@@ -26,7 +26,10 @@ import rv32i_types::*;
     // from reservation station
     input logic set_rob_valid[8],
     output logic [7:0] status_rob_valid,
-    output logic [7:0] allocated_rob_entries, // need to output allocated entries so that when flush_ip, res station and lsq can check if their data has been invalidated
+    /* for resetting registers back to valid during a flush in progress */
+    output logic set_reg_valid [8],
+    output logic [4:0] reg_valid [8],
+    // output logic [7:0] allocated_rob_entries, // need to output allocated entries so that when flush_ip, res station and lsq can check if their data has been invalidated
     output logic invalidated_n[8], // note that this is negated
     input logic [2:0] br_entry,
     input logic br_taken,
@@ -129,14 +132,14 @@ assign status_rob_valid[5] = valid_arr[5];
 assign status_rob_valid[6] = valid_arr[6];
 assign status_rob_valid[7] = valid_arr[7];
 
-assign allocated_rob_entries[0] = _allocated_entries[0];
-assign allocated_rob_entries[1] = _allocated_entries[1];
-assign allocated_rob_entries[2] = _allocated_entries[2];
-assign allocated_rob_entries[3] = _allocated_entries[3];
-assign allocated_rob_entries[4] = _allocated_entries[4];
-assign allocated_rob_entries[5] = _allocated_entries[5];
-assign allocated_rob_entries[6] = _allocated_entries[6];
-assign allocated_rob_entries[7] = _allocated_entries[7];
+// assign allocated_rob_entries[0] = _allocated_entries[0];
+// assign allocated_rob_entries[1] = _allocated_entries[1];
+// assign allocated_rob_entries[2] = _allocated_entries[2];
+// assign allocated_rob_entries[3] = _allocated_entries[3];
+// assign allocated_rob_entries[4] = _allocated_entries[4];
+// assign allocated_rob_entries[5] = _allocated_entries[5];
+// assign allocated_rob_entries[6] = _allocated_entries[6];
+// assign allocated_rob_entries[7] = _allocated_entries[7];
 
 
 
@@ -160,6 +163,7 @@ always_ff @(posedge clk) begin
             rvfi_word_arr[i].rs1_addr <= 5'b00000;
             rvfi_word_arr[i].rs2_addr <= 5'b00000;
             rvfi_word_arr[i].rd_addr <= 5'b00000;
+            rvfi_word_arr[i].rd_tag <= 3'b000;
             rvfi_word_arr[i].pc_rdata <= 32'h00000000;
             rvfi_word_arr[i].pc_wdata <= 32'h00000000;
         end
@@ -213,6 +217,7 @@ always_ff @(posedge clk) begin
            instr_pc[_curr_ptr] <= new_pc;
            instr_next_pc[_curr_ptr] <= new_next_pc;
            rvfi_word_arr[_curr_ptr] <= rvfi_wrd;
+           rvfi_word_arr[_curr_ptr].rd_tag <= _curr_ptr;
            // do not allocate regfile entry for st
            if (instr_type > 7 && instr_type < 11) begin 
                rd_arr[_curr_ptr] <= st_src;
@@ -312,6 +317,8 @@ function void set_defaults();
 
     for (int i = 0; i < 8; i++) begin
         invalidated_n[i] = 1'b1;
+        set_reg_valid[i] = 1'b0;
+        reg_valid[i] = 5'b00000;
     end
 endfunction
 
@@ -320,10 +327,15 @@ always_comb begin
             set_defaults();
 
             /* need to output the entries that are now invalidated */
-            if (flush_in_prog) begin
+            if (flush_in_prog & ~rst) begin
                 // for (int i = br_ptr; i != _head_ptr; i = (i + 1) % 8) begin
-                for (logic [2:0] i = br_ptr + 1; i != _head_ptr; i = i + 1) begin
-                    invalidated_n[i] = 1'b0;
+                for (logic [2:0] m = br_ptr + 1; m != _head_ptr; m = m + 1) begin
+                    invalidated_n[m] = 1'b0;
+                end
+
+                for (logic [2:0] n = br_ptr + 1; n != (_curr_ptr + 1)%8; n = n + 1) begin
+                    set_reg_valid[n] = 1'b1;
+                    reg_valid[n] = rd_arr[n];
                 end
             end
 

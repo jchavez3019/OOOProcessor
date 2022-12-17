@@ -49,9 +49,16 @@ end
 // assign rvfi.commit = dut.ooo.rob.rvfi_commit;
 // assign rvfi.commit = dut.ooo.rob.regfile_load | dut.ooo.itf.rob_ld_pc | dut.ooo.rob.rvfi_commit;
 assign rvfi.commit = dut.ooo.itf.rob_ld_pc | dut.ooo.rob.rvfi_commit;
-assign rvfi.halt = 1'b0;// (rvfi.inst == 32'h0007d463 | rvfi.inst == 32'h00000063) ? 1 : 0;  // check if 'ret' call was made
+assign rvfi.halt = 1'b0;
 initial rvfi.order = 0;
 always @(posedge itf.clk iff rvfi.commit) rvfi.order <= rvfi.order + 1; // Modify for OoO
+// always @(posedge itf.clk) begin
+//     if (itf.rst)
+//         rvfi.halt <= 1'b0;    
+
+//     else if (rvfi.commit & (rvfi.pc_rdata == rvfi.pc_wdata))
+//         rvfi.halt <= 1'b1;
+// end
 assign rvfi.load_regfile = dut.ooo.rob.regfile_load;
 
 //Instruction and trap:
@@ -83,7 +90,8 @@ end
 // always_comb begin : rs1_data_set
 //     if (dut.ooo.rob.regfile_load & rvfi.rs1_addr
 // end
-assign rvfi.rs1_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs1_data;
+// assign rvfi.rs1_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs1_data;
+assign rvfi.rs1_rdata = dut.ooo.cdb.out[dut.ooo.rob.curr_rvfi_word.rd_tag].rs1_data;
 // assign rvfi.rs2_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;
 // assign rvfi.rs2_rdata = dut.ooo.rob.curr_rvfi_word.imm ? 32'h00000000 : dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;
 assign rvfi.rd_addr =  (dut.ooo.rob.curr_rvfi_word.inst[6:0] == 7'b0100011) ? 5'b00000 : dut.ooo.rob.curr_rvfi_word.rd_addr;

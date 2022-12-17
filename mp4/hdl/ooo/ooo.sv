@@ -149,7 +149,9 @@ rob rob (
      .data_mem_resp (data_mem_resp),
      .status_rob_valid (itf.status_rob_valid),
      .set_rob_valid (itf.set_rob_valid),
-     .allocated_rob_entries (itf.allocated_rob_entries),
+     .set_reg_valid(itf.set_reg_valid),
+     .reg_valid(itf.reg_valid),
+    //  .allocated_rob_entries (itf.allocated_rob_entries),
      .invalidated_n(itf.rob_invalidated_entries),
      .br_entry(itf.resbr_alu_out.tag),
      .br_taken(itf.taken),
@@ -203,6 +205,9 @@ regfile regfile (
     .valid_b (itf.src2_valid),
     .tag_a (itf.tag_a),
     .tag_b (itf.tag_b),
+    .set_reg_valid(itf.set_reg_valid),
+    .reg_valid(itf.reg_valid),
+    .flush_ip(itf.flush_in_prog),
     .src_c (itf.st_src_commit),
     .data_out (itf.regfile_data_out)
 );
