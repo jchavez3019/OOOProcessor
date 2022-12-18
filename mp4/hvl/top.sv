@@ -144,8 +144,8 @@ begin : pc_next
     //     rvfi.pc_wdata = dut.ooo.itf.alu3_calculation.data[31:0];
     // else if (dut.ooo.itf.res4_jalr_executed)
     //     rvfi.pc_wdata = dut.ooo.itf.alu4_calculation.data[31:0];
-    else if (res_jalr_buff)
-        rvfi.pc_wdata = jalr_pc_buff;
+    // else if (res_jalr_buff)
+    //     rvfi.pc_wdata = jalr_pc_buff;
     else
         rvfi.pc_wdata = dut.ooo.rob.curr_rvfi_word.pc_wdata;
 end

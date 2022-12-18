@@ -81,6 +81,28 @@ always_comb begin : data_mem_req
 
 end
 
+always_comb begin : jalr_pc_wdata 
+    itf.jalr_pc = 32'h00000000;
+    itf.jalr_tag = 5'b00000;
+    itf.jalr_executed = itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed;
+    if (itf.res1_jalr_executed) begin
+        itf.jalr_pc = itf.alu1_calculation.data[31:0];
+        itf.jalr_tag = itf.res1_jalr_tag;
+    end
+    if (itf.res2_jalr_executed) begin
+        itf.jalr_pc = itf.alu2_calculation.data[31:0];
+        itf.jalr_tag = itf.res2_jalr_tag;
+    end
+    if (itf.res3_jalr_executed) begin
+        itf.jalr_pc = itf.alu3_calculation.data[31:0];
+        itf.jalr_tag = itf.res3_jalr_tag;
+    end
+    if (itf.res4_jalr_executed) begin
+        itf.jalr_pc = itf.alu4_calculation.data[31:0];
+        itf.jalr_tag = itf.res4_jalr_tag;
+    end
+end
+
 ir ir (
     .*,
     .clk(clk),
@@ -171,7 +193,10 @@ rob rob (
      .new_instr(itf.original_instr),
      .new_pc(itf.original_instr_pc),
      .new_next_pc(itf.original_instr_next_pc),
-     .rvfi_wrd(itf.rvfi_wrd)
+     .rvfi_wrd(itf.rvfi_wrd),
+     .jalr_executed(itf.jalr_executed),
+     .jalr_tag(itf.jalr_tag),
+     .jalr_pc(itf.jalr_pc)
  );
 
 
@@ -269,6 +294,7 @@ reservation_station res1(
     .alu_data(itf.res1_alu_out),
     .start_exe(itf.res1_exec),
     .jalr_executed(itf.res1_jalr_executed),
+    .jalr_tag(itf.res1_jalr_tag),
     .ld_pc_to_cdb(itf.res1_pc_to_cdb),
     .update_br(itf.res1_update_br),
     .res_empty(itf.res1_empty),
@@ -291,6 +317,7 @@ reservation_station res2(
     .alu_data(itf.res2_alu_out),
     .start_exe(itf.res2_exec),
     .jalr_executed(itf.res2_jalr_executed),
+    .jalr_tag(itf.res2_jalr_tag),
     .ld_pc_to_cdb(itf.res2_pc_to_cdb),
     .update_br(itf.res2_update_br),
     .res_empty(itf.res2_empty),
@@ -313,6 +340,7 @@ reservation_station res3(
     .alu_data(itf.res3_alu_out),
     .start_exe(itf.res3_exec),
     .jalr_executed(itf.res3_jalr_executed),
+    .jalr_tag(itf.res3_jalr_tag),
     .ld_pc_to_cdb(itf.res3_pc_to_cdb),
     .update_br(itf.res3_update_br),
     .res_empty(itf.res3_empty),
@@ -335,6 +363,7 @@ reservation_station res4(
     .alu_data(itf.res4_alu_out),
     .start_exe(itf.res4_exec),
     .jalr_executed(itf.res4_jalr_executed),
+    .jalr_tag(itf.res4_jalr_tag),
     .ld_pc_to_cdb(itf.res4_pc_to_cdb),
     .update_br(itf.res4_update_br),
     .res_empty(itf.res4_empty),
@@ -356,6 +385,7 @@ reservation_station res_br(      // for branches
     .alu_data(itf.resbr_alu_out),
     .start_exe(itf.resbr_exec),
     .jalr_executed(itf.resbr_jalr_executed),
+    .jalr_tag(),
     .ld_pc_to_cdb(itf.resbr_pc_to_cdb),
     .update_br(itf.resbr_update_br),
     .res_empty(itf.resbr_empty),

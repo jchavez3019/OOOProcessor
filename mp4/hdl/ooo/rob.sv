@@ -51,7 +51,12 @@ import rv32i_types::*;
     // determined by branch output
     output logic ld_pc,
     output logic flush_in_prog, // let other modules know that flush is in progress
-    output logic reallocate_reg_tag
+    output logic reallocate_reg_tag,
+
+    /* stupid rvfi stuff for jalr pc_wdata */
+    input logic jalr_executed,
+    input logic [2:0] jalr_tag,
+    input logic [31:0] jalr_pc
 );
 
 tomasula_types::op_t instr_arr [8];
@@ -195,6 +200,11 @@ always_ff @(posedge clk) begin
         br_dequeue <= 1'b0;
         br_flush_rst <= 1'b0;
         prev_rvfi_word <= curr_rvfi_word;
+
+        /* updating jalr pc */
+        if (jalr_executed) begin
+            rvfi_word_arr[jalr_tag].pc_wdata <= jalr_pc;
+        end
 
         /* ----- ALLOCATE -----*/
         /* when branch wants to update rd for a branch taken/not taken */

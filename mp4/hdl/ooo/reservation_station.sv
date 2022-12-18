@@ -12,6 +12,7 @@ import rv32i_types::*;
     output logic start_exe,
     output logic res_empty,
     output logic jalr_executed, // only instruction that does a jump relative to a register instead of pc
+    output logic [4:0] jalr_tag,
     output logic ld_pc_to_cdb, // used for jal and jalr instructions to load pc + 4 into cdb instead of alu output
     output logic update_br, // used by branch instructions to update rd array in rob
     input tomasula_types::res_word res_in
@@ -21,6 +22,7 @@ import rv32i_types::*;
 );
 
 tomasula_types::res_word res_word;
+assign jalr_tag = res_word.rd_tag;
 
 enum int unsigned {
     EMPTY = 0,

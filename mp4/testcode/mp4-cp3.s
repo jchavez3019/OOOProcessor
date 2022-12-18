@@ -807,7 +807,7 @@ SKIP2:
     jalr x0, x7, 0
 
 CalAddress:
-    slli x5, x2, 5
+    slli x5, x2, 5 # ERROR pc_wdata is incorrect 
     add x5, x1, x5
     slli x5, x5, 2
     jalr x0, x7, 0
@@ -816,7 +816,7 @@ CHECKSUM:
 
     la  x1, M00
     lw x4, TWOFIVESIX
-    add x4, x4, x4
+    add x4, x4, x4 # ERROR not from rvfi but stuck at this instruction
     add x1, x4, x1
     andi x7, x7, 0
     andi x6, x6, 0

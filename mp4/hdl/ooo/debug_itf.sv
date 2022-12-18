@@ -28,6 +28,7 @@ logic [31:0] original_instr_next_pc;
 logic res1_exec;
 tomasula_types::alu_word res1_alu_out;
 logic res1_jalr_executed;
+logic [4:0] res1_jalr_tag;
 logic res1_pc_to_cdb;
 logic res1_update_br;
 
@@ -35,6 +36,7 @@ logic res1_update_br;
 logic res2_exec;
 tomasula_types::alu_word res2_alu_out;
 logic res2_jalr_executed;
+logic [4:0] res2_jalr_tag;
 logic res2_pc_to_cdb;
 logic res2_update_br;
 
@@ -42,6 +44,7 @@ logic res2_update_br;
 logic res3_exec;
 tomasula_types::alu_word res3_alu_out;
 logic res3_jalr_executed;
+logic [4:0] res3_jalr_tag;
 logic res3_pc_to_cdb;
 logic res3_update_br;
 
@@ -49,6 +52,7 @@ logic res3_update_br;
 logic res4_exec;
 tomasula_types::alu_word res4_alu_out;
 logic res4_jalr_executed;
+logic [4:0] res4_jalr_tag;
 logic res4_pc_to_cdb;
 logic res4_update_br;
 
@@ -105,6 +109,9 @@ logic [31:0] pc_in;
 
 /* rvfi signals */
 rv32i_types::rvfi_word rvfi_wrd;
+logic jalr_executed;
+logic [31:0] jalr_pc;
+logic [4:0] jalr_tag;
 
 endinterface : debug_itf
 
