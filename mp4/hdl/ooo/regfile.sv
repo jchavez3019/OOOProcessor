@@ -75,8 +75,15 @@ begin
     // default values
     valid_a = 1'b0;
     valid_b = 1'b0;
-
-    if((dest == src_a) && (src_a != 5'b00000) && load ) begin
+    if ((dest == src_a) && (src_a == src_b) && (src_a != 5'b00000) && load) begin
+        reg_a = in;
+        reg_b = in;
+        if (tag[src_a] == commit_tag) begin
+            valid_a = 1'b1;
+            valid_b = 1'b1;
+        end
+    end
+    else if((dest == src_a) && (src_a != 5'b00000) && load ) begin
         reg_a = in;
         reg_b = src_b ? data[src_b] : 0;
         if (tag[src_a] == commit_tag)
@@ -91,6 +98,7 @@ begin
         if (tag[src_b] == commit_tag)
             valid_b = 1'b1;
     end
+    
     else  begin
         reg_a = src_a ? data[src_a] : 0;
         reg_b = src_b ? data[src_b] : 0;
