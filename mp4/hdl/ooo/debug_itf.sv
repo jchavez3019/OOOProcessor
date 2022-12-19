@@ -3,12 +3,8 @@
 
 interface debug_itf;
 import rv32i_types::*;
-// bit clk, reset_n;
 
 /* ir signals */
-// logic instr_mem_resp, instr_read;
-// logic [31:0] in;
-// rv32i_word instr_mem_address;
 logic [31:0] pc_calc;
 logic ir_ld_pc;
 logic [31:0] ir_instr;
@@ -72,11 +68,8 @@ logic [31:0] reg_src1_data, reg_src2_data, regfile_data_out;
 logic src1_valid, src2_valid;
 logic [2:0] tag_a, tag_b;
 logic [4:0] rd_updated;
-// logic [31:0] reg_a, reg_b;
-// logic valid_a, valid_b;
 
 /* rob signals */
-// logic robs_calculated[8];
 logic rob_ld_pc, regfile_load, rob_full, ld_commit_sel, data_read, data_write, flush_in_prog;
 logic [7:0] status_rob_valid, allocated_rob_entries;
 logic set_rob_valid[8];
@@ -96,13 +89,12 @@ tomasula_types::cdb_data alu1_calculation;
 tomasula_types::cdb_data alu2_calculation;
 tomasula_types::cdb_data alu3_calculation;
 tomasula_types::cdb_data alu4_calculation;
-// tomasula_types::cdb_data alu5_calculation;
 
 /* lsq signals */
 logic finished_lsq_entry, lsq_full;
 logic [31:0] lsq_data_mem_address;
 tomasula_types::alu_word finished_lsq_entry_data; 
-tomasula_types::op_t lsq_load_type;
+logic [2:0] lsq_load_type;
 
 /* mux logic */
 logic [31:0] pc_in;

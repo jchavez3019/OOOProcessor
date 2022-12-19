@@ -16,9 +16,6 @@ import rv32i_types::*;
     output logic ld_pc_to_cdb, // used for jal and jalr instructions to load pc + 4 into cdb instead of alu output
     output logic update_br, // used by branch instructions to update rd array in rob
     input tomasula_types::res_word res_in
-    // input logic [2:0] curr_head_ptr,
-    // input mem_resp, // a dependent load has finally received its data
-    // input logic [31:0] mem_rdata
 );
 
 tomasula_types::res_word res_word;
@@ -33,14 +30,8 @@ enum int unsigned {
 
 always_comb
 begin : assign_alu_data
-    // alu_data.op = res_word.op;
     alu_data.opcode = res_word.opcode;
-    /* modify funct3 so that alu does an add operation */
     alu_data.funct3 = res_word.funct3;
-    // if (res_word.op == tomasula_types::JALR | res_word.op == tomasula_types::JAL)
-    //     alu_data.funct3 = 3'b000;
-    // else
-    //     alu_data.funct3 = res_word.funct3;
     alu_data.funct7 = res_word.funct7;
     alu_data.tag = res_word.rd_tag;
     alu_data.pc = res_word.pc;
@@ -110,39 +101,22 @@ begin : state_actions
         end
         CHECK: begin
             /* both source registers are valid and we can execute in this same cycle */
-            // if (res_in.src1_valid & (res_word.src2_valid | res_in.src2_valid))
-            //     start_exe = 1'b1;
             if (invalidated_rob_entries_n[res_word.rd_tag]) begin
                 if (res_word.src1_valid & res_word.src2_valid)
                     start_exe = 1'b1;
 
                 /* deal with jalr special case to unstall pipeline */
                 /* after changes in second_design, only jalr should be using ld_pc_to_cdb */
-                // if (start_exe & res_word.op == tomasula_types::JALR) begin
                 if (start_exe & res_word.opcode == tomasula_types::s_op_jalr) begin
                     jalr_executed = 1'b1;
                     ld_pc_to_cdb = 1'b1;
                 end
 
-                // /* reroute output for jal like above */
-                // if (start_exe & res_word.op == tomasula_types::JAL) begin
-                //     ld_pc_to_cdb = 1'b1;
-                // end
-
                 /* deal with branches */
-                // if (start_exe & res_word.op == tomasula_types::BRANCH) begin
                 if (start_exe & res_word.opcode == tomasula_types::s_op_br) begin
                     ld_pc_to_cdb = 1'b1;
                     update_br = 1'b1;
                 end
-
-                // if (start_exe & res_word.op == tomasula_types::AUIPC) begin
-                //     ld_pc_to_cdb = 1'b1;
-                // end
-
-                // if (start_exe & res_word.op == tomasula_types::LUI) begin
-                //     ld_pc_to_cdb = 1'b1;
-                // end
                 
                 alu_data.src1_data = res_word.src1_data;
                     
@@ -155,28 +129,12 @@ begin : state_actions
                 start_exe = 1'b1;
 
             /* deal with jalr special case to unstall pipeline */
-            // if (start_exe & res_word.op == tomasula_types::JALR) begin
             if (start_exe & res_word.opcode == tomasula_types::s_op_jalr) begin
                 jalr_executed = 1'b1;
                 ld_pc_to_cdb = 1'b1;
             end
 
-            // /* reroute output for jal like above */
-            // if (start_exe & res_word.op == tomasula_types::JAL) begin
-            //     ld_pc_to_cdb = 1'b1;
-            // end
-
-            // if (start_exe & res_word.op == tomasula_types::AUIPC) begin
-            //     ld_pc_to_cdb = 1'b1;
-            // end
-
-            // if (start_exe & res_word.op == tomasula_types::LUI) begin
-            //     ld_pc_to_cdb = 1'b1;
-            // end
-
-
             /* deal with branches */
-            // if (start_exe & res_word.op == tomasula_types::BRANCH) begin
             if (start_exe & res_word.opcode == tomasula_types::s_op_br) begin
                 ld_pc_to_cdb = 1'b1;
                 update_br = 1'b1;
@@ -200,7 +158,7 @@ begin : next_state_logic
     next_state = state;
     case (state)
         EMPTY: begin
-            if (load_word)// & ~flush_ip)
+            if (load_word)
                 next_state = CHECK;
         end
         CHECK: begin

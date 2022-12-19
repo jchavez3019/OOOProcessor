@@ -22,33 +22,12 @@ import rv32i_types::*;
 /* interface between instruction queue and instruction register */
 IQ_2_IR iq_ir_itf();
 
-/* pc signals */
-logic [31:0] pc;
-// logic [31:0] pc_calc; // this is the output of the ir register which does address calculation for branches
-
 /* harness containing all module signals */
 debug_itf itf();
 
 /***************************************** Modules ***************************************************/
 
 logic [31:0] regfile_mem_in;
-/*
-    case(store_funct3_t'(``RES_STATION.funct3)) \
-        sw: data_mbe = 4'b1111; \
-        sh: data_mbe =  4'b0011 << ``OFFSET; \
-        sb: data_mbe =  4'b0001 << ``OFFSET; \
-    endcase \
-*/
-
-// `define mbe_calc(TYPE, OFFSET, DATA) \
-//         case(tomasula_types::op_t'(TYPE)) \
-//             tomasula_types::LW: regfile_mem_in = ``DATA; \
-//             tomasula_types::LH: regfile_mem_in = {{16{``DATA[16 * ((``OFFSET/2)+1) - 1]}}, ``DATA[8 * ``OFFSET+:16]}; \
-//             tomasula_types::LHU: regfile_mem_in = {{16{1'b0}}, ``DATA[8 * ``OFFSET+:16]}; \
-//             tomasula_types::LB: regfile_mem_in = {{24{``DATA[(8 * (``OFFSET+1)) - 1]}}, ``DATA[8 * ``OFFSET+:8]}; \
-//             tomasula_types::LBU: regfile_mem_in = {{24{1'b0}}, ``DATA[8 * ``OFFSET+:8]}; \
-//             default: regfile_mem_in = ``DATA; \
-//         endcase 
 
 `define write_to_cdb(RES_STATION_EXEC, ALU_OUT, DATA_SEL, ALU_DATA) \
     if (``RES_STATION_EXEC) begin \
@@ -57,27 +36,13 @@ logic [31:0] regfile_mem_in;
             itf.cdb_in[``ALU_OUT.tag].rs2_data[31:0] = ``ALU_OUT.src2_data[31:0]; \
         end
 
-// only request memory on a commit, where address is on cdb
-//
 logic [1:0] memaddr_offset; 
 
 always_comb begin : data_mem_req
-    // data_mem_address = {itf.cdb_out[itf.head_ptr].data[31:2], 2'b00};
-    // memaddr_offset = itf.cdb_out[itf.head_ptr].data[1:0];
+
     data_mem_address = itf.lsq_data_mem_address & {{30{1'b1}}, 2'b00};
     memaddr_offset = itf.lsq_data_mem_address[1:0];
     
-    // default byte enable value
-    //wmask = 4'b0000;
-    //`mbe_calc(itf.commit_type, memaddr_offset, data_mem_rdata);
-    // case(itf.lsq_load_type) 
-    //     tomasula_types::LW: regfile_mem_in = data_mem_rdata; 
-    //     tomasula_types::LH: regfile_mem_in = {{16{data_mem_rdata[16 * ((memaddr_offset/2)+1) - 1]}}, data_mem_rdata[8 * memaddr_offset+:16]};
-    //     tomasula_types::LHU: regfile_mem_in = {{16{1'b0}}, data_mem_rdata[8 * memaddr_offset+:16]}; 
-    //     tomasula_types::LB: regfile_mem_in = {{24{data_mem_rdata[(8 * (memaddr_offset+1)) - 1]}}, data_mem_rdata[8 * memaddr_offset+:8]}; 
-    //     tomasula_types::LBU: regfile_mem_in = {{24{1'b0}}, data_mem_rdata[8 * memaddr_offset+:8]}; 
-    //     default: regfile_mem_in = data_mem_rdata; 
-    // endcase 
     case(load_funct3_t'(itf.lsq_load_type))
         lw: regfile_mem_in = data_mem_rdata; 
         lh: regfile_mem_in = {{16{data_mem_rdata[16 * ((memaddr_offset/2)+1) - 1]}}, data_mem_rdata[8 * memaddr_offset+:16]};
@@ -117,7 +82,6 @@ ir ir (
     .rst(rst),
     .instr_mem_resp(instr_mem_resp),
     .in(instr_mem_rdata),
-    // .executed_jalr(itf.res1_jalr_executed | itf.res2_jalr_executed | itf.res3_jalr_executed | itf.res4_jalr_executed | itf.rob_ld_pc), // included rob_ld_pc to get out of jalr wait state
     .executed_jalr_one(itf.res1_jalr_executed),
     .executed_jalr_two(itf.res2_jalr_executed),
     .executed_jalr_three(itf.res3_jalr_executed),
@@ -128,10 +92,8 @@ ir ir (
     .jalr_pc_four(itf.alu4_calculation.data[31:0]),
     .br_pr_take (1'b0),
     .flush_ip(itf.flush_in_prog),
-    // .pc(pc),
     .instr_mem_address(instr_mem_address),
     .instr_read(instr_read),
-    // .ld_pc(itf.ir_ld_pc),
     .pc_calc(itf.pc_calc),
     .iq_ack(itf.iq_ir_ack),
     .curr_instr(itf.ir_instr),
@@ -144,7 +106,6 @@ iq iq (
     .clk (clk),
     .rst (rst | itf.flush_in_prog),
     .flush_ip(itf.flush_in_prog),
-    // .control_i (itf.control_i),
     .res1_empty(itf.res1_empty),
     .res2_empty(itf.res2_empty),
     .res3_empty(itf.res3_empty),
@@ -173,7 +134,6 @@ rob rob (
      .clk (clk),
      .rst (rst),
      .rob_load (itf.rob_load),
-    //  .instr_type (itf.control_o.op),
     .instr_type(itf.control_o.opcode),
      .rd (itf.control_o.rd),
      .st_src (itf.control_o.src2_reg),
@@ -182,7 +142,6 @@ rob rob (
      .set_rob_valid (itf.set_rob_valid),
      .set_reg_valid(itf.set_reg_valid),
      .reg_valid(itf.reg_valid),
-    //  .allocated_rob_entries (itf.allocated_rob_entries),
      .invalidated_n(itf.rob_invalidated_entries),
      .br_entry(itf.resbr_alu_out.tag),
      .br_taken(itf.taken),
@@ -256,7 +215,6 @@ assign src2_v = itf.src2_valid | itf.control_o.src2_valid;
 assign src2_data = itf.control_o.src2_valid ? itf.control_o.src2_data : itf.reg_src2_data;
 
 always_comb begin : assign_res_word
-    // res_word.op = itf.control_o.op;
     res_word.opcode = itf.control_o.opcode;
     res_word.funct3 = itf.control_o.funct3;
     res_word.funct7 = itf.control_o.funct7;
@@ -364,11 +322,6 @@ cmp cmp3(
     .result(itf.alu3_calculation)
 );
 
-// alu alu3(
-//     .alu_word(itf.res3_alu_out),
-//     .cdb_data(itf.alu3_calculation)
-// );
-
 reservation_station res4(
     .clk (clk),
     .rst(rst),
@@ -393,11 +346,6 @@ cmp cmp4(
     .second(itf.res4_alu_out.src2_data),
     .result(itf.alu4_calculation)
 );
-
-// alu alu4(
-//     .alu_word(itf.res4_alu_out),
-//     .cdb_data(itf.alu4_calculation)
-// );
 
 reservation_station res_br(      // for branches
     .clk (clk),
@@ -465,7 +413,7 @@ always_comb begin : cdb_enable_logic
     `write_to_cdb(itf.resbr_exec, itf.resbr_alu_out, itf.resbr_update_br, 32'h00000000);
 
     // data loaded from memory to cdb through lsq; store 0's in cdb for a store
-    `write_to_cdb(itf.finished_lsq_entry, itf.finished_lsq_entry_data, false, regfile_mem_in);// (itf.finished_lsq_entry_data.op > 10) ? regfile_mem_in : 32'h00000000);
+    `write_to_cdb(itf.finished_lsq_entry, itf.finished_lsq_entry_data, false, regfile_mem_in);
     
     cdb_enable[7:0] = 8'h00 | (itf.res1_exec << itf.res1_alu_out.tag) | (itf.res2_exec << itf.res2_alu_out.tag) | (itf.res3_exec << itf.res3_alu_out.tag) | (itf.res4_exec << itf.res4_alu_out.tag) | (itf.resbr_exec << itf.resbr_alu_out.tag) | (itf.finished_lsq_entry << itf.finished_lsq_entry_data.tag);
 end

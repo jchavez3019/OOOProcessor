@@ -6,14 +6,9 @@ import rv32i_types::*;
     // from iq
     input rob_load,
     // from iq
-    // input tomasula_types::op_t instr_type,
     input tomasula_types::rv32i_opcode_short instr_type,
     input [4:0] rd,
     input [4:0] st_src,
-    // input [31:0] instr_pc,
-
-    // when high, need to flush rob
-    // input branch_mispredict, // remove later, rob will look at cdb/rd for branch mispredict
 
     // from d-cache
     input data_mem_resp,
@@ -30,7 +25,6 @@ import rv32i_types::*;
     /* for resetting registers back to valid during a flush in progress */
     output logic set_reg_valid [8],
     output logic [4:0] reg_valid [8],
-    // output logic [7:0] allocated_rob_entries, // need to output allocated entries so that when flush_ip, res station and lsq can check if their data has been invalidated
     output logic invalidated_n[8], // note that this is negated
     input logic [2:0] br_entry,
     input logic br_taken,
@@ -60,7 +54,6 @@ import rv32i_types::*;
     input logic [31:0] jalr_pc
 );
 
-// tomasula_types::op_t instr_arr [8];
 tomasula_types::rv32i_opcode_short instr_arr [8];
 logic [4:0] rd_arr [8];
 logic valid_arr [8]; // indicates if an rob entry has its output calculated
@@ -121,7 +114,6 @@ fifo_synch_1r1w #(.DTYPE(logic[2:0])) branch_queue
     .data_o(fifo_br),
     .yumi_i(br_dequeue)
 );
-// assign br_ptr = _br_ptr;
 assign br_ptr = fifo_br;
 
 /* 
@@ -139,25 +131,10 @@ assign status_rob_valid[5] = valid_arr[5];
 assign status_rob_valid[6] = valid_arr[6];
 assign status_rob_valid[7] = valid_arr[7];
 
-// assign allocated_rob_entries[0] = _allocated_entries[0];
-// assign allocated_rob_entries[1] = _allocated_entries[1];
-// assign allocated_rob_entries[2] = _allocated_entries[2];
-// assign allocated_rob_entries[3] = _allocated_entries[3];
-// assign allocated_rob_entries[4] = _allocated_entries[4];
-// assign allocated_rob_entries[5] = _allocated_entries[5];
-// assign allocated_rob_entries[6] = _allocated_entries[6];
-// assign allocated_rob_entries[7] = _allocated_entries[7];
-
-
-
 always_ff @(posedge clk) begin
-    // _ld_pc <= 1'b0;
-    // _ld_commit_sel <= 1'b0;
-    // _regfile_load <= 1'b0;
 
     if (rst) begin
         for (int i=0; i<8; i++) begin
-            // instr_arr[i] <= tomasula_types::op_t'(0);
             instr_arr[i] <= tomasula_types::s_op_invalid;
             rd_arr[i] <= '0;
             valid_arr[i] <= '0;
@@ -182,7 +159,6 @@ always_ff @(posedge clk) begin
         _br_ptr <= 3'b000;
         flush_ip <= 1'b0;
         br_flush_rst <= 1'b0;
-        // data_read <= 1'b0;
     end
 
     else begin
@@ -232,17 +208,12 @@ always_ff @(posedge clk) begin
            rvfi_word_arr[_curr_ptr] <= rvfi_wrd;
            rvfi_word_arr[_curr_ptr].rd_tag <= _curr_ptr;
            // do not allocate regfile entry for st
-        //    if (instr_type > 7 && instr_type < 11) begin 
             if (instr_type == tomasula_types::s_op_store) begin
                rd_arr[_curr_ptr] <= st_src;
            end
            // branch - hold taken/not taken (initialized to not taken)
-        //    else if (instr_type == tomasula_types::BRANCH) begin 
             else if (instr_type == tomasula_types::s_op_br) begin
-            //    _br_ptr <= _curr_ptr;
            end
-           // increment _curr_ptr
-           //TODO: beware! overflow may cause errors
            _curr_ptr <= _curr_ptr + 1'b1;
         end
 
@@ -252,18 +223,12 @@ always_ff @(posedge clk) begin
         */
         if (branch_mispredict) begin
             flush_ip <= 1'b1;
-            // _br_flush_ptr <= (valid_arr[_head_ptr] & (instr_arr[_br_flush_ptr] != tomasula_types::BRANCH)) ? _head_ptr + 1'b1 : _head_ptr; // flush ptr should start at updated head pointer 
             _br_flush_ptr <= _head_ptr; // since _head_ptr can't get updated in this state or the flush_ip state, can safely set _br_flush_ptr to head pointer
-            // _br_ptr <= fifo_br;
         end 
         // this doesn't start until two cycles after branch mispredict was found since previous cycle prepares for this logic
         else if (flush_ip) begin
 
-            /* redundant but highlighting the fact that _head_ptr will not get updated */
-            _head_ptr <= _head_ptr;
-
             /* invalidate entries starting from branch pointer to entry right before head pointer */
-            // for (int i = br_ptr; i != _head_ptr; i = (i + 1) % 8) begin
             for (logic [2:0] i = br_ptr + 1; i != _head_ptr; i = i + 1) begin
                 _allocated_entries[i] <= 1'b0;
                 valid_arr[i] <= 1'b0;
@@ -273,20 +238,10 @@ always_ff @(posedge clk) begin
             _allocated_entries[br_ptr] <= 1'b0;
             valid_arr[br_ptr] <= 1'b0;
 
-            /* correct tags in the register file */
-            /* this should be done in combinational logic */
-            // if (_br_flush_ptr != br_ptr) begin
-            //     if (instr_arr[_br_flush_ptr] != tomasula_types::ST | instr_arr[_br_flush_ptr] != tomasula_types::BRANCH) begin
-            //         reallocate_reg_tag = 1'b1;
-            //     end
-
-            // end
-
             /* check if done flushing, else update current branch flush pointer */
             if (_br_flush_ptr == br_ptr) begin
                 flush_ip <= 1'b0;
                 br_dequeue <= 1'b1;
-                // if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
                 if (_head_ptr == br_ptr) begin
                     _curr_ptr <= br_ptr + 1;
                     _head_ptr <= _head_ptr + 1;
@@ -304,7 +259,6 @@ always_ff @(posedge clk) begin
             // if the head of the rob has been computed
             if (valid_arr[_head_ptr] & ~flush_in_prog & ~branch_mispredict) begin
 
-                // if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
                 if (instr_arr[_head_ptr] == tomasula_types::s_op_br) begin
                     valid_arr[_head_ptr] <= 1'b0;
                     _allocated_entries[_head_ptr] <= 1'b0;
@@ -344,7 +298,6 @@ always_comb begin
 
             /* need to output the entries that are now invalidated */
             if (flush_in_prog & ~rst) begin
-                // for (int i = br_ptr; i != _head_ptr; i = (i + 1) % 8) begin
                 for (logic [2:0] m = br_ptr + 1; m != _head_ptr; m = m + 1) begin
                     invalidated_n[m] = 1'b0;
                 end
@@ -355,13 +308,11 @@ always_comb begin
                 end
             end
 
-            // if (instr_type == tomasula_types::BRANCH & rob_load) begin
             if (instr_type == tomasula_types::s_op_br & rob_load) begin
                 br_enqueue = 1'b1;
             end
 
             /* start flushing as soon as branch at head pointer is revealed to be a mispredict */
-            // if((instr_arr[fifo_br] == tomasula_types::BRANCH) & _allocated_entries[fifo_br] & (valid_arr[fifo_br]) & (rd_arr[fifo_br][1] != rd_arr[fifo_br][0]) & ~flush_ip & fifo_br == _head_ptr) begin
             if((instr_arr[fifo_br] == tomasula_types::s_op_br) & _allocated_entries[fifo_br] & (valid_arr[fifo_br]) & (rd_arr[fifo_br][1] != rd_arr[fifo_br][0]) & ~flush_ip & fifo_br == _head_ptr) begin
                 _ld_pc = 1'b1; 
                 branch_mispredict = 1'b1;
@@ -369,7 +320,6 @@ always_comb begin
 
             /* if flush is in progress, reallocate tags in register file */
             if ((_br_flush_ptr != br_ptr) & flush_ip) begin
-                // if (instr_arr[_br_ptr] > 7 && instr_arr[_br_ptr] < 11| instr_arr[_br_flush_ptr] != tomasula_types::BRANCH)
                 if (instr_arr[_br_ptr] == tomasula_types::s_op_store | instr_arr[_br_flush_ptr] != tomasula_types::s_op_br)
                     reallocate_reg_tag = 1'b1;
             end
@@ -378,13 +328,11 @@ always_comb begin
 
             if (valid_arr[_head_ptr] & _allocated_entries[_head_ptr] & ~flush_in_prog & ~branch_mispredict) begin
 
-                // if (instr_arr[_head_ptr] != tomasula_types::BRANCH & (instr_arr[_head_ptr] < 8 | instr_arr[_head_ptr] > 10)) begin
                 if (instr_arr[_head_ptr] != tomasula_types::s_op_br & instr_arr[_head_ptr] != tomasula_types::s_op_store) begin
                     _regfile_load = 1'b1;
                 end
-                /* check that the instruction is not a store */
-                // if (prev_head_ptr != _head_ptr) // may remove prev head ptr later since most likely unnecessary
-                    rvfi_commit = 1'b1; // ROB has committed an instruction
+
+                rvfi_commit = 1'b1; // ROB has committed an instruction
             end
 
 end

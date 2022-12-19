@@ -41,18 +41,15 @@ import rv32i_types::*;
 logic [3:0] res_snoop;
 logic control_o_valid, dequeue, enqueue;
 tomasula_types::ctl_word control_o_buf;
-// rv32i_types::rvfi_word rvfi_word_buf;
 assign res_snoop = {res4_empty, res3_empty, res2_empty, res1_empty};
 
 logic ready_o;
 assign ready_o = iq_ir_itf.issue_q_full_n & ~rst; // if fifo is ready and instruction queue is not getting reset/flushed
-// assign control_o = control_o_buf;
 
 always_comb begin : control_o_logic
     if (control_o_valid)
         control_o = control_o_buf;
     else begin
-        // control_o.op = tomasula_types::BRANCH;
         control_o.opcode = tomasula_types::s_op_invalid;
         control_o.src1_reg = 5'b00000;
         control_o.src1_valid = 1'b0;
@@ -127,7 +124,6 @@ always_comb begin : dequeue_logic
         // if the rob has space and instruction queue has is not empty
         if (~rob_full) begin
             // branch goes to branching unit
-            // if (control_o_buf.op == tomasula_types::BRANCH) begin
             if (control_o_buf.opcode == tomasula_types::s_op_br) begin
                 if (resbr_empty) begin
                     dequeue = 1'b1;
@@ -135,11 +131,8 @@ always_comb begin : dequeue_logic
                 end
             end
             // the instruction is a load/store
-            // else if (control_o_buf.op > 7) begin
             else if (control_o_buf.opcode == tomasula_types::s_op_load | control_o_buf.opcode == tomasula_types::s_op_store) begin
                 if (lsq_empty) begin
-                    // if (control_o_buf.op > 10)
-                    //     regfile_allocate = 1'b1;
                     if (control_o_buf.opcode == tomasula_types::s_op_load)
                         regfile_allocate = 1'b1;
                     dequeue = 1'b1;
@@ -175,35 +168,6 @@ always_comb begin : dequeue_logic
                         res2_load = 1'b1;
                 end
             end
-            /* need to check which instructions go in which reservation stations, 1-2 reserved for alu, 3-4 reserved for cmp */
-            // else begin
-            //     if (res1_empty | res2_empty | res3_empty | res4_empty) begin
-            //         // dequeue the instruction
-            //         dequeue = 1'b1;
-
-            //         // allocate to register file
-            //         if (!(control_o_buf.op > 7 && control_o_buf.op < 11)) begin
-            //             regfile_allocate = 1'b1;
-            //         end
-               
-            //         // send read signals to the regfile
-            //         // regfile_tag1 = control_o_buf.src1_reg;
-            //         // regfile_tag2 = control_o_buf.src2_reg;
-
-            //         // assign the output to the output of the queue
-            //         // control_o = control_o_buf;
-
-            //         // find out which reservation station to route to
-            //         if (res_snoop[0])
-            //             res1_load = 1'b1;
-            //         else if (res_snoop[1])
-            //             res2_load = 1'b1;
-            //         else if (res_snoop[2])
-            //             res3_load = 1'b1;
-            //         else if (res_snoop[3])
-            //             res4_load = 1'b1;
-            //     end
-            // end
         end
     end
     // rob logic is the same as dequeue, reuse here instead of rechecking

@@ -20,7 +20,6 @@ import rv32i_types::*;
     output logic data_read,
     output logic data_write,
     output rv32i_word data_mem_address,
-    // output tomasula_types::op_t load_type,
     output logic [2:0] load_type,
     output logic [3:0] data_mbe
 );
@@ -45,7 +44,6 @@ enum int unsigned {
 } lsq_state, lsq_next_state;
 
 always_comb begin : assign_alu_output
-    // finished_entry_data.op = entries[head_ptr].op;
     finished_entry_data.opcode = entries[head_ptr].opcode;
     finished_entry_data.funct3 = entries[head_ptr].funct3;
     finished_entry_data.funct7 = entries[head_ptr].funct7;
@@ -53,7 +51,6 @@ always_comb begin : assign_alu_output
     finished_entry_data.src2_data = entries[head_ptr].src2_data;
     finished_entry_data.pc = entries[head_ptr].pc;
     finished_entry_data.tag = entries[head_ptr].rd_tag;
-    // load_type = entries[head_ptr].op;
     load_type = entries[head_ptr].funct3;
 end
 
@@ -67,11 +64,10 @@ always_comb begin : store_mask
 end
 
 always_ff @(posedge clk) begin
-    if (rst) begin// | self_rst) begin
+    if (rst) begin
         for (int i = 0; i < 4; i++) begin : initialize_arrays
             addr_rdy[i] <= 1'b0;
             invalidated[i] <= 1'b0;
-            // entries[i].op <= tomasula_types::BRANCH;
             entries[i].opcode <= tomasula_types::s_op_invalid;
             entries[i].funct3 <= 3'b000;
             entries[i].funct7 <= 1'b0;
@@ -95,7 +91,6 @@ always_ff @(posedge clk) begin
             for (int i = 0; i < 4; i++) begin : initialize_arrays
             addr_rdy[i] <= 1'b0;
             invalidated[i] <= 1'b0;
-            // entries[i].op <= tomasula_types::BRANCH;
             entries[i].opcode <= tomasula_types::s_op_invalid;
             entries[i].funct3 <= 3'b000;
             entries[i].funct7 <= 1'b0;
@@ -120,11 +115,9 @@ always_ff @(posedge clk) begin
             entries[curr_ptr].funct3 <= res_in.funct3;
             entries[curr_ptr].funct7 <= res_in.funct7;
             entries[curr_ptr].src1_tag <= res_in.src1_tag;
-            /* snoop register file ONLY at first instead of both register file and cdb in the same cycle when loading */
-            // entries[curr_ptr].src1_data <= robs_calculated[res_in.src1_tag] ? cdb[res_in.src1_tag].data : res_in.src1_data;
             entries[curr_ptr].src1_data <= res_in.src1_data;
-            addr_rdy[curr_ptr] <= res_in.src1_valid;// | robs_calculated[res_in.src1_tag];
-            entries[curr_ptr].src1_valid <= res_in.src1_valid;// | robs_calculated[res_in.src1_tag];
+            addr_rdy[curr_ptr] <= res_in.src1_valid;
+            entries[curr_ptr].src1_valid <= res_in.src1_valid;
             entries[curr_ptr].src2_tag <= res_in.src2_tag;
             entries[curr_ptr].src2_data <= res_in.src2_data;
             entries[curr_ptr].src2_valid <= res_in.src2_valid;
@@ -137,7 +130,6 @@ always_ff @(posedge clk) begin
         end
         // update head ptr when entries in queue has finished using memory
         // reads even if invalidated should wait for mem response; stores should move on
-        // if ((data_mem_resp | (entries[head_ptr].op < 11 & invalidated[head_ptr])) & (lsq_state == ACTIVE)) begin
         if ((data_mem_resp | entries[head_ptr].opcode != tomasula_types::s_op_load & invalidated[head_ptr]) & (lsq_state == ACTIVE)) begin
             invalidated[head_ptr] <= 1'b0; // can reset invalidate signal if it was set high if head pointer moves on
             head_ptr <= head_ptr + 1;
@@ -184,7 +176,6 @@ always_comb begin : actions
             end
             /* address ready for head of queue, request data from memory */
             if (addr_rdy[head_ptr] & (rob_head_ptr == entries[head_ptr].rd_tag)) begin
-                // if (entries[head_ptr].op > 10) begin
                 if (entries[head_ptr].opcode == tomasula_types::s_op_load) begin
                     data_read = 1'b1;
                 end
@@ -195,10 +186,6 @@ always_comb begin : actions
                 end
                 data_mem_address = entries[head_ptr].src1_data + entries[head_ptr].src2_data;
             end
-
-            /* flush is in progress and we are requesting data */
-            // if (flush_ip & ~data_read & ~data_write)
-            //     self_rst = 1'b1;
 
             if (entries_allocated[0] & entries_allocated[1] & entries_allocated[2] & entries_allocated[3])
                 full = 1'b1;
@@ -225,7 +212,6 @@ always_comb begin : next_state_logic
         end
         FLUSH: begin
             if (data_mem_resp)
-                // lsq_next_state = RESET;
                 lsq_next_state = ACTIVE;
         end
     endcase

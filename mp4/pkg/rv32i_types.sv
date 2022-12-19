@@ -15,10 +15,7 @@ typedef struct {
     logic [31:0] inst;
     logic [4:0] rs1_addr;
     logic [4:0] rs2_addr;
-    // logic [31:0] rs1_rdata;
-    // logic [31:0] rs2_rdata;
     logic [4:0] rd_addr;
-    // logic [31:0] rd_wdata;
     logic [31:0] pc_rdata;
     logic [31:0] pc_wdata;
     logic [2:0] rd_tag;

@@ -63,7 +63,6 @@ assign j_imm = {{12{data[31]}}, data[19:12], data[20], data[30:21], 1'b0};
 assign rs1 = data[19:15];
 assign rs2 = data[24:20];
 assign rd = data[11:7];
-// assign instr_mem_address = pc;
 
 /* this is an rvfi word that will get passed so that the rvfi can properly debug */
 rv32i_types::rvfi_word rvfi;
@@ -73,12 +72,9 @@ assign iq_ir_itf.rvfi = rvfi;
 always_comb
 begin : generate_rvfi_word
     rvfi.inst = data;
-    // rvfi.rs1_addr = rs1;
-    // rvfi.rs2_addr = rs2;
     rvfi.rd_addr = rd;
     rvfi.pc_rdata = pc;
     
-    // rvfi.pc_wdata = iq_ir_itf.control_word.pc;
 end
 
 enum int unsigned {
@@ -103,7 +99,6 @@ begin : immediate_op_logic
         predicted_br_pc = pc + b_imm;
     end
 
-    // iq_ir_itf.control_word.op = tomasula_types::ARITH;
     iq_ir_itf.control_word.opcode = tomasula_types::s_op_invalid; 
     iq_ir_itf.control_word.src1_reg = rs1;
     iq_ir_itf.control_word.src1_valid = 1'b0;
@@ -131,7 +126,6 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_data = u_imm;
             iq_ir_itf.control_word.src2_valid = 1'b1;
-            // iq_ir_itf.control_word.pc = u_imm;
             iq_ir_itf.control_word.funct3 = 3'b000;
             iq_ir_itf.control_word.funct7 = 1'b0;
 
@@ -145,7 +139,6 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_data = instr_pc + u_imm;
             iq_ir_itf.control_word.src2_valid = 1'b1;
-            // iq_ir_itf.control_word.pc = instr_pc + u_imm;
             iq_ir_itf.control_word.funct3 = 3'b000;
             iq_ir_itf.control_word.funct7 = 1'b0;
 
@@ -157,7 +150,6 @@ begin : immediate_op_logic
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_data = instr_pc + 4;
             iq_ir_itf.control_word.src2_valid = 1'b1;
-            // iq_ir_itf.control_word.pc = instr_pc + 4; 
             rvfi.pc_wdata = pc_calc;
             iq_ir_itf.control_word.funct3 = 3'b000;
 
@@ -192,14 +184,6 @@ begin : immediate_op_logic
             rvfi.imm = 1'b0;
         end
         op_load: begin
-            /* funct3 will get carried in control word so the type of load should be determined later in lsq */
-            // case (funct3) 
-            //     lw: iq_ir_itf.control_word.op = tomasula_types::LW;
-            //     lh: iq_ir_itf.control_word.op = tomasula_types::LH;
-            //     lhu: iq_ir_itf.control_word.op = tomasula_types::LHU;
-            //     lb: iq_ir_itf.control_word.op = tomasula_types::LB;
-            //     lbu: iq_ir_itf.control_word.op = tomasula_types::LBU;
-            // endcase
             iq_ir_itf.control_word.opcode = tomasula_types::s_op_load;
             iq_ir_itf.control_word.src2_reg = 5'b00000;
             iq_ir_itf.control_word.src2_valid = 1'b1;
@@ -208,15 +192,6 @@ begin : immediate_op_logic
             rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end
         op_store: begin
-            // for stores, src2_reg is not correlated with s_imm
-            // src2_reg is the register holding data that we will write
-            // src2_data used to calculate effective address
-            /* type of store should be determined later by funct3 in lsq */
-            // case (funct3) 
-            //     sw: iq_ir_itf.control_word.op = tomasula_types::SW;
-            //     sh: iq_ir_itf.control_word.op = tomasula_types::SH;
-            //     sb: iq_ir_itf.control_word.op = tomasula_types::SB;
-            // endcase
             iq_ir_itf.control_word.opcode = tomasula_types::s_op_store;
             iq_ir_itf.control_word.src2_valid = 1'b1;
             iq_ir_itf.control_word.src2_data = s_imm;
@@ -243,116 +218,6 @@ begin : immediate_op_logic
             rvfi.imm = iq_ir_itf.control_word.src2_valid;
         end
     endcase
-    // case (opcode)
-    //     op_lui: begin
-    //         iq_ir_itf.control_word.op = tomasula_types::LUI;
-    //         iq_ir_itf.control_word.src1_reg = 5'b00000;
-    //         iq_ir_itf.control_word.src2_reg = 5'b00000;
-    //         iq_ir_itf.control_word.src2_valid = 1'b1;
-    //         iq_ir_itf.control_word.pc = u_imm;
-
-    //         rvfi.imm = iq_ir_itf.control_word.src2_valid;
-    //     end
-    //     op_auipc: begin 
-    //         iq_ir_itf.control_word.op = tomasula_types::AUIPC;
-    //         iq_ir_itf.control_word.src1_reg = 5'b00000;
-    //         iq_ir_itf.control_word.src2_reg = 5'b00000;
-    //         iq_ir_itf.control_word.src2_valid = 1'b1;
-    //         iq_ir_itf.control_word.pc = instr_pc + u_imm;
-
-    //         rvfi.imm = iq_ir_itf.control_word.src2_valid;
-    //     end
-    //     op_jal: begin
-    //         iq_ir_itf.control_word.op = tomasula_types::JAL;
-    //         iq_ir_itf.control_word.src1_reg = 5'b00000;
-    //         iq_ir_itf.control_word.src2_reg = 5'b00000;
-    //         iq_ir_itf.control_word.src2_valid = 1'b1;
-    //         iq_ir_itf.control_word.pc = instr_pc + 4; 
-    //         rvfi.pc_wdata = pc_calc;
-
-    //         rvfi.imm = iq_ir_itf.control_word.src2_valid;
-    //     end
-    //     op_br: begin
-    //         iq_ir_itf.control_word.op = tomasula_types::BRANCH;
-    //         // if predicted to not be taken, save target address for taking
-    //         // the branch
-    //         if (~br_pr_take) begin
-    //             iq_ir_itf.control_word.pc = predicted_br_pc;
-    //             // 0 0 0 PREDICTION 0
-    //             iq_ir_itf.control_word.rd = 5'b00000; 
-    //             rvfi.pc_wdata = instr_pc + 4;
-    //         end 
-    //         else begin
-    //             iq_ir_itf.control_word.pc = instr_pc + 4;
-    //             iq_ir_itf.control_word.rd = 5'b00010;
-    //             rvfi.pc_wdata = predicted_br_pc;
-    //         end
-    //         rvfi.imm = 1'b0;
-    //     end
-    //     op_store: begin
-    //         // for stores, src2_reg is not correlated with s_imm
-    //         // src2_reg is the register holding data that we will write
-    //         // src2_data used to calculate effective address
-    //         case (funct3) 
-    //             sw: iq_ir_itf.control_word.op = tomasula_types::SW;
-    //             sh: iq_ir_itf.control_word.op = tomasula_types::SH;
-    //             sb: iq_ir_itf.control_word.op = tomasula_types::SB;
-    //         endcase
-    //         iq_ir_itf.control_word.src2_valid = 1'b1;
-    //         iq_ir_itf.control_word.src2_data = s_imm;
-
-    //         rvfi.imm = 1'b0;
-    //     end
-    //     op_imm: begin
-    //         iq_ir_itf.control_word.op = tomasula_types::ARITH;
-    //         iq_ir_itf.control_word.src2_reg = 5'b00000;
-    //         iq_ir_itf.control_word.src2_valid = 1'b1;
-    //         /* need to do special logic for add immediates since they can potentially be subtractions, else normal */
-    //         if (funct3 == 3'b000 & i_imm[31]) begin
-    //             iq_ir_itf.control_word.src2_data = ~i_imm + 1;
-    //             iq_ir_itf.control_word.funct7 = 1'b1;
-    //         end
-    //         else if (funct3 == 3'b000) begin
-    //             iq_ir_itf.control_word.src2_data = i_imm;
-    //             iq_ir_itf.control_word.funct7 = 1'b0;
-    //         end
-    //         else begin
-    //             iq_ir_itf.control_word.src2_data = i_imm;
-    //         end
-
-    //         rvfi.imm = iq_ir_itf.control_word.src2_valid;
-    //     end 
-    //     op_csr: begin
-    //         iq_ir_itf.control_word.src2_reg = 5'b00000;
-    //         iq_ir_itf.control_word.src2_valid = 1'b1;
-    //         iq_ir_itf.control_word.src2_data = i_imm;
-
-    //         rvfi.imm = iq_ir_itf.control_word.src2_valid;
-    //     end
-    //     op_jalr: begin
-    //         iq_ir_itf.control_word.op = tomasula_types::JALR;
-    //         iq_ir_itf.control_word.src2_reg = 5'b00000;
-    //         iq_ir_itf.control_word.src2_valid = 1'b1;
-    //         iq_ir_itf.control_word.src2_data = i_imm;
-    //         iq_ir_itf.control_word.pc = instr_pc + 4; 
-
-    //         rvfi.imm = iq_ir_itf.control_word.src2_valid;
-    //     end
-    //     op_load: begin
-    //         case (funct3) 
-    //             lw: iq_ir_itf.control_word.op = tomasula_types::LW;
-    //             lh: iq_ir_itf.control_word.op = tomasula_types::LH;
-    //             lhu: iq_ir_itf.control_word.op = tomasula_types::LHU;
-    //             lb: iq_ir_itf.control_word.op = tomasula_types::LB;
-    //             lbu: iq_ir_itf.control_word.op = tomasula_types::LBU;
-    //         endcase
-    //         iq_ir_itf.control_word.src2_reg = 5'b00000;
-    //         iq_ir_itf.control_word.src2_valid = 1'b1;
-    //         iq_ir_itf.control_word.src2_data = i_imm;
-
-    //         rvfi.imm = iq_ir_itf.control_word.src2_valid;
-    //     end
-    // endcase
     
 end
 
@@ -368,15 +233,7 @@ begin
         pc <= 32'h00000060;
         prev_pc <= 32'h00000000;
     end
-    // else if (next_state == FETCH)
-    // begin
-    //     state <= next_state;
-    // end
-    // else if (next_state == CREATE)
-    // begin
-    //     data <= in;
-    //     state <= next_state;
-    // end
+
     else begin
         if (ld_br_pc)
             br_pc_buffer <= br_pc;
@@ -532,7 +389,6 @@ begin : next_state_logic
         end
         STALL_FLUSH_TWO: begin
             if (~flush_ip & instr_mem_resp)
-                // next_state = FETCH;
                 next_state = CREATE; // could have made a better design choice to work around CREATE state instead
         end
     endcase

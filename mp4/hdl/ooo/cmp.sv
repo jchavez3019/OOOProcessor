@@ -4,7 +4,6 @@ module cmp
 import rv32i_types::*;
 (
     //compare
-    // input branch_funct3_t op,
     input [2:0] funct3_in,
     input rv32i_word first,
     input rv32i_word second,
@@ -27,8 +26,6 @@ always_comb begin
         rv32i_types::blt: result.data = {{31{1'b0}}, ($signed(first) < $signed(second))};
         default: `BAD_MUX_SEL;
     endcase
-
-    // address = a + b;
 end
 
 endmodule

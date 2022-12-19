@@ -36,18 +36,15 @@ always_ff @(posedge itf.clk) begin
         rvfi_commit_buff <= 1'b0;
 
     if (dut.ooo.rob.regfile_load)
-        // rvfi_rdaddr_buff[4:0] <= dut.ooo.rob.curr_rvfi_word.rd_addr[4:0];
         rvfi_rdaddr_buff[4:0] <= dut.ooo.regfile.dest[4:0];
     else
         rvfi_rdaddr_buff[4:0] <= rvfi_rdaddr_buff[4:0];
 
     if (dut.ooo.data_mem_resp)
-        // mem_wdata_buff <= dut.ooo.data_mem_wdata;
         mem_wdata_buff <= dut.ooo.itf.regfile_data_out;
 
 end
-// assign rvfi.commit = dut.ooo.rob.rvfi_commit;
-// assign rvfi.commit = dut.ooo.rob.regfile_load | dut.ooo.itf.rob_ld_pc | dut.ooo.rob.rvfi_commit;
+
 assign rvfi.commit = dut.ooo.itf.rob_ld_pc | dut.ooo.rob.rvfi_commit;
 // assign rvfi.halt = 1'b0;
 initial rvfi.order = 0;
@@ -56,7 +53,7 @@ always @(posedge itf.clk) begin
     if (itf.rst)
         rvfi.halt <= 1'b0;    
 
-    else if (rvfi.commit & ((rvfi.pc_rdata == rvfi.pc_wdata)))// | (rvfi.rs1_data == 32'hxxxxxxxx) | (rvfi.rs2_data == 32'hxxxxxxxx)))
+    else if (rvfi.commit & ((rvfi.pc_rdata == rvfi.pc_wdata)))
         rvfi.halt <= 1'b1;
 end
 assign rvfi.load_regfile = dut.ooo.rob.regfile_load;
@@ -75,7 +72,6 @@ assign rvfi.rs1_addr =  dut.ooo.rob.curr_rvfi_word.rs1_addr;
 always_comb begin : set_rs2
     if (dut.ooo.rob.curr_rvfi_word.inst[6:0] == 7'b0100011) begin
         rvfi.rs2_addr = dut.ooo.rob.rd_arr[dut.ooo.rob._head_ptr];
-        // rvfi.rs2_rdata = dut.ooo.data_mem_wdata;
         rvfi.rs2_rdata = mem_wdata_buff;
     end
     else if (dut.ooo.rob.curr_rvfi_word.imm) begin
@@ -87,13 +83,8 @@ always_comb begin : set_rs2
         rvfi.rs2_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;
     end
 end
-// always_comb begin : rs1_data_set
-//     if (dut.ooo.rob.regfile_load & rvfi.rs1_addr
-// end
-// assign rvfi.rs1_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs1_data;
+
 assign rvfi.rs1_rdata = dut.ooo.cdb.out[dut.ooo.rob.curr_rvfi_word.rd_tag].rs1_data;
-// assign rvfi.rs2_rdata = dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;
-// assign rvfi.rs2_rdata = dut.ooo.rob.curr_rvfi_word.imm ? 32'h00000000 : dut.ooo.cdb.out[dut.ooo.rob._head_ptr].rs2_data;
 assign rvfi.rd_addr =  (dut.ooo.rob.curr_rvfi_word.inst[6:0] == 7'b0100011) ? 5'b00000 : dut.ooo.rob.curr_rvfi_word.rd_addr;
 assign rvfi.pc_rdata = dut.ooo.rob.curr_rvfi_word.pc_rdata;
 
@@ -135,17 +126,6 @@ always_comb
 begin : pc_next
     if (dut.ooo.itf.rob_ld_pc) // only happens for a branch mispredict
         rvfi.pc_wdata = dut.ooo.itf.cdb_out[dut.ooo.itf.br_ptr].data[31:0] ; // always works but fix later
-    /* cases where jalr was calculated and we can finally unstall the pipeline */
-    // else if (dut.ooo.itf.res1_jalr_executed)
-    //     rvfi.pc_wdata = dut.ooo.itf.alu1_calculation.data[31:0];
-    // else if (dut.ooo.itf.res2_jalr_executed)
-    //     rvfi.pc_wdata = dut.ooo.itf.alu2_calculation.data[31:0];
-    // else if (dut.ooo.itf.res3_jalr_executed)
-    //     rvfi.pc_wdata = dut.ooo.itf.alu3_calculation.data[31:0];
-    // else if (dut.ooo.itf.res4_jalr_executed)
-    //     rvfi.pc_wdata = dut.ooo.itf.alu4_calculation.data[31:0];
-    // else if (res_jalr_buff)
-    //     rvfi.pc_wdata = jalr_pc_buff;
     else
         rvfi.pc_wdata = dut.ooo.rob.curr_rvfi_word.pc_wdata;
 end
