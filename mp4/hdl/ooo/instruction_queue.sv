@@ -52,7 +52,8 @@ always_comb begin : control_o_logic
     if (control_o_valid)
         control_o = control_o_buf;
     else begin
-        control_o.op = tomasula_types::BRANCH;
+        // control_o.op = tomasula_types::BRANCH;
+        control_o.opcode = tomasula_types::s_op_invalid;
         control_o.src1_reg = 5'b00000;
         control_o.src1_valid = 1'b0;
         control_o.src2_reg = 5'b00000;
@@ -126,49 +127,83 @@ always_comb begin : dequeue_logic
         // if the rob has space and instruction queue has is not empty
         if (~rob_full) begin
             // branch goes to branching unit
-            if (control_o_buf.op == tomasula_types::BRANCH) begin
+            // if (control_o_buf.op == tomasula_types::BRANCH) begin
+            if (control_o_buf.opcode == tomasula_types::s_op_br) begin
                 if (resbr_empty) begin
                     dequeue = 1'b1;
                     resbr_load = 1'b1;
                 end
             end
             // the instruction is a load/store
-            else if (control_o_buf.op > 7) begin
+            // else if (control_o_buf.op > 7) begin
+            else if (control_o_buf.opcode == tomasula_types::s_op_load | control_o_buf.opcode == tomasula_types::s_op_store) begin
                 if (lsq_empty) begin
-                    if (control_o_buf.op > 10)
+                    // if (control_o_buf.op > 10)
+                    //     regfile_allocate = 1'b1;
+                    if (control_o_buf.opcode == tomasula_types::s_op_load)
                         regfile_allocate = 1'b1;
                     dequeue = 1'b1;
                     lsq_load = 1'b1;
                 end
             end
+            else if (((control_o_buf.opcode == tomasula_types::s_op_imm) | (control_o_buf.opcode == tomasula_types::s_op_reg)) & ((arith_funct3_t'(control_o_buf.funct3) == slt) | (arith_funct3_t'(control_o_buf.funct3) == sltu))) begin
+                if (res3_empty | res4_empty) begin
+                    // dequeue the instruction
+                    dequeue = 1'b1;
+                    // allocate destination tag in the register file
+                    regfile_allocate = 1'b1;
+
+                    // find out which reservation station to route to
+                    if (res_snoop[2])
+                        res3_load = 1'b1;
+                    else if (res_snoop[3])
+                        res4_load = 1'b1;
+                end
+            end
             else begin
-                if (res1_empty | res2_empty | res3_empty | res4_empty) begin
+                if (res1_empty | res2_empty) begin
                     // dequeue the instruction
                     dequeue = 1'b1;
 
                     // allocate to register file
-                    if (!(control_o_buf.op > 7 && control_o_buf.op < 11)) begin
-                        regfile_allocate = 1'b1;
-                    end
-               
-                    // send read signals to the regfile
-                    // regfile_tag1 = control_o_buf.src1_reg;
-                    // regfile_tag2 = control_o_buf.src2_reg;
-
-                    // assign the output to the output of the queue
-                    // control_o = control_o_buf;
+                    regfile_allocate = 1'b1;
 
                     // find out which reservation station to route to
                     if (res_snoop[0])
                         res1_load = 1'b1;
                     else if (res_snoop[1])
                         res2_load = 1'b1;
-                    else if (res_snoop[2])
-                        res3_load = 1'b1;
-                    else if (res_snoop[3])
-                        res4_load = 1'b1;
                 end
             end
+            /* need to check which instructions go in which reservation stations, 1-2 reserved for alu, 3-4 reserved for cmp */
+            // else begin
+            //     if (res1_empty | res2_empty | res3_empty | res4_empty) begin
+            //         // dequeue the instruction
+            //         dequeue = 1'b1;
+
+            //         // allocate to register file
+            //         if (!(control_o_buf.op > 7 && control_o_buf.op < 11)) begin
+            //             regfile_allocate = 1'b1;
+            //         end
+               
+            //         // send read signals to the regfile
+            //         // regfile_tag1 = control_o_buf.src1_reg;
+            //         // regfile_tag2 = control_o_buf.src2_reg;
+
+            //         // assign the output to the output of the queue
+            //         // control_o = control_o_buf;
+
+            //         // find out which reservation station to route to
+            //         if (res_snoop[0])
+            //             res1_load = 1'b1;
+            //         else if (res_snoop[1])
+            //             res2_load = 1'b1;
+            //         else if (res_snoop[2])
+            //             res3_load = 1'b1;
+            //         else if (res_snoop[3])
+            //             res4_load = 1'b1;
+            //     end
+            // end
         end
     end
     // rob logic is the same as dequeue, reuse here instead of rechecking

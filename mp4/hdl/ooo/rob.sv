@@ -6,7 +6,8 @@ import rv32i_types::*;
     // from iq
     input rob_load,
     // from iq
-    input tomasula_types::op_t instr_type,
+    // input tomasula_types::op_t instr_type,
+    input tomasula_types::rv32i_opcode_short instr_type,
     input [4:0] rd,
     input [4:0] st_src,
     // input [31:0] instr_pc,
@@ -59,7 +60,8 @@ import rv32i_types::*;
     input logic [31:0] jalr_pc
 );
 
-tomasula_types::op_t instr_arr [8];
+// tomasula_types::op_t instr_arr [8];
+tomasula_types::rv32i_opcode_short instr_arr [8];
 logic [4:0] rd_arr [8];
 logic valid_arr [8]; // indicates if an rob entry has its output calculated
 logic _allocated_entries [8]; // indicates if an rob entry has been allocated or not
@@ -155,7 +157,8 @@ always_ff @(posedge clk) begin
 
     if (rst) begin
         for (int i=0; i<8; i++) begin
-            instr_arr[i] <= tomasula_types::op_t'(0);
+            // instr_arr[i] <= tomasula_types::op_t'(0);
+            instr_arr[i] <= tomasula_types::s_op_invalid;
             rd_arr[i] <= '0;
             valid_arr[i] <= '0;
             _allocated_entries[i] <= 1'b0;
@@ -229,11 +232,13 @@ always_ff @(posedge clk) begin
            rvfi_word_arr[_curr_ptr] <= rvfi_wrd;
            rvfi_word_arr[_curr_ptr].rd_tag <= _curr_ptr;
            // do not allocate regfile entry for st
-           if (instr_type > 7 && instr_type < 11) begin 
+        //    if (instr_type > 7 && instr_type < 11) begin 
+            if (instr_type == tomasula_types::s_op_store) begin
                rd_arr[_curr_ptr] <= st_src;
            end
            // branch - hold taken/not taken (initialized to not taken)
-           else if (instr_type == tomasula_types::BRANCH) begin 
+        //    else if (instr_type == tomasula_types::BRANCH) begin 
+            else if (instr_type == tomasula_types::s_op_br) begin
             //    _br_ptr <= _curr_ptr;
            end
            // increment _curr_ptr
@@ -299,7 +304,8 @@ always_ff @(posedge clk) begin
             // if the head of the rob has been computed
             if (valid_arr[_head_ptr] & ~flush_in_prog & ~branch_mispredict) begin
 
-                if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
+                // if (instr_arr[_head_ptr] == tomasula_types::BRANCH) begin
+                if (instr_arr[_head_ptr] == tomasula_types::s_op_br) begin
                     valid_arr[_head_ptr] <= 1'b0;
                     _allocated_entries[_head_ptr] <= 1'b0;
                     _head_ptr <= _head_ptr + 1'b1;
@@ -349,19 +355,22 @@ always_comb begin
                 end
             end
 
-            if (instr_type == tomasula_types::BRANCH & rob_load) begin
+            // if (instr_type == tomasula_types::BRANCH & rob_load) begin
+            if (instr_type == tomasula_types::s_op_br & rob_load) begin
                 br_enqueue = 1'b1;
             end
 
             /* start flushing as soon as branch at head pointer is revealed to be a mispredict */
-            if((instr_arr[fifo_br] == tomasula_types::BRANCH) & _allocated_entries[fifo_br] & (valid_arr[fifo_br]) & (rd_arr[fifo_br][1] != rd_arr[fifo_br][0]) & ~flush_ip & fifo_br == _head_ptr) begin
+            // if((instr_arr[fifo_br] == tomasula_types::BRANCH) & _allocated_entries[fifo_br] & (valid_arr[fifo_br]) & (rd_arr[fifo_br][1] != rd_arr[fifo_br][0]) & ~flush_ip & fifo_br == _head_ptr) begin
+            if((instr_arr[fifo_br] == tomasula_types::s_op_br) & _allocated_entries[fifo_br] & (valid_arr[fifo_br]) & (rd_arr[fifo_br][1] != rd_arr[fifo_br][0]) & ~flush_ip & fifo_br == _head_ptr) begin
                 _ld_pc = 1'b1; 
                 branch_mispredict = 1'b1;
             end
 
             /* if flush is in progress, reallocate tags in register file */
             if ((_br_flush_ptr != br_ptr) & flush_ip) begin
-                if (instr_arr[_br_ptr] > 7 && instr_arr[_br_ptr] < 11| instr_arr[_br_flush_ptr] != tomasula_types::BRANCH)
+                // if (instr_arr[_br_ptr] > 7 && instr_arr[_br_ptr] < 11| instr_arr[_br_flush_ptr] != tomasula_types::BRANCH)
+                if (instr_arr[_br_ptr] == tomasula_types::s_op_store | instr_arr[_br_flush_ptr] != tomasula_types::s_op_br)
                     reallocate_reg_tag = 1'b1;
             end
 
@@ -369,7 +378,8 @@ always_comb begin
 
             if (valid_arr[_head_ptr] & _allocated_entries[_head_ptr] & ~flush_in_prog & ~branch_mispredict) begin
 
-                if (instr_arr[_head_ptr] != tomasula_types::BRANCH & (instr_arr[_head_ptr] < 8 | instr_arr[_head_ptr] > 10)) begin
+                // if (instr_arr[_head_ptr] != tomasula_types::BRANCH & (instr_arr[_head_ptr] < 8 | instr_arr[_head_ptr] > 10)) begin
+                if (instr_arr[_head_ptr] != tomasula_types::s_op_br & instr_arr[_head_ptr] != tomasula_types::s_op_store) begin
                     _regfile_load = 1'b1;
                 end
                 /* check that the instruction is not a store */

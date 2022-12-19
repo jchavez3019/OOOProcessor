@@ -33,12 +33,14 @@ enum int unsigned {
 
 always_comb
 begin : assign_alu_data
-    alu_data.op = res_word.op;
+    // alu_data.op = res_word.op;
+    alu_data.opcode = res_word.opcode;
     /* modify funct3 so that alu does an add operation */
-    if (res_word.op == tomasula_types::JALR | res_word.op == tomasula_types::JAL)
-        alu_data.funct3 = 3'b000;
-    else
-        alu_data.funct3 = res_word.funct3;
+    alu_data.funct3 = res_word.funct3;
+    // if (res_word.op == tomasula_types::JALR | res_word.op == tomasula_types::JAL)
+    //     alu_data.funct3 = 3'b000;
+    // else
+    //     alu_data.funct3 = res_word.funct3;
     alu_data.funct7 = res_word.funct7;
     alu_data.tag = res_word.rd_tag;
     alu_data.pc = res_word.pc;
@@ -50,7 +52,8 @@ always_ff @(posedge clk)
 begin
     if (rst)
     begin
-        res_word.op <= tomasula_types::BRANCH;
+        // res_word.op <= tomasula_types::BRANCH;
+        res_word.opcode <= tomasula_types::s_op_invalid;
         res_word.funct3 <= 3'b000;
         res_word.funct7 <= 1'b0;
         res_word.src1_tag <= 3'b000;
@@ -71,7 +74,7 @@ begin
     /* update reservation word if additional information needs to be scope from the cdb */
     if (state == CHECK) begin
         /* check that src1 is not waiting data from a load, only then can it scope cdb */
-        if (~res_word.src1_valid & robs_calculated[res_word.src1_tag] & res_word.op < 11) begin
+        if (~res_word.src1_valid & robs_calculated[res_word.src1_tag]) begin
             res_word.src1_valid <= 1'b1;
             res_word.src1_data <= cdb[res_word.src1_tag].data;
         end
@@ -114,29 +117,32 @@ begin : state_actions
                     start_exe = 1'b1;
 
                 /* deal with jalr special case to unstall pipeline */
-                if (start_exe & res_word.op == tomasula_types::JALR) begin
+                /* after changes in second_design, only jalr should be using ld_pc_to_cdb */
+                // if (start_exe & res_word.op == tomasula_types::JALR) begin
+                if (start_exe & res_word.opcode == tomasula_types::s_op_jalr) begin
                     jalr_executed = 1'b1;
                     ld_pc_to_cdb = 1'b1;
                 end
 
-                /* reroute output for jal like above */
-                if (start_exe & res_word.op == tomasula_types::JAL) begin
-                    ld_pc_to_cdb = 1'b1;
-                end
+                // /* reroute output for jal like above */
+                // if (start_exe & res_word.op == tomasula_types::JAL) begin
+                //     ld_pc_to_cdb = 1'b1;
+                // end
 
                 /* deal with branches */
-                if (start_exe & res_word.op == tomasula_types::BRANCH) begin
+                // if (start_exe & res_word.op == tomasula_types::BRANCH) begin
+                if (start_exe & res_word.opcode == tomasula_types::s_op_br) begin
                     ld_pc_to_cdb = 1'b1;
                     update_br = 1'b1;
                 end
 
-                if (start_exe & res_word.op == tomasula_types::AUIPC) begin
-                    ld_pc_to_cdb = 1'b1;
-                end
+                // if (start_exe & res_word.op == tomasula_types::AUIPC) begin
+                //     ld_pc_to_cdb = 1'b1;
+                // end
 
-                if (start_exe & res_word.op == tomasula_types::LUI) begin
-                    ld_pc_to_cdb = 1'b1;
-                end
+                // if (start_exe & res_word.op == tomasula_types::LUI) begin
+                //     ld_pc_to_cdb = 1'b1;
+                // end
                 
                 alu_data.src1_data = res_word.src1_data;
                     
@@ -149,27 +155,29 @@ begin : state_actions
                 start_exe = 1'b1;
 
             /* deal with jalr special case to unstall pipeline */
-            if (start_exe & res_word.op == tomasula_types::JALR) begin
+            // if (start_exe & res_word.op == tomasula_types::JALR) begin
+            if (start_exe & res_word.opcode == tomasula_types::s_op_jalr) begin
                 jalr_executed = 1'b1;
                 ld_pc_to_cdb = 1'b1;
             end
 
-            /* reroute output for jal like above */
-            if (start_exe & res_word.op == tomasula_types::JAL) begin
-                ld_pc_to_cdb = 1'b1;
-            end
+            // /* reroute output for jal like above */
+            // if (start_exe & res_word.op == tomasula_types::JAL) begin
+            //     ld_pc_to_cdb = 1'b1;
+            // end
 
-            if (start_exe & res_word.op == tomasula_types::AUIPC) begin
-                ld_pc_to_cdb = 1'b1;
-            end
+            // if (start_exe & res_word.op == tomasula_types::AUIPC) begin
+            //     ld_pc_to_cdb = 1'b1;
+            // end
 
-            if (start_exe & res_word.op == tomasula_types::LUI) begin
-                ld_pc_to_cdb = 1'b1;
-            end
+            // if (start_exe & res_word.op == tomasula_types::LUI) begin
+            //     ld_pc_to_cdb = 1'b1;
+            // end
 
 
             /* deal with branches */
-            if (start_exe & res_word.op == tomasula_types::BRANCH) begin
+            // if (start_exe & res_word.op == tomasula_types::BRANCH) begin
+            if (start_exe & res_word.opcode == tomasula_types::s_op_br) begin
                 ld_pc_to_cdb = 1'b1;
                 update_br = 1'b1;
             end

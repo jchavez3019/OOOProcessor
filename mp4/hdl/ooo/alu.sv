@@ -22,26 +22,64 @@ always_comb begin : OPERATION
     a = alu_word.src1_data;
     b = alu_word.src2_data;
 
-    // alu_op = alu_add;
-    if(alu_word.op == tomasula_types::ARITH) begin
-        if (alu_word.funct3 == rv32i_types::sr) begin 
-                if (alu_word.funct7 != 1'b1)
-                    aluop = rv32i_types::alu_srl;
-                else
+    // aluop = alu_add;
+    // if(alu_word.op == tomasula_types::ARITH) begin
+    //     if (alu_word.funct3 == rv32i_types::sr) begin 
+    //             if (alu_word.funct7 != 1'b1)
+    //                 aluop = rv32i_types::alu_srl;
+    //             else
+    //                 aluop = rv32i_types::alu_sra;
+    //         end
+    //         /* check funct7 only when it matters in regular add, not immediate add */
+    //         else if (alu_word.funct3 == rv32i_types::add) begin
+    //             if (alu_word.funct7 != 1'b1)
+    //                 aluop = rv32i_types::alu_add;
+    //             else
+    //                 aluop = rv32i_types::alu_sub;
+    //         end
+    //         else
+    //             aluop = rv32i_types::alu_ops'(alu_word.funct3);
+    // end
+    // else begin
+    //     aluop = rv32i_types::alu_add;
+    // end
+    aluop = rv32i_types::alu_ops'(3'b000); // set to add by default
+    if (alu_word.opcode == tomasula_types::s_op_imm) begin
+        case (alu_word.funct3)
+            add: aluop = rv32i_types::alu_add;
+            sll: aluop = rv32i_types::alu_sll;
+            // slt: aluop = rv32i_types::;
+            // sltu:;
+            axor: aluop = rv32i_types::alu_xor;
+            sr: begin
+                if (alu_word.funct7)
                     aluop = rv32i_types::alu_sra;
-            end
-            /* check funct7 only when it matters in regular add, not immediate add */
-            else if (alu_word.funct3 == rv32i_types::add) begin
-                if (alu_word.funct7 != 1'b1)
-                    aluop = rv32i_types::alu_add;
                 else
-                    aluop = rv32i_types::alu_sub;
+                    aluop = rv32i_types::alu_srl;
             end
-            else
-                aluop = rv32i_types::alu_ops'(alu_word.funct3);
+            aor: aluop = rv32i_types::alu_or;
+            aand: aluop = rv32i_types::alu_and;
+        endcase
     end
-    else begin
-        aluop = rv32i_types::alu_add;
+    else if (alu_word.opcode == tomasula_types::s_op_reg) begin
+        case (alu_word.funct3)
+            add: begin
+                if (alu_word.funct7)
+                    aluop = rv32i_types::alu_sub;
+                else
+                    aluop = rv32i_types::alu_add;
+            end
+            sll: aluop = rv32i_types::alu_sll;
+            axor: aluop = rv32i_types::alu_xor;
+            sr: begin
+                if (alu_word.funct7)
+                    aluop = rv32i_types::alu_sra;
+                else
+                    aluop = rv32i_types::alu_srl;
+            end
+            aor: aluop = rv32i_types::alu_or;
+            aand: aluop = rv32i_types::alu_and;
+        endcase
     end
     
 end

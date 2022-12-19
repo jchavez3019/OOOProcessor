@@ -622,7 +622,7 @@ Continue1_2:
     lw x1, XX1
     lw x2, Y1
     jal x7,  CalAddress
-    add x5, x5, x3
+    add x5, x5, x3 # ERROR x5 holds 0 instead of any actual data
     lw x7, 0(x5)
     add x6, x6, x7
     sw x6, 0(x5)
@@ -816,13 +816,12 @@ LoopRowsD:
     and x3, x3,x7
     not x7,x7
     
-    
-    
-    HALT:
     # added code 
     and x13, x0, x0
     addi x13, x13, 9
     # end added code
+    
+    HALT:
     beq x0, x0, HALT
 
 

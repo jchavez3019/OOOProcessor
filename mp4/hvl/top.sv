@@ -49,16 +49,16 @@ end
 // assign rvfi.commit = dut.ooo.rob.rvfi_commit;
 // assign rvfi.commit = dut.ooo.rob.regfile_load | dut.ooo.itf.rob_ld_pc | dut.ooo.rob.rvfi_commit;
 assign rvfi.commit = dut.ooo.itf.rob_ld_pc | dut.ooo.rob.rvfi_commit;
-assign rvfi.halt = 1'b0;
+// assign rvfi.halt = 1'b0;
 initial rvfi.order = 0;
 always @(posedge itf.clk iff rvfi.commit) rvfi.order <= rvfi.order + 1; // Modify for OoO
-// always @(posedge itf.clk) begin
-//     if (itf.rst)
-//         rvfi.halt <= 1'b0;    
+always @(posedge itf.clk) begin
+    if (itf.rst)
+        rvfi.halt <= 1'b0;    
 
-//     else if (rvfi.commit & (rvfi.pc_rdata == rvfi.pc_wdata))
-//         rvfi.halt <= 1'b1;
-// end
+    else if (rvfi.commit & ((rvfi.pc_rdata == rvfi.pc_wdata)))// | (rvfi.rs1_data == 32'hxxxxxxxx) | (rvfi.rs2_data == 32'hxxxxxxxx)))
+        rvfi.halt <= 1'b1;
+end
 assign rvfi.load_regfile = dut.ooo.rob.regfile_load;
 
 //Instruction and trap:

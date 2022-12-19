@@ -20,7 +20,8 @@ import rv32i_types::*;
     output logic data_read,
     output logic data_write,
     output rv32i_word data_mem_address,
-    output tomasula_types::op_t load_type,
+    // output tomasula_types::op_t load_type,
+    output logic [2:0] load_type,
     output logic [3:0] data_mbe
 );
 // NOTE: for now this lsq will only handle loads, but should incorporate stores soon
@@ -44,21 +45,24 @@ enum int unsigned {
 } lsq_state, lsq_next_state;
 
 always_comb begin : assign_alu_output
-    finished_entry_data.op = entries[head_ptr].op;
+    // finished_entry_data.op = entries[head_ptr].op;
+    finished_entry_data.opcode = entries[head_ptr].opcode;
     finished_entry_data.funct3 = entries[head_ptr].funct3;
     finished_entry_data.funct7 = entries[head_ptr].funct7;
     finished_entry_data.src1_data = entries[head_ptr].src1_data;
     finished_entry_data.src2_data = entries[head_ptr].src2_data;
     finished_entry_data.pc = entries[head_ptr].pc;
     finished_entry_data.tag = entries[head_ptr].rd_tag;
-    load_type = entries[head_ptr].op;
+    // load_type = entries[head_ptr].op;
+    load_type = entries[head_ptr].funct3;
 end
 
 always_comb begin : store_mask
-    case(entries[head_ptr].op) 
-        tomasula_types::SW: data_mbe = 4'b1111;
-        tomasula_types::SH: data_mbe = 4'b0011 << memaddr_offset;
-        tomasula_types::SB: data_mbe = 4'b0001 << memaddr_offset;
+    case(store_funct3_t'(entries[head_ptr].funct3)) 
+        sw: data_mbe = 4'b1111;
+        sh: data_mbe = 4'b0011 << memaddr_offset;
+        sb: data_mbe = 4'b0001 << memaddr_offset;
+        default: data_mbe = 4'b0000;
     endcase
 end
 
@@ -67,14 +71,15 @@ always_ff @(posedge clk) begin
         for (int i = 0; i < 4; i++) begin : initialize_arrays
             addr_rdy[i] <= 1'b0;
             invalidated[i] <= 1'b0;
-            entries[i].op <= tomasula_types::BRANCH;
+            // entries[i].op <= tomasula_types::BRANCH;
+            entries[i].opcode <= tomasula_types::s_op_invalid;
             entries[i].funct3 <= 3'b000;
             entries[i].funct7 <= 1'b0;
             entries[i].src1_tag <= 3'b000;
-            entries[i].src1_data <= 32'h0000;
+            entries[i].src1_data <= 32'h00000000;
             entries[i].src1_valid <= 1'b0;
             entries[i].src2_tag <= 3'b000;
-            entries[i].src2_data <= 32'h0000;
+            entries[i].src2_data <= 32'h00000000;
             entries[i].src2_valid <= 1'b0;
             entries[i].src2_reg <= 5'b00000;
             entries[i].rd_tag <= 3'b000;
@@ -90,7 +95,8 @@ always_ff @(posedge clk) begin
             for (int i = 0; i < 4; i++) begin : initialize_arrays
             addr_rdy[i] <= 1'b0;
             invalidated[i] <= 1'b0;
-            entries[i].op <= tomasula_types::BRANCH;
+            // entries[i].op <= tomasula_types::BRANCH;
+            entries[i].opcode <= tomasula_types::s_op_invalid;
             entries[i].funct3 <= 3'b000;
             entries[i].funct7 <= 1'b0;
             entries[i].src1_tag <= 3'b000;
@@ -109,7 +115,8 @@ always_ff @(posedge clk) begin
         end
         // update curr_ptr when allocating a new entries
         if (load & (lsq_state == ACTIVE)) begin
-            entries[curr_ptr].op <= res_in.op;
+            // entries[curr_ptr].op <= res_in.op;
+            entries[curr_ptr].opcode <= res_in.opcode;
             entries[curr_ptr].funct3 <= res_in.funct3;
             entries[curr_ptr].funct7 <= res_in.funct7;
             entries[curr_ptr].src1_tag <= res_in.src1_tag;
@@ -130,7 +137,8 @@ always_ff @(posedge clk) begin
         end
         // update head ptr when entries in queue has finished using memory
         // reads even if invalidated should wait for mem response; stores should move on
-        if ((data_mem_resp | (entries[head_ptr].op < 11 & invalidated[head_ptr])) & (lsq_state == ACTIVE)) begin
+        // if ((data_mem_resp | (entries[head_ptr].op < 11 & invalidated[head_ptr])) & (lsq_state == ACTIVE)) begin
+        if ((data_mem_resp | entries[head_ptr].opcode != tomasula_types::s_op_load & invalidated[head_ptr]) & (lsq_state == ACTIVE)) begin
             invalidated[head_ptr] <= 1'b0; // can reset invalidate signal if it was set high if head pointer moves on
             head_ptr <= head_ptr + 1;
             entries_allocated[head_ptr] <= 1'b0;
@@ -176,7 +184,8 @@ always_comb begin : actions
             end
             /* address ready for head of queue, request data from memory */
             if (addr_rdy[head_ptr] & (rob_head_ptr == entries[head_ptr].rd_tag)) begin
-                if (entries[head_ptr].op > 10) begin
+                // if (entries[head_ptr].op > 10) begin
+                if (entries[head_ptr].opcode == tomasula_types::s_op_load) begin
                     data_read = 1'b1;
                 end
                 /* should not send write signal at all if entry is invalidated */

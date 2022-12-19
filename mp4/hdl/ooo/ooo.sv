@@ -40,15 +40,15 @@ logic [31:0] regfile_mem_in;
     endcase \
 */
 
-`define mbe_calc(TYPE, OFFSET, DATA) \
-        case(tomasula_types::op_t'(TYPE)) \
-            tomasula_types::LW: regfile_mem_in = ``DATA; \
-            tomasula_types::LH: regfile_mem_in = {{16{``DATA[16 * ((``OFFSET/2)+1) - 1]}}, ``DATA[8 * ``OFFSET+:16]}; \
-            tomasula_types::LHU: regfile_mem_in = {{16{1'b0}}, ``DATA[8 * ``OFFSET+:16]}; \
-            tomasula_types::LB: regfile_mem_in = {{24{``DATA[(8 * (``OFFSET+1)) - 1]}}, ``DATA[8 * ``OFFSET+:8]}; \
-            tomasula_types::LBU: regfile_mem_in = {{24{1'b0}}, ``DATA[8 * ``OFFSET+:8]}; \
-            default: regfile_mem_in = ``DATA; \
-        endcase 
+// `define mbe_calc(TYPE, OFFSET, DATA) \
+//         case(tomasula_types::op_t'(TYPE)) \
+//             tomasula_types::LW: regfile_mem_in = ``DATA; \
+//             tomasula_types::LH: regfile_mem_in = {{16{``DATA[16 * ((``OFFSET/2)+1) - 1]}}, ``DATA[8 * ``OFFSET+:16]}; \
+//             tomasula_types::LHU: regfile_mem_in = {{16{1'b0}}, ``DATA[8 * ``OFFSET+:16]}; \
+//             tomasula_types::LB: regfile_mem_in = {{24{``DATA[(8 * (``OFFSET+1)) - 1]}}, ``DATA[8 * ``OFFSET+:8]}; \
+//             tomasula_types::LBU: regfile_mem_in = {{24{1'b0}}, ``DATA[8 * ``OFFSET+:8]}; \
+//             default: regfile_mem_in = ``DATA; \
+//         endcase 
 
 `define write_to_cdb(RES_STATION_EXEC, ALU_OUT, DATA_SEL, ALU_DATA) \
     if (``RES_STATION_EXEC) begin \
@@ -70,12 +70,20 @@ always_comb begin : data_mem_req
     // default byte enable value
     //wmask = 4'b0000;
     //`mbe_calc(itf.commit_type, memaddr_offset, data_mem_rdata);
-    case(itf.lsq_load_type) 
-        tomasula_types::LW: regfile_mem_in = data_mem_rdata; 
-        tomasula_types::LH: regfile_mem_in = {{16{data_mem_rdata[16 * ((memaddr_offset/2)+1) - 1]}}, data_mem_rdata[8 * memaddr_offset+:16]};
-        tomasula_types::LHU: regfile_mem_in = {{16{1'b0}}, data_mem_rdata[8 * memaddr_offset+:16]}; 
-        tomasula_types::LB: regfile_mem_in = {{24{data_mem_rdata[(8 * (memaddr_offset+1)) - 1]}}, data_mem_rdata[8 * memaddr_offset+:8]}; 
-        tomasula_types::LBU: regfile_mem_in = {{24{1'b0}}, data_mem_rdata[8 * memaddr_offset+:8]}; 
+    // case(itf.lsq_load_type) 
+    //     tomasula_types::LW: regfile_mem_in = data_mem_rdata; 
+    //     tomasula_types::LH: regfile_mem_in = {{16{data_mem_rdata[16 * ((memaddr_offset/2)+1) - 1]}}, data_mem_rdata[8 * memaddr_offset+:16]};
+    //     tomasula_types::LHU: regfile_mem_in = {{16{1'b0}}, data_mem_rdata[8 * memaddr_offset+:16]}; 
+    //     tomasula_types::LB: regfile_mem_in = {{24{data_mem_rdata[(8 * (memaddr_offset+1)) - 1]}}, data_mem_rdata[8 * memaddr_offset+:8]}; 
+    //     tomasula_types::LBU: regfile_mem_in = {{24{1'b0}}, data_mem_rdata[8 * memaddr_offset+:8]}; 
+    //     default: regfile_mem_in = data_mem_rdata; 
+    // endcase 
+    case(load_funct3_t'(itf.lsq_load_type))
+        lw: regfile_mem_in = data_mem_rdata; 
+        lh: regfile_mem_in = {{16{data_mem_rdata[16 * ((memaddr_offset/2)+1) - 1]}}, data_mem_rdata[8 * memaddr_offset+:16]};
+        lhu: regfile_mem_in = {{16{1'b0}}, data_mem_rdata[8 * memaddr_offset+:16]}; 
+        lb: regfile_mem_in = {{24{data_mem_rdata[(8 * (memaddr_offset+1)) - 1]}}, data_mem_rdata[8 * memaddr_offset+:8]}; 
+        lbu: regfile_mem_in = {{24{1'b0}}, data_mem_rdata[8 * memaddr_offset+:8]}; 
         default: regfile_mem_in = data_mem_rdata; 
     endcase 
 
@@ -165,7 +173,8 @@ rob rob (
      .clk (clk),
      .rst (rst),
      .rob_load (itf.rob_load),
-     .instr_type (itf.control_o.op),
+    //  .instr_type (itf.control_o.op),
+    .instr_type(itf.control_o.opcode),
      .rd (itf.control_o.rd),
      .st_src (itf.control_o.src2_reg),
      .data_mem_resp (data_mem_resp),
@@ -247,7 +256,8 @@ assign src2_v = itf.src2_valid | itf.control_o.src2_valid;
 assign src2_data = itf.control_o.src2_valid ? itf.control_o.src2_data : itf.reg_src2_data;
 
 always_comb begin : assign_res_word
-    res_word.op = itf.control_o.op;
+    // res_word.op = itf.control_o.op;
+    res_word.opcode = itf.control_o.opcode;
     res_word.funct3 = itf.control_o.funct3;
     res_word.funct7 = itf.control_o.funct7;
     res_word.src1_tag = itf.tag_a;
@@ -347,10 +357,17 @@ reservation_station res3(
     .res_in(res_word)
 );
 
-alu alu3(
-    .alu_word(itf.res3_alu_out),
-    .cdb_data(itf.alu3_calculation)
+cmp cmp3(
+    .funct3_in(itf.res3_alu_out.funct3),
+    .first(itf.res3_alu_out.src1_data),
+    .second(itf.res3_alu_out.src2_data),
+    .result(itf.alu3_calculation)
 );
+
+// alu alu3(
+//     .alu_word(itf.res3_alu_out),
+//     .cdb_data(itf.alu3_calculation)
+// );
 
 reservation_station res4(
     .clk (clk),
@@ -370,10 +387,17 @@ reservation_station res4(
     .res_in(res_word)
 );
 
-alu alu4(
-    .alu_word(itf.res4_alu_out),
-    .cdb_data(itf.alu4_calculation)
+cmp cmp4(
+    .funct3_in(itf.res4_alu_out.funct3),
+    .first(itf.res4_alu_out.src1_data),
+    .second(itf.res4_alu_out.src2_data),
+    .result(itf.alu4_calculation)
 );
+
+// alu alu4(
+//     .alu_word(itf.res4_alu_out),
+//     .cdb_data(itf.alu4_calculation)
+// );
 
 reservation_station res_br(      // for branches
     .clk (clk),

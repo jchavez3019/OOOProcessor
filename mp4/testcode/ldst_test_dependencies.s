@@ -4,6 +4,11 @@ ldst_mp2test.s:
 .globl _start
 
     lw x2, cooleceb # 60             # X1 <= 0x1111eceb
+    addi x4, x0, 20
+    addi x5, x0, 4
+    add x6, x4, x5
+
+    addi x6, x6, -10
 
     addi x3, x2, 1 # 68
 
