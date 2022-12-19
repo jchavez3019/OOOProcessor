@@ -131,6 +131,29 @@ assign status_rob_valid[5] = valid_arr[5];
 assign status_rob_valid[6] = valid_arr[6];
 assign status_rob_valid[7] = valid_arr[7];
 
+/* use this logic instead of for loops for synthesis */
+uint32_t s_shifted, e_shifted, e_shifted_curr, u_head_ptr, u_curr_ptr, u_br_ptr;
+logic [7:0] for_loop_out, _shifted_loop_out, for_loop_out_curr, _shifted_loop_out_curr;
+logic shifted_loop_out[8];
+logic shifted_loop_out_curr[8];
+assign u_head_ptr = uint32_t'(_head_ptr);
+assign u_curr_ptr = uint32_t'((_curr_ptr + 1)%8);
+assign u_br_ptr = uint32_t'((br_ptr+1)%8);
+assign s_shifted = 0;
+assign e_shifted = u_head_ptr - u_br_ptr;
+assign e_shifted_curr = u_curr_ptr - u_br_ptr;
+
+int bits_to_rotate;
+assign bits_to_rotate = 8 - br_ptr; // need to take opposite so that we do a circular right shift
+// temp_1 = (temp_2 << bits_to_rotate) | (temp_2 >> (8-bits_to_rotate)); // an example of how to circular left shift
+assign _shifted_loop_out = (for_loop_out << bits_to_rotate | (for_loop_out >> (8 - bits_to_rotate)));
+assign _shifted_loop_out_curr = (for_loop_out_curr << bits_to_rotate | (for_loop_out_curr >> (8 - bits_to_rotate)));
+always_comb begin
+    for (int i = 0; i < 8; i++) begin
+        shifted_loop_out[7-i] = _shifted_loop_out[i];
+        shifted_loop_out_curr[7-i] = _shifted_loop_out_curr[i];
+    end
+end
 always_ff @(posedge clk) begin
 
     if (rst) begin
@@ -227,11 +250,17 @@ always_ff @(posedge clk) begin
         end 
         // this doesn't start until two cycles after branch mispredict was found since previous cycle prepares for this logic
         else if (flush_ip) begin
-
+            
             /* invalidate entries starting from branch pointer to entry right before head pointer */
-            for (logic [2:0] i = br_ptr + 1; i != _head_ptr; i = i + 1) begin
-                _allocated_entries[i] <= 1'b0;
-                valid_arr[i] <= 1'b0;
+            /* not synthesizable */
+            // for (logic [2:0] i = br_ptr + 1; i != _head_ptr; i = i + 1) begin
+            //     _allocated_entries[i] <= 1'b0;
+            //     valid_arr[i] <= 1'b0;
+            // end
+            /* for synthesis */
+            for (int i = 0; i < 8; i++) begin
+                _allocated_entries[i] <= shifted_loop_out[i] ? 1'b0 : _allocated_entries[i];
+                valid_arr[i] <= shifted_loop_out[i] ? 1'b0 : valid_arr[i];
             end
 
             /* also invalidate the current branch since we are dealing with it now */
@@ -276,6 +305,8 @@ always_ff @(posedge clk) begin
     end
 end
 
+
+
 function void set_defaults();
     _ld_pc = 1'b0;
     _ld_commit_sel = 1'b0;
@@ -289,22 +320,37 @@ function void set_defaults();
         invalidated_n[i] = 1'b1;
         set_reg_valid[i] = 1'b0;
         reg_valid[i] = 5'b00000;
+        for_loop_out[i] = 1'b0;
+        for_loop_out_curr[i] = 1'b0;
     end
 endfunction
 
 always_comb begin
 
             set_defaults();
-
+            /* regular logic not synthesizable */
             /* need to output the entries that are now invalidated */
             if (flush_in_prog & ~rst) begin
-                for (logic [2:0] m = br_ptr + 1; m != _head_ptr; m = m + 1) begin
-                    invalidated_n[m] = 1'b0;
+                // for (logic [2:0] m = br_ptr + 1; m != _head_ptr; m = m + 1) begin
+                //     invalidated_n[m] = 1'b0;
+                // end
+
+                // for (logic [2:0] n = br_ptr + 1; n != (_curr_ptr + 1)%8; n = n + 1) begin
+                //     set_reg_valid[n] = 1'b1;
+                //     reg_valid[n] = rd_arr[n];
+                // end
+                /* for synthesis */
+                for (int i = 0; i < 8; i++) begin
+                    if (i < e_shifted)
+                        for_loop_out[i] = 1'b1;
+                    if (i <= e_shifted_curr)
+                        for_loop_out_curr[i] = 1'b1;
                 end
 
-                for (logic [2:0] n = br_ptr + 1; n != (_curr_ptr + 1)%8; n = n + 1) begin
-                    set_reg_valid[n] = 1'b1;
-                    reg_valid[n] = rd_arr[n];
+                for (int i = 0; i < 8; i++) begin
+                    invalidated_n[i] = shifted_loop_out[i] ? 1'b0 : invalidated_n[i];
+                    set_reg_valid[i] = shifted_loop_out_curr[i];
+                    reg_valid[i] = shifted_loop_out_curr[i] ? rd_arr[i] : reg_valid[i];
                 end
             end
 
