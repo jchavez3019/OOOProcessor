@@ -103,7 +103,7 @@ logic [31:0] pc_in;
 rv32i_types::rvfi_word rvfi_wrd;
 logic jalr_executed;
 logic [31:0] jalr_pc;
-logic [4:0] jalr_tag;
+logic [2:0] jalr_tag;
 
 endinterface : debug_itf
 

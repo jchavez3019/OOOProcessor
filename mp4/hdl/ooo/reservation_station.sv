@@ -4,7 +4,6 @@ import rv32i_types::*;
     input clk, 
     input rst, 
     input logic load_word,
-    input logic flush_ip,
     input tomasula_types::cdb_data cdb[8],
     input logic [7:0] robs_calculated,
     input logic invalidated_rob_entries_n[8], // originally took the allocated entries in the rob
